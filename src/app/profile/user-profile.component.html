@@ -1,0 +1,150 @@
+<div class="profile-container">
+  <div class="page-hero">
+    <div>
+      <div class="title">My Profile</div>
+      <div class="sub">Manage your personal information and account security</div>
+    </div>
+    <div class="sub">{{ (user?.role || '') }} • {{ (user?.firstName || '') + ' ' + (user?.lastName || '') || (user?.username || '') }}</div>
+  </div>
+
+  <!-- Top summary banner -->
+  <div class="summary-card">
+    <div class="summary-left">
+      <div class="avatar-circle clickable" title="View photo" (click)="showImageViewer = !!previewUrl">
+        <img *ngIf="previewUrl; else noimg" [src]="previewUrl" alt="Profile" (error)="onImgError()" />
+        <ng-template #noimg><span class="placeholder">👤</span></ng-template>
+      </div>
+      <div>
+        <div class="name">{{ (user?.firstName || '') + ' ' + (user?.lastName || '') }}</div>
+        <div class="meta">{{ user?.email }}</div>
+        <div class="meta" *ngIf="user?.phone">{{ user?.phone }}</div>
+      </div>
+    </div>
+    <div class="upload-actions" *ngIf="user?.role==='SuperAdmin'">
+      <input id="file" type="file" (change)="onFile($event)" />
+      <button class="btn primary" (click)="uploadPicture()" [disabled]="!selectedFile || loading">Upload</button>
+    </div>
+  </div>
+
+  <!-- Personal Info (Read-only) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="title">Personal Information</div>
+      <div class="actions">
+        <button *ngIf="user?.role==='SuperAdmin'" class="btn" (click)="openEdit()">Edit</button>
+        <button *ngIf="user?.role==='SuperAdmin'" class="btn" (click)="toggleSmtp()">Outgoing Email (SMTP)</button>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info"><span>First Name</span><b>{{ user?.firstName || '—' }}</b></div>
+      <div class="info"><span>Last Name</span><b>{{ user?.lastName || '—' }}</b></div>
+      <div class="info"><span>Username</span><b>{{ user?.username || '—' }}</b></div>
+      <div class="info"><span>Email</span><b>{{ user?.email || '—' }}</b></div>
+      <div class="info"><span>Phone</span><b>{{ user?.phone || '—' }}</b></div>
+      <div class="info"><span>Role</span><b>{{ user?.role || '—' }}</b></div>
+    </div>
+  </div>
+
+  <!-- Change Password Section -->
+  <div class="card" *ngIf="user?.role==='SuperAdmin'">
+    <div class="card-header">
+      <div class="title">Change Password</div>
+    </div>
+    <!-- Wrap fields in a real form to avoid browser warnings and enable Enter-to-submit -->
+    <form class="password-grid" [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" autocomplete="off" novalidate>
+      <label>
+        <span>Current Password</span>
+        <div class="pw">
+          <input [type]="showOld ? 'text' : 'password'" formControlName="currentPassword" autocomplete="current-password" />
+          <button type="button" class="eye" (click)="showOld = !showOld">{{showOld ? '🙈' : '👁️'}}</button>
+        </div>
+      </label>
+      <label>
+        <span>New Password</span>
+        <div class="pw">
+          <input [type]="showNew ? 'text' : 'password'" formControlName="newPassword" autocomplete="new-password" />
+          <button type="button" class="eye" (click)="showNew = !showNew">{{showNew ? '🙈' : '👁️'}}</button>
+        </div>
+      </label>
+      <label>
+        <span>Confirm New Password</span>
+        <div class="pw">
+          <input [type]="showNew ? 'text' : 'password'" formControlName="confirmPassword" autocomplete="new-password" />
+        </div>
+      </label>
+      <div class="actions">
+        <button type="submit" class="btn">Update Password</button>
+        <button type="button" class="btn" (click)="requestApproval()">Forgot password? Request SuperAdmin approval</button>
+        <span class="ok" *ngIf="pwMsg">{{pwMsg}}</span>
+        <span class="err" *ngIf="pwErr">{{pwErr}}</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal" *ngIf="showEdit">
+    <div class="overlay" (click)="closeEdit()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="title">Edit Personal Information</div>
+        <button class="close" (click)="closeEdit()">✖</button>
+      </div>
+      <form [formGroup]="form" (ngSubmit)="save()" class="form-grid" autocomplete="on" novalidate>
+        <label><span>First Name</span><input formControlName="firstName" autocomplete="given-name" /></label>
+        <label><span>Last Name</span><input formControlName="lastName" autocomplete="family-name" /></label>
+        <label><span>Username</span><input formControlName="username" autocomplete="username" autocapitalize="off" spellcheck="false" /></label>
+        <label><span>Email</span><input type="email" formControlName="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" /></label>
+        <label><span>Phone</span><input formControlName="phone" autocomplete="tel" inputmode="tel" /></label>
+        <div class="actions">
+          <button type="button" class="btn" (click)="closeEdit()">Cancel</button>
+          <button type="submit" class="btn primary" [disabled]="loading || form.invalid">Save Changes</button>
+
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Fullscreen image viewer -->
+  <div class="img-viewer" *ngIf="showImageViewer" (click)="showImageViewer=false">
+    <img *ngIf="previewUrl" [src]="previewUrl" alt="Profile large" />
+  </div>
+</div>
+
+<!-- SMTP Settings (SuperAdmin) - outside other modals -->
+<div class="modal" *ngIf="showSmtp">
+  <div class="overlay" (click)="showSmtp=false"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="title">Outgoing Email (SMTP)</div>
+      <button class="close" (click)="showSmtp=false">✖</button>
+    </div>
+    <form [formGroup]="smtpForm" (ngSubmit)="saveSmtp()" class="form-grid" autocomplete="off" novalidate>
+      <label><span>SMTP Host</span><input formControlName="host" autocomplete="off" placeholder="smtp.gmail.com" /></label>
+      <label><span>Port</span><input type="number" formControlName="port" autocomplete="off" placeholder="587 or 465" /></label>
+      <label title="Use 465 for secure (SSL/TLS), 587 for STARTTLS"><span>Secure (TLS 465)</span><input type="checkbox" formControlName="secure" /></label>
+      <label><span>SMTP User (Email)</span><input type="email" formControlName="user" autocomplete="username" placeholder="your-email@gmail.com" /></label>
+      <label><span>App Password</span>
+        <div class="pw">
+          <input [type]="showSmtpPass ? 'text' : 'password'" formControlName="pass" placeholder="16-char app password (no spaces)" autocomplete="new-password" />
+          <button type="button" class="eye" (click)="showSmtpPass=!showSmtpPass">{{showSmtpPass ? '🙈' : '👁️'}}</button>
+        </div>
+      </label>
+      <label><span>From</span><input formControlName="from" placeholder="RAMCAH HMS <your-email@gmail.com>" autocomplete="off" /></label>
+      <div class="actions">
+        <button type="button" class="btn" (click)="showSmtp=false">Close</button>
+        <button type="submit" class="btn primary" [disabled]="smtpLoading || smtpForm.invalid">Save SMTP</button>
+        <div style="flex:1"></div>
+        <input placeholder="Test to (optional)" [(ngModel)]="smtpTestTo" name="smtpTestTo" [ngModelOptions]="{standalone: true}" />
+        <button type="button" class="btn" (click)="sendTest()" [disabled]="smtpLoading">Send Test</button>
+      </div>
+      <div class="status">
+        <span class="ok" *ngIf="smtpMsg">{{smtpMsg}}</span>
+        <span class="err" *ngIf="smtpErr">{{smtpErr}}</span>
+        <div class="hint" *ngIf="!smtpErr && !smtpMsg">
+          Tip: Gmail requires an App Password (not your normal password). Enable 2-Step Verification, then create an App Password for "Mail".
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+

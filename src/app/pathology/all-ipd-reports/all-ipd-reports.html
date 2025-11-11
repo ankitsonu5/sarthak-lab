@@ -1,0 +1,278 @@
+<div class="all-reports-container">
+  <!-- Header -->
+  <div class="reports-header">
+    <div class="header-left">
+      <h2 class="reports-title">All IPD Pathology Reports</h2>
+      <div class="reports-count">Total: {{ totalReports }} | Today: {{ todayReports }}</div>
+    </div>
+    <button class="refresh-btn" (click)="refreshReports()" [disabled]="isLoading">Refresh</button>
+  </div>
+
+  <!-- Search & Filters (single row like earlier) -->
+  <div class="search-filter-section">
+    <div class="filters-row">
+      <!-- Search by patient name -->
+      <div class="search-field">
+        <label>Search</label>
+        <input class="filter-input" type="text" [(ngModel)]="searchTerm" placeholder="Search by patientName" (input)="onSearchInput(); searchReports()" (keyup.enter)="applyFiltersExact('patientName')" />
+      </div>
+      <!-- Receipt No -->
+      <div class="search-field narrow">
+        <label>Receipt No</label>
+        <input class="filter-input" type="text" [(ngModel)]="filters.receiptNo" (input)="onFilterInput('receiptNo')" (keyup.enter)="applyFiltersExact('receiptNo')" />
+      </div>
+      <!-- Yearly No -->
+      <div class="search-field narrow">
+        <label>Yearly No</label>
+        <input class="filter-input" type="text" [(ngModel)]="filters.labYearlyNo" (input)="onFilterInput('labYearlyNo')" (keyup.enter)="applyFiltersExact('labYearlyNo')" />
+      </div>
+      <!-- Single Date -->
+      <div class="search-field narrow">
+        <label>Date (Registration)</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filters.particularDate" (change)="onParticularDateChange()" />
+      </div>
+      
+      <!-- From Date -->
+      <div class="search-field narrow">
+        <label>From</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filters.dateFrom" (change)="searchReports()" />
+      </div>
+      <!-- To Date -->
+      <div class="search-field narrow">
+        <label>To</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filters.dateTo" (change)="searchReports()" />
+      </div>
+      <!-- Month (All / January..December) -->
+      <div class="search-field narrow">
+        <label>Month</label>
+        <select class="filter-input month-dropdown" [(ngModel)]="filters.month" (change)="searchReports()">
+          <option value="">All</option>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Second row: actions and counts like in screenshot -->
+    <div class="filter-actions">
+      <div class="action-buttons-left">
+        <button class="clear-filters-btn" (click)="clearAllFilters()">Clear Filters</button>
+      </div>
+
+      <!-- Today Quick Filter -->
+      <div class="search-field narrow today-checkbox">
+        <label>Today</label>
+        <input type="checkbox" [(ngModel)]="isTodayChecked" (change)="onTodayToggle(isTodayChecked)" />
+      </div>
+
+      <div class="filter-results">
+        <span>Showing {{ (filteredReports && filteredReports.length) ? filteredReports.length : 0 }} of {{ (totalReports || 0) }} reports</span>
+      </div>
+    </div>
+
+  <!-- Pagination (Top) -->
+  <div class="pagination-container top" *ngIf="!isLoading && filteredReports.length > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ getEndIndex() }} of {{ totalReports }}
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-indicator" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <div>Loading reports...</div>
+  </div>
+
+  <!-- No Reports -->
+  <div class="no-reports-message" *ngIf="!isLoading && filteredReports.length === 0">
+    <div class="no-reports-icon">🗒️</div>
+    <h3>No reports found</h3>
+    <p>Try adjusting your filters</p>
+  </div>
+
+  <!-- Reports Table -->
+  <div class="reports-table-container" *ngIf="!isLoading && filteredReports.length > 0">
+    <table class="reports-table">
+      <thead class="table-header">
+        <tr>
+          <th class="serial-no">S/N</th>
+          <th class="receipt-no">RECEIPT</th>
+          <th class="patient-name">PATIENT</th>
+          <th class="lab-yearly-no"><div>LAB</div><div>YEARLY NO</div></th>
+          <th class="lab-daily-no"><div>LAB</div><div>DAILY NO</div></th>
+          <th class="test-names">TESTS</th>
+          <th class="date-col">DATE</th>
+          <th class="type">TYPE</th>
+          <th class="actions-header">ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-row" *ngFor="let rpt of paginatedReports; let i = index; trackBy: trackByReportId" [id]="'receipt-' + rpt.receiptNo">
+          <td class="serial-no">
+            {{ (currentPage - 1) * itemsPerPage + i + 1 }}
+            <span *ngIf="rpt.isEdited" class="badge edited-badge">Edited</span>
+          </td>
+          <td class="receipt-no">{{ rpt.receiptNo }}</td>
+          <td>
+            <div class="patient-info">
+              <div class="name">{{ (rpt.patientData && rpt.patientData.fullName) || '' }}</div>
+              <div class="details">{{ getAgeWithUnit(rpt) }} | {{ (rpt.patientData && rpt.patientData.gender) || '' }}</div>
+            </div>
+          </td>
+          <td class="lab-yearly-no">{{ rpt.labYearlyNo }}</td>
+          <td class="lab-daily-no">{{ rpt.labDailyNo }}</td>
+          <td class="test-names">
+            <div class="test-names-list">{{ rpt.testNamesShort }}</div>
+          </td>
+          <td class="date-col">{{ formatDate(rpt.registrationDate || rpt.reportDate) }}</td>
+          <td class="type">
+            <span class="type-badge" [ngClass]="(rpt.patientType || '') === 'IPD' ? 'ipd-type' : 'opd-type'">{{ rpt.patientType || '' }}</span>
+          </td>
+          <td class="actions">
+            <div class="action-buttons">
+              <button class="action-btn view-btn" (click)="openViewModal(rpt)">View</button>
+              <button class="action-btn edit-btn" (click)="editReport(rpt)">Edit</button>
+              <button class="action-btn print-btn" (click)="printReport(rpt)">Print</button>
+              <button class="action-btn whatsapp-btn" (click)="shareOnWhatsApp(rpt)"><i class="fa-brands fa-whatsapp"></i> Share</button>
+              <!-- <button class="action-btn delete-btn" (click)="deleteReport(rpt)">Delete</button> -->
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!isLoading && filteredReports.length > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ getEndIndex() }} of {{ totalReports }}
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  <!-- View Modal (reusable child component) -->
+  <app-all-reports-view [show]="showViewModal" [report]="selectedReport" (close)="closeViewModal()"></app-all-reports-view>
+
+  <!-- WhatsApp Share Modal -->
+  <div class="whatsapp-modal-overlay" *ngIf="showWhatsAppModal" (click)="closeWhatsAppModal()">
+    <div class="whatsapp-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fab fa-whatsapp"></i> Share Test Report</h3>
+        <button class="close-btn" (click)="closeWhatsAppModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Patient Info Display -->
+        <div class="patient-info-display" *ngIf="selectedReportForShare">
+          <h4>Patient: {{ selectedReportForShare.patientData?.fullName }}</h4>
+          <p>Receipt No: {{ selectedReportForShare.receiptNo }} | Date: {{ selectedReportForShare.reportDate | date:'dd/MM/yyyy' }}</p>
+        </div>
+
+        <!-- Contact Number Section -->
+        <div class="contact-section">
+          <label>WhatsApp Number</label>
+          <input
+            type="tel"
+            [(ngModel)]="whatsappNumber"
+            class="form-input"
+            placeholder="Enter WhatsApp number (with country code)"
+            (input)="validateWhatsAppNumber()">
+          <small class="help-text">Format: +91XXXXXXXXXX</small>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-section" *ngIf="isGeneratingReport">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <p>Generating report... Please wait</p>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" *ngIf="shareSuccessMessage">
+          <i class="fas fa-check-circle"></i>
+          {{ shareSuccessMessage }}
+        </div>
+
+        <!-- Share Options -->
+        <div class="share-options" [class.disabled]="isGeneratingReport">
+          <h4>Choose Sharing Format:</h4>
+
+          <!-- Smart Share Option -->
+          <div class="option-card smart-share" (click)="!isGeneratingReport && shareSmartly()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">🚀</div>
+            <div class="option-content">
+              <h5>Smart Share <span class="new-badge">NEW!</span></h5>
+              <p>AI-powered sharing with direct file attachment</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card" (click)="!isGeneratingReport && shareReportAsText()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📝</div>
+            <div class="option-content">
+              <h5>Text Format</h5>
+              <p>Share as formatted text message</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card enhanced" (click)="!isGeneratingReport && shareReportAsPDF()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📄</div>
+            <div class="option-content">
+              <h5>Share PDF <span class="enhanced-badge">ENHANCED</span></h5>
+              <p>Generate PDF with smart attachment</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card enhanced" (click)="!isGeneratingReport && shareReportAsImage()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">🖼️</div>
+            <div class="option-content">
+              <h5>Share Image <span class="enhanced-badge">ENHANCED</span></h5>
+              <p>High-quality image with clipboard support</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card" (click)="!isGeneratingReport && shareReportDirectly()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📱</div>
+            <div class="option-content">
+              <h5>Direct Share</h5>
+              <p>Open WhatsApp directly</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeWhatsAppModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+

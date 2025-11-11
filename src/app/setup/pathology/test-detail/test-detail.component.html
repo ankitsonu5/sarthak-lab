@@ -1,0 +1,216 @@
+@if (testDefinition) {
+<div class="test-detail-container">
+  <!-- Breadcrumb Navigation -->
+  <div class="breadcrumb">
+    <span class="breadcrumb-item" (click)="goBack()">MASTER TEST LIST</span>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item" (click)="goBackToCategory()">{{ getCategoryName() }}</span>
+    <span class="breadcrumb-separator">/</span>
+    <span class="breadcrumb-item active">{{ getShortName() }}</span>
+  </div>
+
+  <!-- Test Header -->
+  <div class="test-header">
+    <h1 class="test-title">{{ testDefinition.name }} ({{ getShortName() }})</h1>
+    <button class="edit-btn" (click)="editTest()">
+      <i class="fas fa-edit"></i> Edit
+    </button>
+  </div>
+
+  <!-- Reorder Info - Only show for multiple and nested parameters -->
+  <!-- <div class="reorder-info" *ngIf="testDefinition.testType === 'multiple' || testDefinition.testType === 'nested'">
+    <i class="fas fa-info-circle"></i>
+    <span>Reorder parameters by drag 'n' drop.</span>
+  </div> -->
+
+  <!-- Parameters Section for Multiple Parameters -->
+  @if (testDefinition.testType === 'multiple') {
+    <div class="parameters-section">
+      <h2>Parameters:</h2>
+
+      <div class="parameters-table">
+        <div class="table-header">
+          <div class="col-order">ORDER</div>
+          <div class="col-name">NAME</div>
+          <div class="col-optional">OPTIONAL</div>
+          <div class="col-unit">UNIT</div>
+          <div class="col-action">Action</div>
+        </div>
+
+        @for (parameter of getSortedParameters(); track parameter.order; let i = $index) {
+          <div class="table-row"
+               draggable="true"
+               (dragstart)="onRowDragStart($event, parameter)"
+               (dragover)="onRowDragOver($event)"
+               (drop)="onRowDrop($event, parameter)">
+            <div class="col-order">
+              <span class="drag-handle" aria-hidden="true">
+                <i class="fa-solid fa-caret-up"></i>
+                <i class="fa-solid fa-caret-down"></i>
+              </span>
+              {{ parameter.order }}.
+            </div>
+            <div class="col-name">{{ getParameterDisplayName(parameter) }}</div>
+            <div class="col-optional">{{ isParameterOptional(parameter) ? 'Yes' : 'No' }}</div>
+            <div class="col-unit">
+              {{ getParameterUnit(parameter) }}
+              </div>
+              <div class="col-action">
+              <button
+                class="edit-normal-values-btn-small"
+                (click)="editParameterNormalValues(parameter)"
+                title="Edit normal values">
+                <i class="fas fa-edit"></i> Edit normal values
+              </button>
+              </div>
+
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Parameters Section for Nested Parameters -->
+  @if (testDefinition.testType === 'nested') {
+    <div class="parameters-section">
+      <h2>Parameters:</h2>
+
+      <div class="parameters-table">
+        <div class="table-header">
+          <div class="col-order">ORDER</div>
+          <div class="col-name">NAME</div>
+          <div class="col-optional">OPTIONAL</div>
+          <div class="col-unit">UNIT</div>
+          <div class="col-action">Action</div>
+        </div>
+
+        <!-- Group parameters by groupBy field -->
+        @for (group of getGroupedParameters(); track $index) {
+          <!-- Group Header -->
+          @if (group.groupName) {
+            <div class="group-header">
+              <strong>{{ group.groupName }}</strong>
+            </div>
+          }
+
+          <!-- Parameters in this group -->
+          @for (parameter of group.parameters; track $index; let i = $index) {
+            <div class="table-row">
+              <div class="col-order">
+                <span class="drag-handle" aria-hidden="true">
+                  <i class="fa-solid fa-caret-up"></i>
+                  <i class="fa-solid fa-caret-down"></i>
+                </span>
+                {{ parameter.order }}.
+              </div>
+              <div class="col-name">{{ getParameterDisplayName(parameter) }}</div>
+              <div class="col-optional">{{ isParameterOptional(parameter) ? 'Yes' : 'No' }}</div>
+              <div class="col-unit">
+                {{ getParameterUnit(parameter) }}
+                </div>
+                <div class="col-action">
+                <button
+                  class="edit-normal-values-btn-small"
+                  (click)="editParameterNormalValues(parameter)"
+                  title="Edit normal values">
+                  <i class="fas fa-edit"></i> Edit normal values
+                </button>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Single Parameter Layout -->
+  @if (testDefinition.testType === 'single') {
+    <div class="single-parameter-section">
+      <div class="method-instrument-info">
+        <div class="info-row">
+          <span class="info-label">Method:</span>
+          <span class="info-value">{{ testDefinition.method || 'Not specified' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Instrument:</span>
+          <span class="info-value">{{ testDefinition.instrument || 'Not specified' }}</span>
+        </div>
+      </div>
+
+      <div class="single-parameter-card">
+        <div class="unit-section">
+          <label class="unit-label">UNIT</label>
+          <div class="unit-value">{{ getSingleParameterUnit() }}</div>
+          <button
+            class="edit-normal-values-btn"
+            (click)="editSingleParameterNormalValues()">
+            <i class="fas fa-edit"></i> Edit normal values
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Document Type Layout -->
+  @if (testDefinition.testType === 'document') {
+    <div class="document-section">
+      <div class="category-info">
+        <span class="category-label">Category:</span>
+        <span class="category-value">{{ getCategoryName() }}</span>
+      </div>
+
+      @if (testDefinition.parameters && testDefinition.parameters.length > 0) {
+        <div class="default-result-section">
+          <span class="default-result-label">Default result:</span>
+          <div class="default-result-value">{{ testDefinition.parameters[0].defaultResult || '' }}</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Create Similar Test Button -->
+  <!-- <div class="create-similar-section">
+    <button class="create-similar-btn" (click)="createSimilarTest()">
+      <i class="fas fa-copy"></i> Create similar test
+    </button>
+  </div> -->
+
+
+
+
+  <!-- Error Alert -->
+  @if (showAlert && alertType === 'error') {
+    <div class="alert-container">
+      <div class="alert alert-error">
+        <span>{{ alertMessage }}</span>
+        <button class="alert-close" (click)="showAlert = false">&times;</button>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Normal Value Modal -->
+@if (showNormalValueModal) {
+  <div class="modal-overlay" (click)="closeNormalValueModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <app-normal-value-editor
+        [parameter]="selectedParameter"
+        [normalValues]="selectedParameter?.normalValues || []"
+        (save)="saveNormalValues($event)"
+        (cancel)="closeNormalValueModal()"
+        (close)="closeNormalValueModal()">
+      </app-normal-value-editor>
+    </div>
+  </div>
+}
+}
+
+<!-- Loading State -->
+@if (!testDefinition) {
+  <div class="loading-container">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Loading test details...</span>
+    </div>
+  </div>
+}

@@ -1,0 +1,135 @@
+<div class="reports-records-container">
+
+
+  <!-- 1. Simple Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Reports Records</h1>
+    </div>
+    <div class="header-right">
+      <span class="record-count">Total Records: {{ totalRecords }}</span>
+      <span class="showing-count">Showing: {{ filteredData.length }} records</span>
+      <div class="header-actions" *ngIf="filteredData.length > 0">
+        <button class="print-btn" (click)="printReport()"><i class="fas fa-print"></i> Print</button>
+        <button class="pdf-btn" (click)="generateReportPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Filters Section -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>From Date:</label>
+        <input type="date" [(ngModel)]="fromDate" (change)="applyFilters()" class="form-input">
+      </div>
+
+      <div class="filter-group">
+        <label>To Date:</label>
+        <input type="date" [(ngModel)]="toDate" (change)="applyFilters()" class="form-input">
+      </div>
+
+      <div class="filter-group">
+        <label>Receipt No:</label>
+        <input type="text" [(ngModel)]="receiptNoFilter" (input)="applyFilters()" placeholder="Enter receipt number" class="form-input">
+      </div>
+
+      <div class="filter-group">
+        <label>Type:</label>
+        <select [(ngModel)]="recordTypeFilter" (change)="applyFilters()" class="form-select">
+          <option value="">All Types</option>
+          <option value="OPD">OPD</option>
+          <option value="IPD">IPD</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Category:</label>
+        <select [(ngModel)]="categoryFilter" (change)="applyFilters()" class="form-select">
+          <option value="">All Categories</option>
+          <option *ngFor="let cat of categories" [value]="cat._id">{{ cat.name }}</option>
+        </select>
+      </div>
+
+
+      <div class="filter-actions">
+        <button class="clear-btn" (click)="clearFilters()">Clear</button>
+        <button class="refresh-btn" (click)="refreshData()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Hospital Header with Logo -->
+  <div class="hospital-header-section" #pdfHeader>
+    <div class="logo-section">
+      <img src="assets/images/myupgov.png" alt="UP Government Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+      <div class="hospital-info">
+        <h2>राजकीय आयुर्वेद कॉलेज एवं अस्पताल वाराणसी</h2>
+        <h3>RAJKIYA AYURVEDA COLLEGE AND HOSPITAL VARANASI</h3>
+        <p>Government Ayurvedic Medical College & Hospital</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Data Table -->
+  <div class="table-container" #recordsTable *ngIf="filteredData.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>S/N</th>
+          <th>Receipt No</th>
+          <th>Patient Name</th>
+          <th>Age | Gender</th>
+          <th>Lab Yearly No</th>
+          <th>Lab Daily No</th>
+          <th>Tests</th>
+          <th>Type</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of pagedData; let i = index">
+          <td>{{ ((currentPage - 1) * pageSize) + i + 1 }}</td>
+          <td>{{ record.receiptNo }}</td>
+          <td>{{ record.patientData?.fullName }}</td>
+          <td>{{ getAgeWithUnit(record) }} | {{ record.patientData?.gender }}</td>
+          <td>{{ record.labYearlyNo }}</td>
+          <td>{{ record.labDailyNo }}</td>
+          <td>{{ getTestNamesShort(record.testResults) }}</td>
+          <td>
+            <span class="type-badge" [ngClass]="record.type === 'OPD' ? 'opd-type' : 'ipd-type'">
+              {{ record.type || 'OPD' }}
+            </span>
+          </td>
+          <td>{{ record.reportDate | date:'dd/MM/yyyy' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- Pagination Controls -->
+    <div class="pagination-controls">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <span>Page {{currentPage}} / {{totalPages}}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+
+    <!-- Signature Footer (appears in print/PDF) -->
+    <div class="signature-footer" *ngIf="filteredData.length > 0">
+      <div class="sig-left">
+        <div class="line"></div>
+        <div class="label">Department Signature</div>
+        <div class="small">Name ____________________</div>
+        <div class="small">Designation ______________</div>
+      </div>
+      <div class="sig-right">
+        <div class="line"></div>
+        <div class="label">Senior Medical Officer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Data Message -->
+  <div class="no-data-message" *ngIf="filteredData.length === 0">
+    <p>No records found. Please adjust your filters or refresh the data.</p>
+  </div>
+</div>
+

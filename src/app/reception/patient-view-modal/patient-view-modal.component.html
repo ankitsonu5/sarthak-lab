@@ -1,0 +1,143 @@
+<div class="custom-modal-overlay">
+  <div class="custom-modal-container">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>{{ isViewMode ? 'View Patient Details' : 'Edit Patient Information' }}</h2>
+      <button class="close-btn" (click)="onCancel()">✕</button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <form [formGroup]="patientForm" class="patient-form">
+        
+        <!-- Row 1: Basic Info -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Patient ID</label>
+            <input type="text" formControlName="patientId" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label>Registration Date</label>
+            <input type="date" formControlName="date" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label>Aadhaar No</label>
+            <input type="text" formControlName="aadharNo" class="form-input"
+                   placeholder="Enter 12-digit Aadhaar" [readonly]="isViewMode"
+                   maxlength="12" inputmode="numeric" pattern="[0-9]*">
+          </div>
+        </div>
+
+        <!-- Row 2: Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" formControlName="firstName" class="form-input"
+                   placeholder="Enter first name" [readonly]="isViewMode"
+                   (input)="onNameInput($event, 'firstName')"
+                   style="text-transform: capitalize;">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" formControlName="lastName" class="form-input"
+                   placeholder="Enter last name" [readonly]="isViewMode"
+                   (input)="onNameInput($event, 'lastName')"
+                   style="text-transform: capitalize;">
+          </div>
+        </div>
+
+        <!-- Row 3: Age & Gender -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age *</label>
+            <input type="number" formControlName="age" class="form-input"
+                   placeholder="Enter age" min="0" [readonly]="isViewMode">
+          </div>
+          <div class="form-group">
+            <label>Age In *</label>
+            <select formControlName="ageIn" class="form-input" [disabled]="isViewMode">
+              <option value="Years">Years</option>
+              <option value="Months">Months</option>
+              <option value="Days">Days</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select formControlName="gender" class="form-input" [disabled]="isViewMode">
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 4: Contact & Blood Group -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="tel" formControlName="contact" class="form-input"
+                   placeholder="Enter 10-digit mobile number" [readonly]="isViewMode"
+                   maxlength="10" inputmode="numeric" pattern="[0-9]*">
+          </div>
+          <div class="form-group">
+            <label>Blood Group</label>
+            <select formControlName="bloodGroup" class="form-input" [disabled]="isViewMode">
+              <option value="">Select Blood Group</option>
+              <option *ngFor="let bg of bloodGroups" [value]="bg">{{ bg }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 5: Address -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="address" class="form-input"
+                   placeholder="Enter address" [readonly]="isViewMode">
+          </div>
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" formControlName="city" class="form-input"
+                   placeholder="Enter city" [readonly]="isViewMode">
+          </div>
+          <div class="form-group">
+            <label>Post</label>
+            <input type="text" formControlName="post" class="form-input"
+                   placeholder="Enter postal code" [readonly]="isViewMode">
+          </div>
+        </div>
+
+        <!-- Row 6: Remarks -->
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Remarks</label>
+            <textarea formControlName="remark" class="form-input" rows="3"
+                      placeholder="Enter any remarks" [readonly]="isViewMode"></textarea>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()">
+        {{ isViewMode ? 'Close' : 'Cancel' }}
+      </button>
+      <button *ngIf="isEditMode" type="button" class="btn btn-primary" 
+              (click)="onSave()" [disabled]="isLoading">
+        {{ isLoading ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Alert Modal -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="'🎉 Patient Updated Successfully!'"
+    [message]="successMessage"
+    [badgeText]="'Patient Information Updated Successfully'"
+    (close)="closeSuccessAlert()">
+  </app-success-alert>
+</div>

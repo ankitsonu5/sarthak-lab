@@ -1,0 +1,119 @@
+<div class="report-container">
+  <!-- Page Title -->
+  <div class="page-title">
+    <h2>Daily Cash Report</h2>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="filter-inputs">
+      <!-- Today's Date (Default) -->
+      <div class="filter-field">
+        <label>Today:</label>
+        <input type="date" [(ngModel)]="todayDate" name="todayDate" readonly>
+      </div>
+
+      <!-- From Date -->
+      <div class="filter-field">
+        <label>From:</label>
+        <input type="date" [(ngModel)]="fromDate" name="fromDate">
+      </div>
+
+      <!-- To Date -->
+      <div class="filter-field">
+        <label>To:</label>
+        <input type="date" [(ngModel)]="toDate" name="toDate">
+      </div>
+
+      <!-- Month Filter Dropdown -->
+      <div class="filter-field">
+        <label>Month Filter:</label>
+        <select [(ngModel)]="selectedMonth" name="selectedMonth" (change)="onMonthFilterChange()">
+          <option value="all">All</option>
+          <option value="01">January</option>
+          <option value="02">February</option>
+          <option value="03">March</option>
+          <option value="04">April</option>
+          <option value="05">May</option>
+          <option value="06">June</option>
+          <option value="07">July</option>
+          <option value="08">August</option>
+          <option value="09">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="download-btn" (click)="downloadReport()">Download</button>
+      <button class="search-btn" (click)="generateReport()">Search</button>
+      <button class="print-btn" (click)="printReport()">Print</button>
+    </div>
+  </div>
+
+  <!-- Report Content -->
+  <div class="report-content" *ngIf="reportData">
+    <div class="report-header">
+      <div class="logo-container">
+        <img src="./assets/images/myupgov.png" alt="UP Government Logo" class="logo" loading="eager">
+      </div>
+      <div class="header-text">
+        <h1>राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
+        <h2>चौकाघाट, वाराणसी</h2>
+        <h3>{{ getReportTitle() }} : {{ getFormattedDate() }}</h3>
+      </div>
+      <!-- spacer to visually center heading with left logo -->
+      <div class="logo-spacer"></div>
+    </div>
+
+    <!-- Category-wise Cash Report Table -->
+    <div class="report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Department</th>
+            <th>Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of reportData.categories">
+            <td>{{category.name}}</td>
+            <td>{{category.totalAmount | number:'1.0-0'}}</td>
+          </tr>
+          <tr class="total-row">
+            <td>Total</td>
+            <td>{{reportData.totalAmount | number:'1.0-0'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Signature Footer -->
+    <div class="signature-footer">
+      <div class="sig-left">
+        <div class="line"></div>
+        <div class="label">Department Signature</div>
+        <div class="small">Name ____________________</div>
+        <div class="small">Designation ______________</div>
+      </div>
+      <div class="sig-right">
+        <div class="line"></div>
+        <div class="label">Senior Medical Officer</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <p>Loading report data...</p>
+  </div>
+
+  <!-- No Data State -->
+  <div class="no-data-container" *ngIf="!reportData && !isLoading">
+    <p>No report data available. Please select a date and click Search.</p>
+  </div>
+</div>

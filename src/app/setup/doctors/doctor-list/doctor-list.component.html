@@ -1,0 +1,186 @@
+<div class="search-container">
+  <!-- Header -->
+  <div class="search-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">
+          👨‍⚕️
+        </div>
+        <div class="header-text">
+          <h1 class="header-title">Search Doctors</h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <p class="header-subtitle">Total: {{ totalDoctors }} doctors | Showing: {{ filteredDoctors.length }}</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+
+      <button type="button" (click)="navigateToDocSearchRegistration()"
+              style="border-bottom: 2px solid #b501b2; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Search Doctor
+      </button>
+      <button type="button" (click)="navigateToDocRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Doctor Registration
+      </button>
+
+    </nav>
+  </div>
+
+ 
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-controls">
+      <div class="search-input-group">
+        <input
+          #searchInput
+          type="text"
+          [(ngModel)]="searchCriteria.name"
+          (input)="onSearchTermChange(searchInput.value)"
+          placeholder="Search by name, Doctor ID, contact, or Department..."
+          class="search-input">
+      </div>
+
+      <!-- <div class="filter-group">
+        <select
+          [(ngModel)]="searchCriteria.specialization"
+          (change)="applyFilters()"
+          class="filter-select">
+          <option value="">All Specializations</option>
+          <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+        </select>
+      </div> -->
+
+      <div class="filter-group">
+        <select
+          [(ngModel)]="searchCriteria.department"
+          (change)="applyFilters()"
+          class="filter-select">
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <select
+          [(ngModel)]="searchCriteria.gender"
+          (change)="applyFilters()"
+          class="filter-select">
+          <option value="">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <button type="button" (click)="clearFilters()" class="clear-btn">
+        �️ Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="results-table">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Date</th>
+          <th>Doctor ID</th>
+          <th>Doctor Name</th>
+          <th>Department</th>
+          <th>Gender</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doctor of filteredDoctors; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ doctor.createdAt | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <span class="doctor-id">{{ doctor.doctorId || doctor._id }}</span>
+          </td>
+          <td>{{ getDoctorName(doctor) }}</td>
+          <td>{{ getDepartmentName(doctor.department) }}</td>
+          <td>{{ doctor.gender }}</td>
+          <td>
+            <div class="action-buttons">
+              <button
+                (click)="viewDoctor(doctor)"
+                class="btn-view"
+                title="View Details">
+                <i class="fa-solid fa-eye"></i> View
+              </button>
+              <button
+                (click)="editDoctor(doctor)"
+                class="btn-edit"
+                title="Edit Doctor">
+                <i class="fa-solid fa-edit"></i> Edit
+              </button>
+              <button
+                (click)="deleteDoctor(doctor)"
+                class="btn-delete"
+                title="Delete Doctor">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+
+    <!-- No Data Message -->
+    <div *ngIf="filteredDoctors.length === 0" class="no-data">
+      <div class="no-data-content">
+        <span class="no-data-icon">👨‍⚕️</span>
+        <h3 class="no-data-title">No Doctors Found</h3>
+        <p class="no-data-text">No doctors match your search criteria.</p>
+      </div>
+    </div>
+  </div>
+
+ 
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="'Delete Doctor'"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Doctor Deleted'"
+  [message]="'The doctor has been successfully removed from the system.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="2000"
+  (closed)="onDeleteSuccessClosed()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="'Cannot Delete Doctor'"
+  [message]="deleteBlockedMessage"
+  [details]="deleteBlockedDetails"
+  [badgeText]="'Dependencies present'"
+  [rooms]="blockedRooms"
+  [doctors]="[]"
+  [autoHideDelay]="3000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>
+

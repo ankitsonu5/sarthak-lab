@@ -1,0 +1,46 @@
+{
+  "receiptNo": "RCP002",
+  "registrationNo": "REG002",
+  "labYearlyNo": "LAB2024002",
+  "labDailyNo": "DAILY002",
+  "labNumber": "LAB002",
+  "patientData": {
+    "firstName": "सीता",
+    "lastName": "देवी",
+    "age": "28",
+    "gender": "Female",
+    "phone": "9876543211",
+    "address": "लंका, वाराणसी",
+    "aadhaar": "123456789013",
+    "registrationNumber": "REG002",
+    "bloodGroup": "A+",
+    "email": "sita.devi@email.com"
+  },
+  "department": "Pathology",
+  "doctor": "Dr. Sharma",
+  "testResults": [
+    {
+      "testName": "COMPLETE BLOOD COUNT",
+      "category": "PATHOLOGY",
+      "parameters": [
+        {
+          "name": "Hemoglobin",
+          "value": "12.5",
+          "unit": "g/dL",
+          "normalRange": "12-15",
+          "status": "Normal"
+        },
+        {
+          "name": "WBC Count",
+          "value": "7500",
+          "unit": "/μL",
+          "normalRange": "4000-11000",
+          "status": "Normal"
+        }
+      ]
+    }
+  ],
+  "reportDate": "2024-01-16",
+  "reportStatus": "Completed",
+  "createdBy": "Test User"
+}

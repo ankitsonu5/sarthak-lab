@@ -1,0 +1,1029 @@
+/* Print Container */
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap');
+
+:host, .pathology-report-print, .hospital-name, .hospital-location {
+  font-family: 'Raleway', Arial, sans-serif;
+}
+
+.print-container {
+  width: 100%;
+  background: white;
+}
+
+/* Force exact A4 portrait sizing and full-page report with no margins */
+@media print {
+  /* A4 portrait full page */
+  @page { size: A4; margin: 0; }
+  html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; }
+  body { display: block !important; }
+  /* Allow multi-page flow: no fixed height, no overflow clipping */
+  .pathology-report-print {
+    width: 210mm !important;
+    min-height: auto;
+    height: auto;
+    max-height: none;
+    margin: 0 !important;
+    padding: 6mm 8mm !important;
+    box-sizing: border-box;
+    overflow: visible;
+    page-break-inside: auto;
+    page-break-after: avoid;
+  }
+}
+
+/* Print Controls (Hidden in print) */
+.print-controls {
+  padding: 20px;
+  text-align: center;
+  background: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.print-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.print-btn:hover {
+  background: #0056b3;
+}
+
+/* Pathology Report Print Layout */
+.pathology-report-print {
+  width: 210mm;
+  margin: 0 auto;
+  padding: 8mm 10mm;
+  /* tighter for perfect A4 fit */
+  background: white;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  line-height: 1.2;
+  color: #000;
+  border: 1px solid #000;
+  /* single outer border (double line removed) */
+}
+
+/* First-page header block (logo + name) */
+/* Brand chevrons */
+.pathology-report-print { --brand-green: #16a34a; }
+.chevron { height: 6mm; background: repeating-linear-gradient(-45deg, var(--brand-green) 0 12px, transparent 12px 24px); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.chevron-top { margin: 6px 0 8px 0; }
+.chevron-bottom { margin: 8px 0 0 0; }
+
+/* Tri-signature footer */
+.footer-row.tri { display: flex; justify-content: space-between; gap: 10px; }
+.footer-row.tri .sign-col { width: 33.33%; text-align: center; }
+.footer-row.tri .signature-line { width: 90%; margin: 6px auto 0; height: 12px; border-bottom: 1px solid #000; }
+.report-header-block {
+  border: 1px solid #000;
+  margin-top: 2mm;
+  padding: 5px 10px;
+  margin-bottom: 0 !important;
+}
+
+@media print {
+  .report-header-block {
+    display: block !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    /* Pull the patient box up so first page keeps tight gap while keeping big spacer for pages 2+ */
+    margin-bottom: -25px !important;
+  }
+}
+
+/* Table layout for repeating header/footer across pages */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+}
+
+.header-cell,
+.patient-cell {
+  padding: 0;
+}
+
+/* Ensure header & patient cells align properly */
+.header-cell,
+.patient-cell {
+  padding: 0;
+  vertical-align: top;
+}
+
+.columns-header th {
+  border: 1px solid #000;
+  text-align: center;
+  background: #fff;
+  padding: 4px 6px;
+  line-height: 1.1;
+}
+
+/* Boxed structure like invoice */
+.category-row td,
+.testname-row td,
+.param-row td,
+.remark-row td,
+.columns-header th {
+  border: 1px solid #000;
+}
+
+.columns-header {
+  border-top: 2px solid #000;
+}
+
+.columns-header th {
+  border-bottom: 1px solid #000;
+}
+
+.center-text {
+  text-align: center;
+}
+
+/* Column widths: reduce Normal Value width on header (carries to body) */
+.report-table th.test-column { width: 46%; }
+.report-table th.result-column { width: 26%; }
+.report-table th.normal-column { width: 28%; }
+
+
+.group-title {
+  font-weight: bold;
+  background: #f4f4f4;
+  border: 1px solid #000;
+  padding: 4px 8px;
+}
+
+.param-row .test-name {
+  padding: 4px 8px;
+}
+
+
+/* Remark row styling */
+.remark-row .remark-cell {
+  font-style: normal;
+  color: #000;
+  padding: 2px 4px;
+}
+
+.param-row .test-name {
+  padding-left: 14px;
+}
+
+.param-row .test-result,
+.param-row .test-range {
+  padding: 4px 8px;
+}
+
+/* Center normal value column like old layout */
+.param-row .test-range { text-align: center; }
+
+/* Keep these sections at top of every printed page */
+@media print {
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tbody {
+    display: table-row-group !important;
+  }
+
+  /* Stretch table to fill remaining height so tfoot stays at bottom when possible */
+  .report-table { height: 100%; }
+
+  thead tr {
+    page-break-inside: avoid !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+
+  .header-cell,
+  .patient-cell {
+    vertical-align: top;
+  }
+
+  .report-header,
+  .patient-info-section {
+    width: 100%;
+    display: block;
+    page-break-inside: avoid;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Fixed print header approach (not used now) */
+.print-fixed-header {
+  display: none !important;
+}
+
+@media print {
+
+  /* Ensure patient info row is visible and repeats on every page */
+  .report-table thead .patient-info-row {
+    margin-top: 15px;
+    display: table-row !important;
+    margin-bottom: 20px !important;
+  }
+
+  .pathology-report-print {
+    margin-top: 0 !important;
+  }
+}
+
+/* Header table inside bordered block; no extra horizontal rule */
+.header-table {
+  border-bottom: 0;
+  border-collapse: collapse;
+  margin-bottom: 0;
+  width: 100%;
+}
+
+/* Show hospital header on first page only; subsequent pages: only patient info */
+@media print {
+  /* Thead rows repeat; hide the hospital header row after first page using CSS page margin box simulation per page is limited.
+     Alternative: keep thead header row, but add a top border and ensure patient info repeats. */
+}
+
+
+/* Patient info grid: exactly 3 items per row */
+.patient-info-section {
+  padding: 10px 14px;
+  border: 1px solid #000;
+  margin-top: 12px;
+  margin-bottom: 14px;
+}
+
+/* Force 3 columns in a single row using grid; remove inner lines completely */
+.patient-row {
+  display: grid !important;
+  grid-template-columns: 1.7fr 1.3fr 1.1fr;
+  column-gap: 24px;
+  align-items: center;
+  padding: 2px 0;
+  border-top: 0 !important;
+  margin-left: 0 !important;
+}
+
+.patient-row+.patient-row {
+  border-top: 0 !important;
+}
+
+.patient-row.first-row {
+  border-top: 0 !important;
+}
+
+.patient-field-medium,
+.patient-field-small {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+.field-label {
+  font-weight: 700;
+  margin-right: 2px; /* tighter gap between label and value */
+  flex-shrink: 0;
+}
+
+.inline-value { margin-left: 0; }
+
+/* Compact style for short fields like Date / IPD-OPD / Gender */
+.patient-field-small .field-label,
+.patient-field-small .field-value {
+  font-size: 16px;
+}
+
+.patient-field-small .inline-value {
+  margin-left: 0; /* no extra left margin */
+}
+
+@media print {
+  .patient-info-section {
+    border: 1px solid #000;
+    margin-top: 12px;
+    margin-bottom: 14px;
+  }
+}
+
+
+/* Header Section */
+.report-header {
+  border: 1px solid #000;
+  padding: 15px;
+  /* margin-bottom: 5px; */
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logo-section {
+  flex-shrink: 0;
+}
+
+.govt-logo {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Slightly larger hospital name to match reference */
+.hospital-info {
+  flex: 1;
+  text-align: center;
+}
+
+/* Keep hospital name to a single line and slightly smaller to prevent wrap */
+.hospital-name {
+  font-size: 19px;
+  /* reduced to fit in one line */
+  line-height: 1.1;
+  font-weight: bold;
+  margin: 0 0 6px 0;
+  color: #000;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.hospital-location {
+  font-size: 18px;
+  /* smaller subtitle */
+  font-weight: normal;
+  margin: 0;
+  color: #000;
+}
+
+/* Patient Information Section */
+.patient-info-section {
+  border: 1px solid #000;
+  /* full box around patient info */
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.patient-row {
+  display: flex;
+  /* margin-bottom: 6px; */
+  /* gap: 12px; */
+  align-items: center;
+  /* gap: 24px; */
+}
+
+.patient-row:last-child {
+  margin-bottom: 0;
+}
+
+.patient-field-medium,
+.patient-field-small {
+  display: flex;
+  align-items: center;
+  /* gap: 3px; */
+  flex: 0 0 33.333%;
+  max-width: 33.333%;
+  min-width: 0;
+  padding-right: 12px;
+  /* ensure space between columns */
+}
+
+.field-label {
+  font-weight: 700;
+  min-width: 56px;
+  white-space: nowrap;
+  font-size: 15px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* Label/value pair gap */
+.patient-field-medium,
+.patient-field-small { gap: 4px; }
+
+.inline-value { margin-left: 0; }
+.patient-field-small .inline-value { margin-left: 4px; }
+
+.patient-field-small .field-label { font-size: 15px; }
+.patient-field-small .field-value { font-size: 15px; }
+
+.field-value {
+  font-weight: 500;
+  min-width: 0;
+  padding-bottom: 0;
+  text-align: start;
+  font-size: 15px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Force single-line for compact short fields (Date/IPD/OPD/Gender) */
+.patient-field-small .field-value,
+.patient-field-small .field-label {
+  white-space: nowrap !important;
+}
+
+/* Specifically enforce Date to stay on one line */
+.date-single-line {
+  white-space: nowrap !important;
+}
+
+/* Test Results Section */
+.first-row .patient-field-medium,
+.first-row .patient-field-small {
+  display: flex;
+  align-items: start;
+}
+
+/* .first-row .field-label{ margin-right:6px; } */
+/* .first-row .field-value{ margin-right:22px; } */
+
+/* Allow long patient names to wrap within the first cell only */
+.first-row .patient-field-medium .field-value {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.test-results-section {
+  border: 1px solid #000;
+  /* margin-bottom: 30px; */
+}
+
+.results-header {
+  display: flex;
+  background: white;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  text-align: center;
+}
+
+.test-column {
+  flex: 2;
+  padding: 4px 6px;
+  border-right: 1px solid #000;
+}
+
+.result-column {
+  flex: 1.5;
+  padding: 4px 6px;
+  border-right: 1px solid #000;
+}
+
+.normal-column {
+  flex: 1.5;
+  padding: 4px 6px;
+}
+
+/* Test Category */
+.test-category {
+  border-bottom: 1px solid #ccc;
+  /* margin-bottom: 10px; */
+}
+
+.test-category:last-child {
+  border-bottom: none;
+}
+
+.main-category-header {
+  padding: 8px;
+  background: white;
+  border-bottom: 1px solid #000;
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.test-name-header {
+  padding: 8px 10px;
+  background: white;
+  border-bottom: 1px solid #eee;
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.testname-row td {
+  text-align: left;
+  font-weight: bold;
+  padding: 4px 20px 4px 12px
+}
+
+.category-row td {
+  text-align: center;
+  font-weight: bold;
+  padding: 4px 8px
+}
+
+.param-row .test-name {
+  text-align: left;
+}
+
+
+/* Test Parameter Row */
+.test-parameter-row {
+  display: flex;
+  border-bottom: 1px solid #eee;
+  min-height: 25px;
+}
+
+.test-parameter-row:last-child {
+  border-bottom: none;
+}
+
+.test-name {
+  flex: 2;
+  padding: 5px 10px;
+  border-right: 1px solid #ddd;
+  font-weight: normal;
+}
+
+.test-result {
+  flex: 1.5;
+  padding: 5px 10px;
+  border-right: 1px solid #ddd;
+  text-align: center;
+
+}
+
+.unit {
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+.normal-range {
+  flex: 1.5;
+  padding: 5px 10px;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* Status Classes for Highlighting */
+.normal-value {
+  color: #000;
+  background: transparent;
+  font-weight: normal;
+  font-size: 11px;
+}
+
+.abnormal-value {
+  color: #d32f2f;
+  background: #ffebee;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.high-value {
+  color: #d32f2f;
+  background: #ffebee;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.low-value {
+  color: #d32f2f;
+  background: #ffebee;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+
+/* Repeating footer at bottom of every printed page */
+.page-footer {
+  padding-top: 6px;
+  min-height: 28mm; /* space for signatures + notes */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+@media print {
+  .page-footer { -webkit-print-color-adjust: exact; print-color-adjust: exact; margin-top: 0 !important; padding-top: 0 !important; }
+}
+
+/* Footer Section */
+.report-footer {
+  margin-top: 5px;
+}
+
+/* Darker full-row highlight when result is flagged High/Low/Abnormal */
+.param-row.row-abnormal td {
+  background: #f2dede;
+  /* light red background */
+}
+
+/* Ensure background colors are printed */
+@media print {
+  .param-row.row-abnormal td {
+    background: #f2dede !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .normal-value {
+    font-weight: normal !important;
+    font-size: 11px !important;
+  }
+
+  .abnormal-value {
+    background: #ffebee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #d32f2f !important;
+    font-weight: 900!important;
+    font-size: 13px !important;
+  }
+
+  .high-value {
+    background: #ffebee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #d32f2f !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+  }
+
+  .low-value {
+    background: #ffebee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color: #d32f2f !important;
+    font-weight: 900 !important;
+    font-size: 13px !important;
+  }
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.technician-section,
+.pathologist-section {
+  text-align: center;
+}
+
+.signature-label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.signature-line {
+  width: 200px;
+  border-bottom: 1px solid #000;
+  height: 10px;
+}
+
+.footer-note {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Highlight IPD value a bit bolder/darker as requested */
+.ipd-highlight {
+  font-weight: 800;
+  color: #000;
+  background: #e6f0ff; /* very light blue to subtly emphasize */
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+@media print {
+  .ipd-highlight {
+    background: #e6f0ff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+}
+
+.footer-note p {
+  margin: 3px 0;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .pathology-report-print {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 6mm 8mm !important;
+    box-shadow: none !important;
+    page-break-inside: auto !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    font-size: 11px !important;
+    page-break-after: avoid !important;
+  }
+
+  .test-category {
+    page-break-inside: avoid;
+  }
+
+  table.report-table {
+    page-break-inside: auto;
+    page-break-after: auto;
+    page-break-before: auto;
+  }
+
+  .patient-row {
+    gap: 6px !important; /* a bit tighter */
+    justify-content: space-between !important;
+  }
+
+  .field-label,
+  .field-value {
+    font-size: 16px !important;
+  }
+
+  /* Reduce label-value spacing further in print */
+  .patient-field-medium,
+  .patient-field-small { gap: 2px !important; }
+  .patient-info-section .field-label { margin-right: 0 !important; }
+  .patient-info-section .inline-value { margin-left: 0 !important; }
+
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+/* Print-time fixed frame box and fixed footer inside the right half (A5 area) */
+@media print {
+  /* Use overlay frame instead of attaching borders to content */
+  .pathology-report-print { border: none !important; padding: 6mm  !important; }
+
+  /* Draw a full-page repeated frame on the right half - match edit-record dimensions */
+  .print-frame-box {
+    position: fixed;
+    /* Match edit-record: top 6mm, right 10mm, height 196mm */
+    /* top: 6mm;
+    right: 6mm;
+    width: 148mm;
+    height: 196mm; */
+    /* Requested safe margins: top 2mm, bottom 2mm, right 4mm */
+    top: 6mm; right: 10mm;
+    width: calc(148mm - 8mm); height: calc(100vh - 12mm);
+    box-sizing: border-box;
+    border: 2px solid #030303ff; /* match edit-record border */
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Fixed footer overlay + spacer: footer visually fixed, space reserved */
+  .print-fixed-footer {
+    display: block !important;
+    position: fixed;
+    right: 9mm; bottom: 7mm;
+    width: calc(148mm - 6mm); box-sizing: border-box;
+    padding: 0 4mm;
+    z-index: 10000;
+  }
+  /* Reserve space for visual fixed footer so it sticks to page bottom */
+  table.report-table tfoot { display: table-footer-group !important; visibility: hidden !important; height: 20mm !important; }
+}
+
+
+/* Show only in print */
+@media screen { .only-print { display: none !important; } }
+@media print  { .only-print { display: block !important; } }
+
+@media print {
+  .print-frame-box { z-index: 10000 !important; }
+  .print-fixed-footer { z-index: 9999 !important; background: transparent !important; }
+
+  /* Keep tfoot only as spacer; actual visible footer is overlay .print-fixed-footer */
+  table.report-table tfoot {
+    display: table-footer-group !important;
+    visibility: hidden !important;
+    height: 20mm !important;
+  }
+}
+
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tbody {
+    display: table-row-group !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .pathology-report-print {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .patient-row {
+    /* flex-direction: column; */
+    gap: 10px;
+  }
+
+  .results-header,
+  .test-parameter-row {
+    flex-direction: column;
+  }
+
+  .test-column,
+  .result-column,
+  .normal-column,
+  .test-name,
+  .test-result,
+  .normal-range {
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+}
+
+/* Print-specific overrides for reliable repeating thead */
+@media print {
+
+  .header-content { display: table; width: 100%; }
+  .header-content>* { display: table-cell; vertical-align: middle; }
+
+  .govt-logo { height: 80px; width: auto; }
+
+  .patient-info-section { display: block; }
+
+  /* Widen middle column for Reg. No., add more gap to avoid collision */
+  .patient-row {
+    display: grid !important;
+    width: 100%;
+    /* Slightly more width for Date (3rd column) to ensure single line */
+    grid-template-columns: 2fr 0.95fr 1.05fr;
+    column-gap: 22px !important; /* a bit tighter gap */
+    row-gap: 8px !important; /* vertical space between rows */
+    margin-left: 0 !important;
+  }
+
+  .patient-field-medium,
+  .patient-field-small {
+    display: flex !important;
+    align-items: flex-start; /* avoid vertical overlap when values wrap */
+    vertical-align: top;
+    gap: 3px !important; /* smaller label-value gap */
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+    overflow: visible !important; /* allow wrapped text to expand vertically */
+  }
+
+  /* Slightly smaller text in the patient info row to guarantee fit */
+  .patient-info-section .field-label,
+  .patient-info-section .field-value { font-size: 12.5px !important; line-height: 1.15 !important; }
+
+  /* Make label/value layout robust */
+  .patient-info-section .patient-field-medium,
+  .patient-info-section .patient-field-small { flex-wrap: wrap !important; }
+  .patient-info-section .field-label { margin-right: 2px !important; min-width: 50px !important; }
+  .patient-info-section .field-value { flex: 1 1 0% !important; max-width: 100% !important; }
+
+  /* Hard-copy: show full values with wrapping (no ellipsis), except Date if needed */
+  .patient-info-section .field-value {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+  }
+/* Stronger rule to force Date on one line in print and screen */
+.patient-info-section .patient-row .patient-field-small .date-nowrap,
+.patient-info-section .date-nowrap {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  max-width: none !important;
+}
+
+/* Prevent wrapping for IPD/OPD value */
+.patient-info-section .no-wrap .field-value { white-space: nowrap !important; }
+
+
+/* Date alignment tweaks */
+.date-label { padding-right: 3px; }
+@media print {
+}
+
+
+  /* Only Date value can be ellipsized to protect layout */
+  .patient-info-section .date-ellipsis {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Ensure a visible bottom border at end of each printed page */
+  tfoot .page-bottom-border td { border-top: 1px solid #000; height: 8mm; }
+}
+
+/* Strong guard: do not split any result row across pages */
+@media print {
+  /* Allow overall table to flow across pages, but never split rows/cells */
+  table.report-table, thead, tfoot {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+  thead, tfoot, tr, td, th,
+  table.report-table .param-row,
+  table.report-table .testname-row,
+  table.report-table .category-row,
+  .test-parameter-row {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    break-inside: avoid-page !important; /* Chrome/modern */
+    page-break-before: auto !important;
+    page-break-after: auto !important;
+    break-before: auto !important;
+    break-after: auto !important;
+    -webkit-column-break-inside: avoid !important;
+    -webkit-region-break-inside: avoid !important;
+  }
+}
+
+
+/* Hard override: never show overlay fixed footer in print */
+@media print { .print-fixed-footer { display: block !important; } }
+
+/* Force new page before specific rows when JS marks them */
+@media print {
+  /* Print-only top spacer row to create top margin before Patient Info Box */
+  tr.top-spacer th {
+    height: 20px !important; /* Standard spacing for pages 2, 3, 4... (no header) */
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  /* Ensure spacer row renders as a table row in print and repeats each page */
+  .report-table thead tr.top-spacer { display: table-row !important; }
+
+  tr.page-break-before { page-break-before: always !important; break-before: page !important; }
+}
+
+
+/* Hide only the overlay footer in screen; show table tfoot footer in screen */
+@media screen {
+  .print-fixed-footer { display: none !important; }
+}
+
+
+/* Template variants */
+.pathology-report-print.tpl-compact {
+  font-size: 9.5px;
+  padding: 6mm 8mm;
+  border: 2px solid #000;
+}
+.pathology-report-print.tpl-compact .govt-logo { width: 90px; }
+.pathology-report-print.tpl-compact .hospital-name { font-size: 18px; }
+
+.pathology-report-print.tpl-minimal {
+  font-size: 10px;
+  padding: 4mm 6mm;
+  border: 1px solid #000;
+}
+.pathology-report-print.tpl-minimal .govt-logo { width: 70px; }
+.pathology-report-print.tpl-minimal .hospital-name { font-size: 17px; }

@@ -1,0 +1,93 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <h1>Sarthak Diagnostic Network</h1>
+      <p>Login</p>
+    </div>
+
+    <!-- Login Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          autocomplete="email"
+          class="form-input"
+        >
+        <div *ngIf="email?.hasError('required')" class="error-message">
+          Email is required
+        </div>
+        <div *ngIf="email?.hasError('email')" class="error-message">
+          Please enter a valid email
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-container">
+          <input
+            id="password"
+            [type]="hidePassword ? 'password' : 'text'"
+            formControlName="password"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            class="form-input"
+          >
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="hidePassword = !hidePassword"
+          >
+            {{ hidePassword ? '👁️' : '🙈' }}
+          </button>
+        </div>
+        <div *ngIf="password?.hasError('required')" class="error-message">
+          Password is required
+        </div>
+        <div *ngIf="password?.hasError('minlength')" class="error-message">
+          Password must be at least 6 characters
+        </div>
+        <div style="text-align: right; margin-top: 0.25rem;">
+          <a routerLink="/auth/forgot-password" class="link">Forgot password?</a>
+        </div>
+      </div>
+
+      <!-- Default Credentials Info -->
+      <div class="info-alert">
+        <span>ℹ️ Default Login Credentials:</span>
+        <br>
+        <strong>Admin:</strong> admin&#64;hospital.com / admin123
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-alert">
+        <span>⚠️ {{ error }}</span>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary btn-full"
+        [disabled]="loginForm.invalid || loading"
+      >
+        <span *ngIf="loading">🔄 Signing in...</span>
+        <span *ngIf="!loading">🔐 Sign In</span>
+      </button>
+
+
+    </form>
+
+    <!-- Footer (Registration visible only for SuperAdmin via direct URL; hide link here) -->
+    <div class="login-footer">
+      <p>
+        <a routerLink="/auth/forgot-password" class="link">Forgot password?</a>
+      </p>
+    </div>
+  </div>
+</div>

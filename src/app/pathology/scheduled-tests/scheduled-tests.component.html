@@ -1,0 +1,154 @@
+<div class="scheduled-container">
+  <div class="header header-gradient">
+    <div class="head-left">
+      <h2>Scheduled Tests</h2>
+    </div>
+    <div class="head-right">
+      <div class="stats">
+        <span class="chip">Total: <b>{{ totalRecords }}</b></span>
+        <span class="chip">Showing: <b>{{ filtered.length }}</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="filters-container">
+    <div class="filters-row">
+      <div class="search-field">
+        <input type="text" class="filter-input" placeholder="Search by name / reg / phone / test name" [(ngModel)]="search" (input)="onFiltersChange()" (keyup.enter)="applySearchEnter()" />
+      </div>
+      <div class="search-field narrow">
+        <label>Receipt No.</label>
+        <input type="text" class="filter-input" placeholder="Receipt No" [(ngModel)]="filterReceiptNo" (input)="onFiltersChange()" (keyup.enter)="applyReceiptExact()" />
+      </div>
+      <div class="search-field narrow">
+        <label>Date Range</label>
+        <select class="filter-input" [(ngModel)]="filterDateRange" (change)="onDateRangeChange()">
+          <option value="">All</option>
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+        <!-- Custom Date Range Row (shown only when custom is selected) -->
+    <div class="custom-date-row" *ngIf="showCustomDateRange">
+      <div class="search-field narrow">
+        <label>From Date</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filterDateFrom" (change)="onFiltersChange()" />
+      </div>
+      <div class="search-field narrow">
+        <label>To Date</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filterDateTo" (change)="onFiltersChange()" />
+      </div>
+    </div>
+
+
+      <div class="search-field narrow">
+        <label>Status</label>
+        <select class="filter-input" [(ngModel)]="filterStatus" (change)="onFiltersChange()">
+          <option value="">All</option>
+          <option value="pending">Pending Registration</option>
+          <option value="done">Registration Done</option>
+        </select>
+      </div>
+      <button class="clear-btn" (click)="clearFilters()">Clear</button>
+    </div>
+
+
+  </div>
+
+  <div *ngIf="isLoading" class="loading">Loading...</div>
+  <!-- Pagination (Top) -->
+  <div class="pagination-container top" *ngIf="!isLoading && filtered.length > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }}–{{ getEndIndex() }} of {{ totalRecords }}
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+
+  <div *ngIf="!isLoading">
+    <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="narrow sno">S. NO.</th>
+          <th class="narrow">REGISTRATION NO.</th>
+          <th class="narrow">RECEIPT NO.</th>
+          <th class="narrow" *ngIf="false">TYPE</th>
+          <th>PATIENT NAME</th>
+          <th>TEST NAMES</th>
+          <th>SAMPLE</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filtered; let i = index">
+          <td class="narrow">{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td class="regcol"><div class="regval">{{ r.patient.registrationNumber }}</div></td>
+          <td class="narrow">{{ r.receiptNumber }}</td>
+          <td class="narrow" *ngIf="false"><span class="type-chip" [ngClass]="{'opd': (r.mode||'OPD')==='OPD', 'ipd': (r.mode||'OPD')==='IPD'}">{{ (r.mode || 'OPD') }}</span></td>
+          <td class="pname">
+            <div class="nm">{{ r.patient.name }}</div>
+            <div class="meta">{{ r.patient.age }}{{ r.patient.ageIn || 'Y' }}, {{ r.patient.gender }} • {{ r.patient.phone }}</div>
+          </td>
+          <td class="tnames">{{ getTestNames(r) }}</td>
+          <td class="sample-cell">
+            <div class="sample-wrap">
+              <button class="dropdown-btn" cdkOverlayOrigin #sampleOrigin="cdkOverlayOrigin" (click)="toggleSample(r)">Sample Set</button>
+              <span class="taken-badge" *ngIf="r.sampleDone">Taken</span>
+              <ng-template
+                cdkConnectedOverlay
+                [cdkConnectedOverlayOrigin]="sampleOrigin"
+                [cdkConnectedOverlayOpen]="r.sampleOpen"
+                [cdkConnectedOverlayHasBackdrop]="true"
+                [cdkConnectedOverlayBackdropClass]="'cdk-overlay-transparent-backdrop'"
+                [cdkConnectedOverlayPositions]="positions"
+                [cdkConnectedOverlayPush]="true"
+                [cdkConnectedOverlayFlexibleDimensions]="true"
+                [cdkConnectedOverlayViewportMargin]="8"
+                (backdropClick)="r.sampleOpen=false">
+                <div class="overlay-panel">
+                  <div class="opt" *ngFor="let s of sampleOptions">
+                    <label><input type="checkbox" [checked]="r.sampleSelected?.includes(s)" (change)="onSampleToggle(r, s, $event)"/> {{ s }}</label>
+                  </div>
+                  <div class="drop-actions">
+                    <button class="submit" (click)="submitSamples(r)">Done</button>
+                  </div>
+                </div>
+              </ng-template>
+            </div>
+          </td>
+          <td class="action-cell">
+            <button class="go" *ngIf="!r.isRegistered" (click)="goToRegistration(r)">Registration</button>
+            <span class="done" *ngIf="r.isRegistered">Registration Done</span>
+            <div class="muted" *ngIf="!r.sampleDone">Sample Pending</div>
+          </td>
+        </tr>
+        <tr *ngIf="filtered.length === 0">
+          <td class="loading" colspan="8">No records found</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Pagination (Top) -->
+  <div class="pagination-container top" *ngIf="!isLoading && filtered.length > 0">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }}–{{ getEndIndex() }} of {{ totalRecords }}
+    </div>
+    <div class="pagination-controls">
+      <button class="pagination-btn" (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+</div>

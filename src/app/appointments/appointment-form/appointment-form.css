@@ -1,0 +1,16 @@
+.apt-form { padding: 12px 16px; }
+.apt-form h2 { margin: 0 0 10px 0; font-size: 18px; }
+.apt-form .finder { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:10px 12px; margin-bottom:12px; }
+.apt-form .finder .row { display:flex; gap:8px; align-items:center; }
+.apt-form .finder input { flex:1; padding:8px 10px; border:1px solid #e5e7eb; border-radius:6px; }
+.apt-form .finder button { padding:8px 12px; background:#0ea5e9; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+.apt-form .patient-name { margin-top:6px; color:#334155; font-size:13px; }
+
+.apt-form .grid { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; }
+.apt-form .grid .full { grid-column: 1 / -1; }
+.apt-form label { display:block; font-size:12px; color:#64748b; margin-bottom:4px; font-weight:600; }
+.apt-form input, .apt-form select { width:100%; padding:8px 10px; border:1px solid #e5e7eb; border-radius:6px; }
+
+.apt-form .actions { margin-top:12px; display:flex; gap:8px; }
+.apt-form .actions button { padding:8px 12px; border-radius:6px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
+.apt-form .actions button[type="submit"] { background:#10b981; color:#fff; border:none; }

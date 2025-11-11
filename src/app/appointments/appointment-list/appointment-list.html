@@ -1,0 +1,61 @@
+<div class="apt-list">
+  <div class="toolbar">
+    <div class="left">
+      <h2>All Appointments</h2>
+    </div>
+    <div class="right">
+      <input type="text" placeholder="Search by patient / phone / APT ID" [(ngModel)]="search" (keyup.enter)="onSearchEnter()" />
+      <select [(ngModel)]="status" (change)="onStatusChange()">
+        <option value="">All Status</option>
+        <option>Scheduled</option>
+        <option>Confirmed</option>
+        <option>In Progress</option>
+        <option>Completed</option>
+        <option>Cancelled</option>
+        <option>No Show</option>
+      </select>
+      <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" />
+      <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" />
+      <button (click)="newAppointment()">+ New</button>
+    </div>
+  </div>
+
+  <div class="table-wrap" *ngIf="!isLoading; else loadingTpl">
+    <table class="apt-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>APT ID</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Patient</th>
+          <th>Room</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rows; let i = index">
+          <td>{{ (page - 1) * limit + i + 1 }}</td>
+          <td>{{ r.appointmentId }}</td>
+          <td>{{ r.appointmentDate | date:'mediumDate' }}</td>
+          <td>{{ r.appointmentTime }}</td>
+          <td>{{ r.patient?.firstName }} {{ r.patient?.lastName }}</td>
+          <td>R{{ r.room?.roomNumber || '-' }}</td>
+          <td>{{ r.status }}</td>
+          <td>
+            <button (click)="editAppointment(r._id)">Edit</button>
+            <button (click)="cancelAppointment(r._id)" [disabled]="r.status === 'Cancelled'">Cancel</button>
+          </td>
+        </tr>
+        <tr *ngIf="rows.length === 0">
+          <td colspan="8" class="empty">No appointments</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading">Loading...</div>
+  </ng-template>
+</div>

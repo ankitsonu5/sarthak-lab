@@ -1,0 +1,159 @@
+<div class="modal-container">
+  <!-- Header -->
+  <div class="modal-header">
+    <h2>{{ isEditMode ? 'Edit Patient' : 'Patient Details' }}</h2>
+    <button class="close-btn" (click)="onCancel()">✕</button>
+  </div>
+
+  <!-- Form Content -->
+  <div class="modal-content">
+    <form [formGroup]="patientForm">
+
+      <!-- Ultra Compact Form -->
+      <div class="ultra-compact-form">
+
+        <!-- Row 1: ID, Date, Aadhar, Name -->
+        <div class="form-row-4">
+          <div class="mini-field">
+            <label>ID</label>
+            <input type="text" formControlName="patientId" readonly>
+          </div>
+          <div class="mini-field">
+            <label>Date</label>
+            <input type="date" formControlName="date" readonly>
+          </div>
+          <div class="mini-field">
+            <label>Aadhar No.</label>
+            <input type="text" formControlName="aadharNo" placeholder="000000000000" maxlength="12">
+          </div>
+          <div class="mini-field">
+            <label>Name</label>
+            <input type="text" formControlName="firstName" placeholder="First Name">
+          </div>
+        </div>
+
+        <!-- Row 2: Last Name, Age, Age In, Sex -->
+        <div class="form-row-4">
+          <div class="mini-field">
+            <label>Last Name</label>
+            <input type="text" formControlName="lastName" placeholder="Last Name">
+          </div>
+          <div class="mini-field">
+            <label>Age</label>
+            <input type="number" formControlName="age" min="0">
+          </div>
+          <div class="mini-field">
+            <label>Age In</label>
+            <select formControlName="ageIn">
+              <option *ngFor="let option of ageInOptions" [value]="option">{{ option }}</option>
+            </select>
+          </div>
+          <div class="mini-field">
+            <label>Sex</label>
+            <select formControlName="gender">
+              <option value="">Select</option>
+              <option *ngFor="let gender of genderOptions" [value]="gender">{{ gender }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Contact, City, Post, Weight -->
+        <div class="form-row-4">
+          <div class="mini-field">
+            <label>Contact</label>
+            <input type="text" formControlName="contact" placeholder="Phone Number" maxlength="10">
+          </div>
+          <div class="mini-field">
+            <label>City</label>
+            <input type="text" formControlName="city" placeholder="City">
+          </div>
+          <div class="mini-field">
+            <label>Post</label>
+            <input type="text" formControlName="post" placeholder="Post">
+          </div>
+          <div class="mini-field">
+            <label>Weight(Kg)</label>
+            <input type="number" formControlName="weightKg" placeholder="Weight" min="0" step="0.1">
+          </div>
+        </div>
+
+        <!-- Row 4: Address (Full Width) -->
+        <div class="form-row-1">
+          <div class="mini-field full-width">
+            <label>Address</label>
+            <input type="text" formControlName="address" placeholder="Full Address">
+          </div>
+        </div>
+
+        <!-- Row 5: Registration Date, Doctor, Department, Remarks -->
+        <div class="form-row-4">
+          <div class="mini-field">
+            <label>Registration Date</label>
+            <input type="date" formControlName="registrationDate">
+          </div>
+          <div class="mini-field" *ngIf="false">
+            <label>Doctor</label>
+            <select formControlName="doctor">
+              <option value="">Select</option>
+              <option *ngFor="let doctor of doctors" [value]="doctor._id">
+                {{ getDoctorDisplayName(doctor) }}
+              </option>
+            </select>
+          </div>
+          <div class="mini-field" *ngIf="false">
+            <label>Department ({{ departments.length }} items)</label>
+            <select formControlName="department" (change)="onDepartmentChange()">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+            </select>
+            <!-- Debug info -->
+            <small style="color: #666; font-size: 10px;">Debug: {{ departments | json }}</small>
+          </div>
+          <div class="mini-field">
+            <label>Remarks</label>
+            <input type="text" formControlName="remark" placeholder="Any remarks">
+          </div>
+        </div>
+
+        <!-- Row 6: Fee and Mode (Only in Edit Mode) -->
+        <div class="form-row-4" *ngIf="isEditMode">
+          <div class="mini-field">
+            <label>Fee</label>
+            <input type="number" formControlName="fee" placeholder="Consultation Fee">
+          </div>
+          <div class="mini-field" *ngIf="false">
+            <label>Mode</label>
+            <select formControlName="mode">
+              <option value="">Select Mode</option>
+              <option value="Cash">Cash</option>
+              <option value="Card">Card</option>
+              <option value="UPI">UPI</option>
+              <option value="Insurance">Insurance</option>
+            </select>
+          </div>
+          <div class="mini-field"></div>
+          <div class="mini-field"></div>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-success" (click)="onSave()"
+            *ngIf="isEditMode" [disabled]="patientForm.invalid || isLoading">
+      <span *ngIf="isLoading">Saving...</span>
+      <span *ngIf="!isLoading">Save</span>
+    </button>
+    <button type="button" class="btn btn-secondary" (click)="onCancel()">
+      Close
+    </button>
+    <button type="button" class="btn btn-danger" (click)="onDelete()"
+            *ngIf="isEditMode" [disabled]="isLoading">
+      <span *ngIf="isLoading">Deleting...</span>
+      <span *ngIf="!isLoading">Delete</span>
+    </button>
+  </div>
+</div>

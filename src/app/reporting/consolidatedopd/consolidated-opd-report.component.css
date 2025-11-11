@@ -1,0 +1,319 @@
+.report-container {
+  padding: 20px;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+.left-header {
+  flex: 1;
+}
+
+.right-header {
+  flex: 1;
+  text-align: right;
+}
+
+.opd-details-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.page-title {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #333;
+  margin: 0;
+  text-transform: capitalize;
+}
+.page-title h2{
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+
+.search-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.date-inputs {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.date-field input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.search-btn, .print-btn, .download-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.search-btn {
+  background: #28a745;
+  color: white;
+}
+
+.search-btn:hover {
+  background: #218838;
+}
+
+.print-btn {
+  background: #007bff;
+  color: white;
+}
+
+.print-btn:hover {
+  background: #0056b3;
+}
+
+.download-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.download-btn:hover {
+  background: #545b62;
+}
+
+
+
+.report-content {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #007bff;
+}
+
+.logo-container {
+  margin-right: 30px;
+  width: 18%;
+}
+
+.logo {
+  width: 100%;
+  object-fit: contain;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
+  margin-right: 10px;
+}
+
+.header-text h1 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.header-text h2 {
+  font-size: 18px;
+  color: #666;
+  margin: 0 0 10px 0;
+}
+
+.header-text h3 {
+  font-size: 18px;
+  color: #007bff;
+  margin: 0;
+  font-weight: 600;
+}
+
+.report-table {
+  margin-top: 20px;
+}
+
+.report-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.report-table thead {
+
+background: #5048e8;
+background: linear-gradient(90deg, rgba(80, 72, 232, 0.96) 0%, rgba(65, 117, 240, 1) 50%, rgba(104, 104, 242, 0.99) 89%);
+}
+
+.report-table th {
+  background: transparent;
+  color: white;
+  padding: 12px;
+  text-align: center;
+  font-weight: 600;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.report-table th:last-child {
+  border-right: none;
+}
+
+.report-table td {
+  padding: 10px 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+  background: #f8f9fa;
+}
+
+.report-table tbody tr:nth-child(odd) td {
+  background: hwb(240 97% 3%);
+}
+
+.report-table tbody tr:nth-child(even) td {
+  background: #ffffff;
+}
+
+.report-table tbody tr:hover td {
+ background: #e8f4fd;
+}
+
+.total-row td {
+  background: #e8f4fd !important;
+  font-weight: bold;
+  color: #0056b3;
+  border-top: 2px solid #007bff;
+
+}
+
+/* Signature Footer (shared style) */
+.signature-footer { display: flex; justify-content: space-between; margin-top: 40px; padding: 0 20px; flex-wrap: nowrap; }
+.signature-footer .line { width: 180px; border-top: 1px solid #333; margin-bottom: 4px; }
+.signature-footer .label { font-weight: 600; color: #374151; white-space: nowrap; }
+.signature-footer .small { font-size: 12px; color: #6b7280; margin-top: 20px; }
+.signature-footer .sig-right { text-align: right; }
+.signature-footer .sig-left, .signature-footer .sig-right { width: 48%; }
+.signature-footer { align-items: flex-start; gap: 12px; }
+.signature-footer .sig-left, .signature-footer .sig-right { display: flex; flex-direction: column; }
+.signature-footer .sig-right { text-align: right; }
+.signature-footer .sig-right .line { margin-left: auto; }
+.signature-footer .sig-left .line { margin-right: auto; }
+
+
+.loading-container, .no-data-container {
+  background: white;
+  padding: 40px;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.loading-container p, .no-data-container p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Print Styles - Rotated right block with safe margins (same as Daily OPD) */
+@media print {
+  @page { size: A4 landscape; margin: 0; }
+
+  html, body {
+    width: 297mm; height: 210mm;
+    margin: 0 !important; padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background: #fff !important;
+    overflow: hidden !important; /* guard: prevent phantom extra page */
+  }
+
+  /* Show only the report area while printing */
+  body * { visibility: hidden !important; }
+  .report-container, .report-container * { visibility: visible !important; }
+
+  /* Hide non-print controls */
+  .search-section, .page-title { display: none !important; }
+
+  /* Full page wrapper */
+  .report-container {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    margin: 8mm !important; /* use container margin instead of @page to avoid rounding overflow */
+    width: auto !important; height: auto !important; min-height: auto !important;
+    padding: 0 !important; background: #fff !important; overflow: hidden !important;
+    page-break-inside: avoid !important; break-inside: avoid-page !important; page-break-after: avoid !important;
+  }
+
+  /* Rotated content on the right with visible outer margins */
+  .report-content {
+    position: absolute !important;
+    top: 2mm; left: 156mm;  /* tighter outer margins to avoid cut */
+    width: 186mm !important; height: 130mm !important;  /* overall border width/height reduced */
+    box-sizing: border-box !important; padding: 5mm !important;
+    transform-origin: left top !important;
+    transform: rotate(90deg) translateY(-100%) !important;
+    border: 1px solid #000 !important; border-radius: 0 !important;
+    box-shadow: none !important; background: #fff !important;
+    overflow: visible !important;
+  }
+
+  .report-header {
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    gap: 6px !important; flex-wrap: nowrap !important; flex-direction: row !important;
+    padding: 2mm 5mm 1mm 5mm !important; background: #fff !important; border-bottom: 1px solid #000 !important;
+  }
+  .logo-container { flex: 0 0 auto !important; width: 15mm !important; }
+  .logo { width: 15mm !important; height: auto !important; object-fit: contain !important; }
+  .header-text { text-align: center !important; }
+  .header-text h1 { font-size: 16px !important; margin: 0 !important; color: #000 !important; white-space: nowrap !important; }
+  .header-text h2 { font-size: 13px !important; margin: 0 !important; color: #000 !important; }
+  .header-text h3 { font-size: 12px !important; margin: 1mm 0 0 0 !important; color: #000 !important; }
+
+  .report-table { padding: 2mm 4mm 4mm 4mm !important; }
+  .report-table table { width: 88% !important; margin: 0 auto !important; font-size: 11px !important; border-collapse: collapse !important; border-spacing: 0 !important; }
+  .report-table th, .report-table td { padding: 3px 6px !important; line-height: 1.05 !important; }
+  .report-table th { background: #007bff !important; color: #fff !important; border: 1px solid #007bff !important; }
+  .report-table tr:nth-child(even) { background: #f5f8ff !important; }
+  .total-row { background: #0b5ed7 !important; color: #fff !important; }
+  .signature-footer { position: absolute !important; left: 10mm !important; right: 10mm !important; bottom: 4mm !important; padding: 0 !important; display: flex !important; justify-content: space-between !important; align-items: flex-start !important; gap: 6mm !important; }
+  /* Prevent accidental page split */
+  .report-container, .report-content { page-break-inside: avoid !important; break-inside: avoid-page !important; page-break-after: avoid !important; }
+
+  .signature-footer .line { width: 45mm !important; border-top: 1px solid #000 !important; margin-bottom: 2mm !important; }
+  .signature-footer .label { font-weight: 600 !important; color: #000 !important; }
+  .signature-footer .small { display: none !important; }
+}
+

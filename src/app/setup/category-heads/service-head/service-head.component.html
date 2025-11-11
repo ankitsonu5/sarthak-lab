@@ -1,0 +1,295 @@
+<div class="service-head-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <i class="fa-solid fa-stethoscope header-icon"></i>
+        <h1>Service Head Management</h1>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button"
+              (click)="navigateToCategoryRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Category Registration and Search
+      </button>
+      <button type="button"
+              style="border-bottom: 2px solid #3b82f6; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+      Service Registration
+      </button>
+      <button type="button"
+              (click)="navigateToSearchService()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+          Search Service
+      </button>
+    </nav>
+  </div>
+
+  <!-- First Row: Service Entry Form -->
+  <div class="form-container">
+   
+    <form [formGroup]="serviceForm" class="service-form">
+      <div class="form-row">
+        
+        <!-- Category Dropdown -->
+        <div class="form-group">
+          <label for="category" class="form-label">
+            Category Name <span class="required">*</span>
+          </label>
+          <select
+            id="category"
+            formControlName="category"
+            class="form-select"
+            [class.error]="isFieldInvalid('category')"
+            (change)="onCategoryChange()">
+            <option *ngFor="let option of categoryOptions" [value]="option._id">
+              {{ option.categoryName }}
+            </option>
+          </select>
+
+        </div>
+
+        <!-- Service Name -->
+        <div class="form-group">
+          <label for="serviceName" class="form-label">
+            Service Name <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="serviceName"
+            #serviceNameInput
+            formControlName="serviceName"
+            class="form-input"
+            [class.error]="isFieldInvalid('serviceName')"
+            placeholder="Enter service name"
+            maxlength="100"
+            (blur)="checkDuplicateService()">
+          <div *ngIf="isFieldInvalid('serviceName')" class="error-text">
+            {{ getFieldError('serviceName') }}
+          </div>
+
+
+        </div>
+
+        <!-- Price -->
+        <div class="form-group">
+          <label for="price" class="form-label">
+            Price <span class="required">*</span>
+          </label>
+          <input
+            type="number"
+            id="price"
+            formControlName="price"
+            class="form-input"
+            [class.error]="isFieldInvalid('price')"
+            placeholder=".00"
+            (blur)="setDigit($event)"
+           >
+          
+        </div>
+
+        <!-- Add Button -->
+        <div class="form-group">
+          <label class="form-label">&nbsp;</label>
+          <button
+            type="button"
+            (click)="addService()"
+            class="btn-add"
+            [disabled]="!serviceForm.valid">
+            <i class="fa-solid fa-plus" *ngIf="!isEditMode"></i>
+            <i class="fa-solid fa-edit" *ngIf="isEditMode"></i>
+            {{ isEditMode ? 'Update' : 'Add' }}
+          </button>
+          <button
+            type="button"
+            *ngIf="isEditMode"
+            (click)="resetEditMode()"
+            class="btn-cancel"
+            style="margin-left: 10px;">
+            <i class="fa-solid fa-times"></i> Cancel
+          </button>
+   
+
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+
+  <!-- Category Heads List -->
+  <div class="list-container">
+  <!-- Second Row: Category Header (Always show when category is selected) -->
+  <div class="temp-list-container" *ngIf="serviceForm.get('category')?.value">
+    <div class="temp-list-header">
+      <h3>{{ getCategoryName(serviceForm.get('category')?.value) }}</h3>
+    </div>
+
+    <!-- Services Table (Always show when category is selected) -->
+    <div class="table-container">
+      <table class="temp-services-table">
+        <thead>
+          <tr>
+            <th>Sr No</th>
+            <th>Category</th>
+            <th>Service Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let service of tempServiceList; let i = index" class="table-row">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <span class="category-badge">{{ getCategoryName(service.category) }}</span>
+            </td>
+            <td class="service-name">{{ service.testName }}</td>
+            <td class="price">{{ formatPrice(service.price) }}</td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <button
+                  (click)="removeFromTempList(i)"
+                  class="action-btn btn-delete"
+                  title="Remove from list">
+                 <i class="fa-solid fa-xmark"></i> Remove
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State Row when no services -->
+          <tr *ngIf="tempServiceList.length === 0" class="empty-row">
+            <td colspan="5" class="empty-message">
+              <div class="empty-state">
+                <p>Add services to save them</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Save button (Only show when there are services) -->
+    <div class="Save-button" *ngIf="tempServiceList.length > 0">
+      <button
+          type="button"
+          (click)="saveServices()"
+          class="btn-save">
+          <i class="fa-solid fa-save"></i> Save All Services
+        </button>
+    </div>
+  </div>
+
+  </div>
+<!-- Category Heads List -->
+  <div class="list-container">
+  <!-- Third Row: All Services by Category -->
+  <div class="all-services-container">
+
+    
+    <div class="all-services-header">
+      <h3>{{ selectedViewCategory ? getCategoryName(selectedViewCategory) : 'All' }}</h3>
+     
+    </div>
+
+    <div class="table-container">
+
+      <table class="all-services-table">
+        <thead>
+          <tr>
+            <th>Sr No</th>
+            <th>Category</th>
+            <th>Service Name</th>
+            <th>Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let service of allServicesByCategory; let i = index" class="table-row">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <span class="category-badge">{{ getCategoryName(service.category) }}</span>
+            </td>
+            <td class="service-name">{{ service.testName }}</td>
+            <td class="price">{{ formatPrice(service.price) }}</td>
+            <td class="actions-column">
+              <div class="action-buttons">
+                <button
+                  (click)="editService(service)"
+                  class="action-btn btn-edit"
+                  title="Edit Service">
+                  <i class="fa-solid fa-edit"></i> Edit
+                </button>
+                <button
+                  (click)="deleteService(service)"
+                  class="action-btn btn-delete"
+                  title="Delete Service">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Empty State -->
+          <tr *ngIf="allServicesByCategory.length === 0" class="empty-row">
+            <td colspan="5" class="empty-message">
+              <div class="empty-state">
+                <i class="fa-solid fa-inbox empty-icon"></i>
+                <h4>No Services Found</h4>
+                <p>No services found for category "{{ selectedViewCategory }}"</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="'Delete Service'"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  [confirming]="isDeleting"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Service Deleted'"
+  [message]="'The service has been successfully removed from the system.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="2000"
+  (closed)="onDeleteSuccessClosed()">
+</app-delete-success-modal>
+
+<!-- Record Already Exists Modal -->
+<app-record-exists-modal
+  [show]="showRecordExistsModal"
+  [title]="'Service Already Exists!'"
+  [message]="recordExistsMessage"
+  [subMessage]="'Please try with a different service name.'"
+  [badgeText]="'Duplicate Service Found'"
+  [autoHideDelay]="2000"
+  (closed)="onRecordExistsModalClosed()">
+</app-record-exists-modal>
+
+<!-- Success Alert Modal -->
+<app-success-alert
+  [show]="showSuccessAlert"
+  [title]="isEditMode ? '🎉 Service Updated Successfully!' : '🎉 Service Registration Successful!'"
+  [message]="successMessage"
+  [badgeText]="isEditMode ? 'Service Updated Successfully' : 'Service Added Successfully'"
+  (close)="closeSuccessAlert()">
+</app-success-alert>
+ 

@@ -1,0 +1,287 @@
+.report-container {
+    padding: 16px
+}
+
+.page-title {
+    margin-bottom: 12px
+}
+
+.search-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 12px
+}
+
+.filter-inputs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap
+}
+
+.filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px
+}
+
+.action-buttons button {
+    padding: 6px 12px
+}
+
+.report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0 12px
+}
+
+.logo {
+    width: 200px;
+    height: auto;
+}
+
+.report-table table {
+    width: 100%;
+    border-collapse: collapse
+}
+
+.report-table th,
+.report-table td {
+    border: 1px solid #ddd;
+    padding: 6px;
+    text-align: right;
+}
+
+.report-table th:first-child,
+.report-table td:first-child {
+    text-align: left
+}
+
+.report-table th:nth-child(2),
+.report-table td:nth-child(2) {
+    text-align: left
+}
+
+.total-row {
+    font-weight: 700;
+    background: #f7f7f7
+}
+
+@media print {
+
+    .search-section,
+    .page-title {
+        display: none
+    }
+
+    .report-container {
+        padding: 0
+    }
+
+    .report-table th,
+    .report-table td {
+        padding: 4px
+    }
+
+    /* Force landscape for print */
+    @page { size: A4 landscape; margin: 8mm; }
+}
+
+/* Enhanced styles for better look and print/PDF */
+:root {
+  --primary: #2563eb; /* blue-600 */
+  --primary-700: #1d4ed8;
+  --text: #111827; /* gray-900 */
+  --muted: #6b7280; /* gray-500 */
+  --border: #e5e7eb; /* gray-200 */
+  --bg: #ffffff;
+}
+
+/* Container polish */
+.report-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  background: var(--bg);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+/* Title */
+.page-title h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* Filters */
+.filter-field label { font-size: 12px; color: var(--muted); }
+.filter-field input,
+.filter-field select { height: 32px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; }
+
+/* Action buttons */
+.download-btn, .search-btn, .print-btn {
+  height: 32px; padding: 0 12px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+}
+.download-btn { background: #f9fafb; border-color: var(--border); }
+.search-btn { background: var(--primary); color: #fff; }
+.search-btn:hover { background: var(--primary-700); }
+.print-btn { background: #111827; color: #fff; }
+
+/* Header */
+.logo { width: 64px; height: 64px; object-fit: contain; }
+.header-text { text-align: center; }
+.header-text h1 { margin: 0; font-size: 28px; color: var(--text); }
+.header-text h2 { margin: 2px 0 0; font-size: 16px; color: var(--muted); font-weight: 600; }
+.header-text h3 { margin: 6px 0 0; font-size: 14px; color: var(--primary); font-weight: 700; }
+.logo-spacer { width: 64px; }
+
+/* Table polish */
+.report-table table { font-size: 13px; }
+.report-table thead th { position: sticky; top: 0; background: #eef2ff; color: #1f2937; z-index: 1; }
+.report-table tbody tr:nth-child(even) { background: #fafafa; }
+.total-row td { border-top: 2px solid #111827; }
+/* Ensure second column (first category after receipt) is numeric aligned */
+.report-table th:nth-child(2),
+.report-table td:nth-child(2) { text-align: right; }
+
+
+/* States */
+.loading-container, .no-data-container { text-align: center; color: var(--muted); padding: 16px 0; }
+
+/* Print styles */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  .search-section, .page-title { display: none !important; }
+  .report-container { box-shadow: none; padding: 0; }
+  .report-table thead th { position: static; background: transparent; color: #000; }
+  .report-table th, .report-table td { padding: 4px; border-color: #000; font-size: 12px; }
+}
+
+
+/* Theme aligned with other Reporting pages (colors, spacing, print) */
+/* Palette: primary #007bff, search #1e40af, print #8b5cf6, download #ef4444 */
+
+/* Layout */
+.report-container { padding: 20px; background: #f8f9fa; min-height: 100vh; }
+.page-title h2 { font-size: 1rem; font-weight: 500; color: #333; margin: 0; }
+
+/* Search section */
+.search-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+.filter-inputs { display: flex; gap: 15px; align-items: end; flex-wrap: wrap; }
+.filter-field { display: flex; flex-direction: column; gap: 5px; }
+.filter-field label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; }
+.filter-field select, .filter-field input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; min-width: 120px; background: #fff; }
+.filter-field select:focus, .filter-field input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 2px rgba(0,123,255,0.25); }
+
+/* Action buttons */
+.action-buttons { display: flex; gap: 10px; }
+.download-btn, .search-btn, .print-btn { padding: 10px 16px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s ease; }
+.download-btn { background: #ef4444; color: #fff; }
+.search-btn { background: #1e40af; color: #fff; }
+.print-btn { background: #8b5cf6; color: #fff; }
+.download-btn:hover { background: #dc2626; }
+.search-btn:hover { background: #1e3a8a; }
+.print-btn:hover { background: #7c3aed; }
+
+/* Report surface */
+.report-content { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); overflow: hidden; }
+.report-header { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 0px 20px; border-bottom: 2px solid #007bff; background: #f8f9fa; }
+.logo-container { flex-shrink: 0; width: 200px!important; margin-left: -8px; }
+.logo { width: 100%!important; height: auto; object-fit: contain; }
+.logo-spacer { width: 120px; }
+.header-text { text-align: center; }
+.header-text h1 { color: #007bff; font-size: 1.75rem; font-weight: 700; margin: 0 0 2px 0; letter-spacing: .3px; }
+.header-text h2 { color: #333; font-size: 1.05rem; margin: 0 0 2px 0; }
+.header-text h3 { color: #444; font-size: 1.05rem; margin: 0; font-weight: 600; }
+
+/* Table */
+.report-table { padding: 20px; overflow-x: auto; }
+.report-table table { width: max-content; min-width: 1200px; border-collapse: collapse; margin: 0; font-size: 14px; }
+.report-table th, .report-table td { border: 1px solid #ddd; padding: 10px; text-align: center; white-space: nowrap; }
+.report-table th { background: #007bff; color: #fff; font-weight: 600; text-transform: uppercase; }
+.report-table tr:nth-child(even) { background: #f8f9fa; }
+
+/* Signature footer (shared style) */
+.signature-footer { display: flex; justify-content: space-between; margin-top: 35px; padding: 0 8px; }
+.signature-footer .line { width: 200px; border-top: 1px solid #333; margin-bottom: 4px; }
+.signature-footer .label { font-weight: 600; color: #374151; }
+.signature-footer .small { font-size: 12px; color: #6b7280; }
+
+.report-table tr:hover { background: #e9ecef; }
+.total-row { background: #007bff !important; color: #fff !important; font-weight: 600; }
+.total-row:hover { background: #0056b3 !important; }
+
+/* States */
+.loading-container, .no-data-container { text-align: center; padding: 60px; color: #6b7280; font-style: italic; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+
+/* Print */
+@media print {
+  .search-section, .page-title { display: none !important; }
+  .report-container { padding: 0; background: #fff; }
+  .report-content { box-shadow: none; border-radius: 0; }
+  .report-header { border-bottom: 2px solid #000; }
+  .report-table th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #000; }
+  .total-row { background: #e0e0e0 !important; color: #000 !important; }
+}
+
+
+/* Compact layout overrides (reduce side spacing, remove nested boxes) */
+.report-container { width: 100%; max-width: none; margin: 0; padding: 12px 12px; background: transparent; box-shadow: none; border-radius: 0; }
+.search-section { background: transparent; padding: 8px 0; box-shadow: none; border-radius: 0; gap: 10px; }
+.filter-inputs { gap: 10px; }
+.download-btn, .search-btn, .print-btn { padding: 8px 12px; border-radius: 6px; }
+.report-content { background: transparent; box-shadow: none; border-radius: 0; }
+.report-header { padding: 8px 0 0px; background: transparent; border-bottom: 1px solid #007bff; }
+
+.report-table { padding: 8px 0 0; }
+.report-table table { font-size: 13px; }
+.report-table th, .report-table td { padding: 8px; }
+
+
+/* Header logo style like reference (left logo, centered text, blue underline) */
+.report-header { justify-content: center; gap: 16px; border-bottom: 2px solid #3b82f6; }
+
+.header-text { text-align: center; }
+.header-text h1 { color: #111827; font-size: 1.75rem; font-weight: 700; margin: 0; }
+.header-text h2 { color: #6b7280; font-size: 1rem; font-weight: 600; margin: 4px 0 0; }
+.header-text h3 { color: #2563eb; font-size: 1rem; font-weight: 700; margin: 8px 0 0; }
+
+
+/* Final tune: bigger logo + hospital name, cleaner filters */
+/* Header sizes */
+
+.header-text h1 { font-size: 2rem; font-weight: 800; letter-spacing: .2px; color: #0f172a; }
+.header-text h2 { font-size: 1.125rem; color: #6b7280; font-weight: 600; margin-top: 4px; }
+.header-text h3 { font-size: 1.0625rem; color: #2563eb; font-weight: 700; margin-top: 8px; }
+
+/* Filters polish */
+.search-section { padding: 6px 0 8px; margin: 6px 0 10px; gap: 12px; align-items: end; }
+.filter-inputs { gap: 12px; }
+.filter-field label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: .02em; }
+.filter-field input, .filter-field select { height: 36px; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #ffffff; min-width: 120px; }
+.filter-field input:focus, .filter-field select:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.15); outline: none; }
+
+/* Buttons match input height */
+.download-btn, .search-btn, .print-btn { height: 36px; padding: 0 14px; border-radius: 8px; font-weight: 700; }
+
+
+/* PDF/Print fixes: keep colors + correct Devanagari rendering */
+/* Ensure Devanagari text uses proper fonts and no letter-spacing that breaks matras */
+.header-text h1 { letter-spacing: 0 !important; font-family: "Noto Sans Devanagari", "Nirmala UI", "Mangal", sans-serif; }
+#daily-cash-summary-pdf.pdf-export .header-text h1 { letter-spacing: 0 !important; }
+
+/* Preserve colors in print like on screen */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .report-table th { background: #eef2ff !important; color: #1f2937 !important; }
+  .total-row { background: #007bff !important; color: #fff !important; }
+  .report-header { border-bottom-color: #007bff !important; }
+}

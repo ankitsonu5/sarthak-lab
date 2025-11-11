@@ -1,0 +1,133 @@
+<div class="profile-container" *ngIf="!loading && doctor">
+  <!-- Main Profile Card with Gradient Background -->
+  <div class="profile-card">
+    <!-- Left Section - Hospital and Specialties -->
+    <div class="profile-content">
+      <!-- Hospital Header with Logo and Title -->
+      <div class="hospital-header">
+        <div class="hospital-logo">
+          <span class="medical-cross"><img src="assets/images/upremovebg.png"></span>
+          <div class="hospital-name"><strong>   <h1>राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय <br>
+       <span class="sub-title">चौकाघाट, वाराणसी</span></h1></strong></div>
+        </div>
+        <div class="main-title"></div> <!-- Empty for layout adjustment -->
+      </div>
+
+      <!-- Description -->
+      <div class="description">
+        <p>Experienced medical professional dedicated to providing comprehensive healthcare services with excellence in patient care.</p>
+      </div>
+
+      <!-- Specialties Section -->
+      <div class="specialties-section">
+        <h3>Specialties</h3>
+        <div class="specialties-list">
+          <div *ngFor="let specialty of getSpecialties()" class="specialty-item">
+            <span class="specialty-dot">●</span>
+            <span class="specialty-name">{{ specialty }}</span>
+          </div>
+        </div>
+      </div>
+
+     
+
+      <!-- Contact Info -->
+      <div class="contact-info">
+        <div class="contact-item" *ngIf="doctor.phone">
+          <span class="contact-icon"><i class="fa-solid fa-phone"></i></span>
+          <div class="contact-details">
+            <span class="contact-label"></span>
+            <span class="contact-value">{{ getFormattedPhone() }}</span>
+          </div>
+        </div>
+        <div class="contact-item" *ngIf="doctor.email">
+          <span class="contact-icon"><i class="fa-solid fa-envelope"></i></span>
+          <div class="contact-details">
+            <span class="contact-label"></span>
+            <span class="contact-value">{{ doctor.email }}</span>
+          </div>
+        </div>
+        <div class="contact-item" *ngIf="doctor.fee">
+          <span class="contact-icon"><i class="fa-solid fa-rupee-sign"></i></span>
+          <div class="contact-details">
+            <span class="contact-label">Fee </span>
+            <span class="contact-value">₹ {{ doctor.fee }}</span>
+          </div>
+        </div>
+      </div>
+        <!-- Action Button -->
+      <div class="action-button">
+        <button (click)="editDoctor()" class="know-more-btn">
+          <span class="arrow">→</span> Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- Right Section - Doctor Image and Details -->
+    <div class="doctor-section">
+      <!-- Doctor Image -->
+      <div class="doctor-image-container">
+        <div class="doctor-image">
+          <img [src]="getDoctorImage()"
+               alt="Doctor Profile"
+               (error)="onImageError($event)"
+               (load)="onImageLoad($event)">
+        </div>
+        <div class="doctor-name-title">
+          <h2>{{ getDoctorName() }}</h2>
+          <p class="doctor-title">{{ doctor.specialization || getDepartmentName() }}</p>
+        </div>
+      </div>
+
+      <!-- Doctor Details Grid -->
+      <div class="doctor-details">
+        <div class="detail-row">
+          <div class="detail-item">
+            <span class="detail-label">Age</span>
+            <span class="detail-value">{{ getFormattedAge() }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Gender</span>
+            <span class="detail-value">{{ getFormattedGender() }}</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-item">
+            <span class="detail-label">Department</span>
+            <span class="detail-value">{{ getDepartmentName() }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Experience</span>
+            <span class="detail-value">{{ getExperienceText() }}</span>
+          </div>
+        </div>
+        <div class="detail-row">
+          <div class="detail-item">
+            <span class="detail-label">Qualification</span>
+            <span class="detail-value">{{ getQualificationFormatted() }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">License No</span>
+            <span class="detail-value">{{ getLicenseNumber() }}</span>
+          </div>
+        </div>
+      </div>
+
+     
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-container" *ngIf="loading">
+  <div class="loading-spinner"></div>
+  <p>Loading doctor profile...</p>
+</div>
+
+<!-- Error State -->
+<div class="error-container" *ngIf="error && !loading">
+  <div class="error-icon">⚠️</div>
+  <h3>Error Loading Profile</h3>
+  <p>{{ error }}</p>
+  <button (click)="goBack()" class="error-back-btn">Go Back</button>
+</div>

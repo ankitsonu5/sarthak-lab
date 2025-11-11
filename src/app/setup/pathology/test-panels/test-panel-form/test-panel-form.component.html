@@ -1,0 +1,201 @@
+<div class="panel-form-container">
+  <div class="breadcrumb" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #deeeff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);padding: 10px;">
+    <a routerLink="/setup/pathology/test-panels">Test Panels</a>
+    <span class="sep">›</span>
+    <span>{{ editId ? 'Edit' : 'New' }}</span>
+  </div>
+
+  <h2 class="page-title">{{ editId ? 'Edit test panel' : 'Add new test panel' }}</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+    <div class="form-row">
+      
+      <div class="form-field">
+        <label>Short name <span class="req">*</span></label>
+        <div class="dropdown-container">
+          <input
+            type="text"
+            formControlName="shortName"
+            class="dropdown-input"
+            placeholder="Search and select test name"
+            (input)="onShortNameSearch($event)"
+            (focus)="showShortNameDropdown = true"
+            (blur)="onShortNameBlur()"
+            autocomplete="off" />
+          <div class="dropdown-list" *ngIf="showShortNameDropdown && filteredServiceHeads.length > 0">
+            <div class="dropdown-item" *ngFor="let sh of filteredServiceHeads" (mousedown)="selectShortName(sh.testName)">
+              <span [innerHTML]="highlightMatch(sh.testName, shortNameSearchTerm)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" formControlName="name" placeholder="Enter test name" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field">
+        <label>Category</label>
+        <select formControlName="category" (change)="onCategoryChange($event)">
+          <option value="">Select category</option>
+          <option *ngFor="let c of categories" [value]="c.name">{{ c.name }}</option>
+        </select>
+      </div>
+         <div class="form-field">
+            <label for="sampleType">Sample Type</label>
+            <div class="dropdown-container" #sampleTypeContainer>
+              <input
+                type="text"
+                id="sampleType"
+                formControlName="sampleType"
+                class="dropdown-input"
+                placeholder="Select one or more sample types"
+                (focus)="showSampleTypeDropdown = true"
+                (click)="showSampleTypeDropdown = true"
+                (blur)="onSampleTypeBlur()"
+                readonly
+                autocomplete="off" />
+              <div class="dropdown-list"
+                   *ngIf="showSampleTypeDropdown"
+                   (mouseenter)="mouseInSampleDropdown = true"
+                   (mouseleave)="mouseInSampleDropdown = false">
+                <div
+                  class="dropdown-item"
+                  *ngFor="let st of filteredSampleTypeOptions"
+                  (mousedown)="interactingWithSampleType = true"
+                  (mouseup)="interactingWithSampleType = false"
+                  (click)="$event.stopPropagation()">
+                  <label class="checkbox-item" (click)="$event.stopPropagation()">
+                    <input type="checkbox"
+                           [checked]="isSampleTypeSelected(st._id)"
+                           (change)="onSampleTypeCheckboxChange(st, $event)"
+                           [disabled]="isViewMode" />
+                    <span [innerHTML]="highlightMatch(st.name, sampleTypeSearchTerm)"></span>
+                  </label>
+                  <button
+                    type="button"
+                    class="remove-chip"
+                    *ngIf="!isViewMode"
+                    (mousedown)="$event.stopPropagation(); interactingWithSampleType = true;"
+                    (mouseup)="interactingWithSampleType = false"
+                    (click)="promptDeleteSampleType(st)"
+                    title="Delete sample type">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="add-new-btn" *ngIf="!isViewMode" (click)="openSampleTypeModal()">
+              <i class="fas fa-plus"></i> Add new
+            </button>
+          </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-field full">
+        <label>Tests</label>
+        <!-- Selected tests as removable chips -->
+        <div class="chips-box">
+          <span class="chip" *ngFor="let t of selectedTests">
+            {{ getTestNameById(t) }}
+            <button type="button" class="chip-remove" (click)="removeTest(t)">×</button>
+          </span>
+        </div>
+        <!-- Dropdown to add tests from testdefinitions -->
+        <select class="tests-select" (change)="onTestSelect($event)">
+          <option value="">Select test to add</option>
+          <option *ngFor="let t of availableTests" [value]="t._id">{{ t.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn primary">{{ editId ? 'Update' : 'Save' }}</button>
+      <button type="button" class="btn" (click)="cancel()">Cancel</button>
+    </div>
+
+    <!-- Success alert for Save/Update -->
+    <app-success-alert
+      [show]="showSuccessAlert"
+      [title]="alertTitle"
+      [message]="alertMessage"
+      [badgeText]="alertBadgeText"
+      (close)="onAlertClose()">
+    </app-success-alert>
+
+    <!-- Record Exists Modal -->
+    <app-record-exists-modal
+      [show]="showRecordExistsModal"
+      [title]="'Record Already Exists'"
+      [message]="duplicateRecordMessage"
+      [badgeText]="'Duplicate Record Found'"
+      [autoHideDelay]="2000"
+      (closed)="onRecordExistsModalClosed()">
+    </app-record-exists-modal>
+  </form>
+</div>
+
+
+
+  <!-- Sample Type Modal -->
+  <div class="modal-overlay" *ngIf="showSampleTypeModal" (click)="closeSampleTypeModal()">
+    <div class="modal-content unit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Sample Type</h3>
+        <button type="button" class="modal-close" (click)="closeSampleTypeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newSampleType">Sample Type <span class="required">*</span></label>
+          <input
+            type="text"
+            id="newSampleType"
+            [(ngModel)]="newSampleTypeName"
+            class="form-control"
+            placeholder="Enter sample type (e.g., Blood, Urine)"
+            (keyup.enter)="saveNewSampleType()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSampleTypeModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveNewSampleType()" [disabled]="!(newSampleTypeName || '').trim()">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+<!-- Delete modals -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  (confirmed)="confirmDeleteSampleType()"
+  (cancelled)="cancelDeleteSampleType()">
+</app-delete-confirmation-modal>
+
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="deleteSuccessTitle"
+  [message]="'Deleted successfully.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="1000"
+  (closed)="onDeleteSampleTypeSuccessClosed()">
+</app-delete-success-modal>
+
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="deleteBlockedTitle"
+  [message]="deleteBlockedMessage"
+  [details]="[]"
+  [badgeText]="'Dependencies present'"
+  [autoHideDelay]="2000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>

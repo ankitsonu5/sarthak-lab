@@ -1,0 +1,801 @@
+<div class="pathology-container">
+  <form [formGroup]="pathologyForm" (ngSubmit)="onSubmit()">
+
+    <!-- Header -->
+    <div class="header-section">
+      <h3 class="page-title">
+        <span class="billing-icon"><img src="../../assets/images/bill1.png"></span>
+        {{ isEditMode ? 'Edit Billing' : 'Account and Billing' }}
+      </h3>
+    </div>
+
+
+
+
+    <!-- Patient Details Grid -->
+    <div class="patient-details-grid" *ngIf="!showCompactBillingLayout">
+      <div class="grid-row">
+        <div class="grid-item">
+          <label>Registration No.:</label>
+          <div class="registration-input-container">
+            <input
+              #registrationNumberInput
+              type="text"
+              formControlName="registrationNumber"
+              class="grid-input"
+              placeholder="Enter appointment ID or registration number and press Enter..."
+              (input)="onRegistrationNumberChange()"
+              (keydown.enter)="onEnterPressed()"
+              autocomplete="off"
+              tabindex="1">
+          </div>
+        </div>
+        <div class="grid-item">
+          <label>Date:</label>
+          <input type="date" formControlName="collectionDate" class="grid-input" [disabled]="topReadOnly">
+        </div>
+        <div class="grid-item">
+          <label>Name:</label>
+          <input type="text" formControlName="patient" class="grid-input" placeholder="Enter patient name" [readonly]="topReadOnly"
+                 (input)="onPatientNameInput($event)" style="text-transform: capitalize;">
+        </div>
+      </div>
+
+      <div class="grid-row">
+        <div class="grid-item" *ngIf="false">
+          <label>Department:</label>
+          <select formControlName="department" class="grid-input" (change)="onDepartmentChange()" [disabled]="topReadOnly">
+            <option value="">Select Department</option>
+            <option *ngFor="let dept of departments" [value]="dept._id">
+              {{ dept.name }}
+            </option>
+          </select>
+        </div>
+        <div class="grid-item" *ngIf="false">
+          <label>Prescribed Doctor:</label>
+          <select formControlName="doctor" class="grid-input" (change)="onDoctorChange()" [disabled]="topReadOnly">
+            <option value="">Select Doctor</option>
+            <option *ngFor="let doctor of filteredDoctors" [value]="doctor._id">
+              {{ getDoctorDisplayName(doctor) }}
+            </option>
+          </select>
+        </div>
+        <div class="grid-item" *ngIf="false">
+          <label>Mode:</label>
+          <select #modeSelect formControlName="mode" class="grid-input" (change)="onModeChange($event)" tabindex="2">
+            <option value="OPD">OPD</option>
+            <option value="IPD">IPD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-row four-cols">
+        <div class="grid-item age-with-unit">
+          <label>Age:</label>
+          <div class="age-input-group">
+            <input type="number" formControlName="age" class="age-input" placeholder="Enter age" min="1" max="120" [readonly]="topReadOnly">
+            <select formControlName="ageIn" class="age-unit-select" [disabled]="topReadOnly">
+              <option value="Years">Years</option>
+              <option value="Months">Months</option>
+              <option value="Days">Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-item">
+          <label>Gender:</label>
+          <!-- Dropdown hidden: show read-only text -->
+          <input class="grid-input" [value]="(pathologyForm.get('gender')?.value || '') | titlecase" readonly>
+        </div>
+        <div class="grid-item">
+          <label>Contact:</label>
+          <input type="tel" formControlName="contact" class="grid-input" placeholder="Enter 10-digit contact number" [readonly]="topReadOnly"
+                 maxlength="10" inputmode="numeric" pattern="[0-9]*"
+                 (input)="formatContactInput($event)">
+        </div>
+        <div class="grid-item">
+          <label>Payment Method:</label>
+          <select formControlName="paymentMethod" class="grid-input">
+            <option value="CASH">Cash</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-row">
+        <div class="grid-item">
+          <label>Reg. Date:</label>
+          <input type="text" formControlName="registrationDate" class="grid-input" placeholder="Registration date" readonly>
+        </div>
+        <div class="grid-item">
+          <label>Address:</label>
+          <input type="text" formControlName="address" class="grid-input" placeholder="Enter address" [readonly]="topReadOnly"
+                 (input)="onAddressInput($event)" style="text-transform: capitalize;">
+        </div>
+        <div class="grid-item">
+          <label>Doctor Ref. No.:</label>
+          <input #doctorRefNoInput type="text" formControlName="doctorRefNo" class="grid-input" placeholder="Enter doctor ref. no." tabindex="3">
+        </div>
+      </div>
+    </div>
+
+    <!-- Unified single container like screenshot -->
+    <div class="billing-dialog" style="width:100%; background:#fff; border:1px solid #e0e0e0; border-radius:10px; padding:12px; margin-top:8px;">
+
+    <!-- Compact Billing Layout: Single full-width form -->
+    <div class="billing-full" *ngIf="showCompactBillingLayout" style="display:block;">
+      <!-- Quick Search: Registration No. / Appointment ID -->
+      <div class="regno-quick-search" style="display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:end; margin-bottom:12px;">
+        <div>
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Registration No. / Appointment ID</label>
+          <input
+            #registrationNumberInput
+            type="text"
+            formControlName="registrationNumber"
+            class="grid-input"
+            placeholder="Enter Registration No."
+            (input)="onRegistrationNumberChange()"
+            (keydown.enter)="onEnterPressed()"
+            autocomplete="off"
+          />
+          <small class="muted">Enter Registration No.</small>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary" (click)="onEnterPressed()" style="margin-top:22px;">Search</button>
+        </div>
+      </div>
+
+      <!-- Top: Patient Summary (full width) -->
+      <div class="patient-summary" style="display:grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap:12px; margin-bottom:12px;">
+        <div><small class="muted">Name</small><div>{{ pathologyForm.get('patient')?.value }}</div></div>
+        <div><small class="muted">Reg. No.</small><div>{{ pathologyForm.get('registrationNumber')?.value }}</div></div>
+        <div><small class="muted">Gender</small><div>{{ (pathologyForm.get('gender')?.value || '') | titlecase }}</div></div>
+        <div><small class="muted">Age</small><div>{{ pathologyForm.get('age')?.value }} {{ pathologyForm.get('ageIn')?.value }}</div></div>
+        <div><small class="muted">Contact</small><div>{{ pathologyForm.get('contact')?.value }}</div></div>
+        <div><small class="muted">Billing Date</small><div>{{ pathologyForm.get('collectionDate')?.value | date:'dd/MM/yyyy, h:mm a' }}</div></div>
+        <div style="grid-column: span 2;"><label style="font-weight:600; display:block; margin-bottom:6px;">Payment Method</label>
+          <select formControlName="paymentMethod" class="grid-input">
+            <option value="CASH">Cash</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Category Tiles (quick select) - No manage/create options -->
+      <div class="category-tiles" *ngIf="serviceCategories && serviceCategories.length">
+        <button type="button"
+                class="category-tile"
+                *ngFor="let cat of serviceCategories"
+                [class.active]="cat._id === selectedServiceCategory"
+                (click)="onCategoryTileClick(cat)">
+          <span class="icon-box"><i [ngClass]="getCategoryIconClass(cat)"></i></span>
+          <span class="label">{{ getCategoryDisplayName(cat.categoryName) }}</span>
+        </button>
+      </div>
+
+
+    <!-- Test Selection Section -->
+    <div class="test-selection-row">
+      <div class="selection-group">
+        <label>Service Category:</label>
+        <select formControlName="serviceCategory" class="selection-dropdown" (change)="onCategoryChange($event)">
+          <option value="">Select</option>
+          <option *ngFor="let category of serviceCategories" [value]="category._id">
+            {{ getCategoryDisplayName(category.categoryName) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="selection-group">
+        <label>Select Service Head: <small style="color: #666;">(Double-click to add/increase quantity OR Select multiple + Add Selected)</small></label>
+        <input
+          type="text"
+          class="selection-search"
+          placeholder="Search service head..."
+          (input)="onSearchChange($event)"
+          [disabled]="!selectedServiceCategory"
+          [value]="searchTerm"
+          style="margin-bottom: 8px; width: 100%;" />
+        <select
+          class="selection-dropdown multiple-select"
+          (change)="onMultipleServiceHeadChange($event)"
+          [disabled]="!selectedServiceCategory"
+          multiple
+          size="6">
+          <option *ngFor="let test of filteredTests" [value]="test._id" (dblclick)="addSingleTest(test._id)">
+            {{ test.name }} - ₹{{ test.cost | number:'1.0-0' }}
+          </option>
+        </select>
+        <div class="selection-info">
+          <span *ngIf="selectedServiceHeads.length > 0" class="selected-count">
+            ✅ {{ selectedServiceHeads.length }} test(s) selected
+          </span>
+        </div>
+        <div class="search-info loading" *ngIf="serviceHeadService.loading$ | async">
+          🔄 Loading tests...
+        </div>
+        <div class="search-info warning" *ngIf="selectedServiceCategory && filteredTests.length === 0 && !(serviceHeadService.loading$ | async)">
+          ⚠️ No tests available for this category
+        </div>
+      </div>
+
+      <div class="selection-group">
+        <label>Select Service Head And Click Add:</label>
+        <div class="action-buttons">
+          <button type="button" class="add-btn" (click)="addSelectedTests()"
+                  [disabled]="selectedServiceHeads.length === 0">
+            Add Selected ({{ selectedServiceHeads.length }})
+          </button>
+          <button type="button" class="reset-btn" (click)="resetForm()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Tests Table -->
+    <div class="tests-table-section" *ngIf="addedTests.length > 0">
+      <table class="tests-table">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Category</th>
+            <th>Head</th>
+            <th>Unit</th>
+            <th>Amount</th>
+            <th>Qty</th>
+            <th>Disc</th>
+            <th>Net Amt</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let test of addedTests; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ test.categoryName }}</td>
+            <td>{{ test.name }}</td>
+            <td>Test</td>
+            <td>₹{{ test.cost | number:'1.0-0' }}</td>
+            <td>
+              <input
+                type="number"
+                class="qty-input"
+                [value]="test.quantity || 1"
+                (change)="onQuantityChange(test, $event)"
+                min="1">
+            </td>
+            <td>
+              <input
+                type="number"
+                class="discount-input"
+                [value]="test.discount || 0"
+                (change)="onDiscountChange(test, $event)"
+                min="0">
+            </td>
+            <td>₹{{ (test.netAmount || test.cost) | number:'1.0-0' }}</td>
+            <td>
+              <button type="button" class="delete-btn" (click)="removeTest(test)" title="Remove">
+                <i *ngIf="isPathologyDeleteLocked(test)" class="fas fa-lock"></i>
+                <span *ngIf="!isPathologyDeleteLocked(test)">×</span>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Payment Details Strip (like screenshot) -->
+    <div class="payment-strip" *ngIf="addedTests.length > 0">
+      <div class="pay-box">
+        <div class="pay-label">Total</div>
+        <div class="pay-value">₹{{ subtotal | number:'1.0-0' }}</div>
+      </div>
+      <div class="pay-box">
+        <div class="pay-label">Discount</div>
+        <div class="pay-value">₹{{ totalDiscount | number:'1.0-0' }}</div>
+      </div>
+      <div class="pay-box">
+        <div class="pay-label">Amount Received</div>
+        <div class="pay-input">
+          <span class="prefix">₹</span>
+          <input type="number"
+                 min="0"
+                 step="1"
+                 [value]="amountReceived"
+                 (input)="onAmountReceivedInput($event)"
+                 [max]="netPayableAmount"
+                 placeholder="0" />
+        </div>
+      </div>
+      <div class="pay-box">
+        <div class="pay-label">Balance</div>
+        <div class="pay-value balance" [class.zero]="paymentBalance <= 0">₹{{ paymentBalance | number:'1.0-0' }}</div>
+      </div>
+    </div>
+
+    <!-- Edit Mode Adjustment Banner under strip -->
+    <div *ngIf="isEditMode && addedTests.length > 0" class="adjustment-banner" style="margin-top:8px;">
+      <div class="adjustment-text">
+        <strong>Adjustment:</strong>
+        <span [ngClass]="{ 'collect': adjustmentDelta > 0, 'refund': adjustmentDelta < 0, 'neutral': adjustmentDelta === 0 }">
+          {{ adjustmentDirection }} - ₹{{ adjustmentAbs | number:'1.0-0' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <!-- Edit Mode Button -->
+      <button type="button" class="pay-invoice-btn edit-mode-btn" (click)="payInvoice()"
+              [disabled]="isSubmitting || !isPayInvoiceEnabled() || paymentCompleted"
+              *ngIf="!paymentCompleted && isEditMode">
+        ✏️ Update & Adjust — {{ adjustmentDelta === 0 ? '₹0' : ((adjustmentDelta > 0 ? '+ ₹' : '- ₹') + (adjustmentAbs | number:'1.0-0')) }}
+      </button>
+
+      <!-- Normal Mode Button -->
+      <button type="button" class="pay-invoice-btn" (click)="payInvoice()"
+              [disabled]="isSubmitting || !isPayInvoiceEnabled() || paymentCompleted"
+              *ngIf="!paymentCompleted && !isEditMode">
+        💳 Pay Invoice - ₹{{ netPayableAmount | number:'1.0-0' }}
+      </button>
+
+      <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
+    </div>
+
+    <!-- Patient Paid Data Display - Always Show Today's Invoices -->
+    <div class="patient-paid-section" *ngIf="displayedPaidPatients.length > 0 || showPatientPaidData">
+      <div class="paid-header">
+        <h3>✅ Payment Completed ({{ displayedPaidPatients.length }} patients)</h3>
+        <button type="button" class="clear-btn" (click)="clearPaidPatients()">
+          🗑️ Clear List
+        </button>
+      </div>
+
+	      <!-- Filters under Payment Completed banner -->
+	      <div class="paid-filters">
+	        <input
+	          type="text"
+	          class="filter-input"
+	          placeholder="Receipt No."
+          name="receiptFilterInput"
+	          [(ngModel)]="receiptFilter"
+          [ngModelOptions]="{ standalone: true }"
+	          (ngModelChange)="onFilterChange()"
+          (keyup.enter)="$event.preventDefault(); onFilterChange()"
+	        />
+	        <input
+	          type="text"
+	          class="filter-input"
+	          placeholder="Registration No."
+	          [(ngModel)]="registrationFilter"
+          [ngModelOptions]="{ standalone: true }"
+	          (ngModelChange)="onFilterChange()"
+          (keyup.enter)="$event.preventDefault(); onFilterChange()"
+	        />
+	      </div>
+
+
+      <!-- Professional Invoice Table -->
+      <div class="invoice-table-container" *ngIf="displayedPaidPatients.length > 0 || showPatientPaidData">
+        <!-- Header with Title and Edit Record Button -->
+        <div class="invoice-header">
+          <div class="header-left">
+            <h3 class="invoice-title">Today's Invoices</h3>
+            <span class="invoice-date">{{ getCurrentDate() }}</span>
+          </div>
+          <div class="header-right">
+            <button
+              type="button"
+              class="btn btn-outline-primary edit-record-btn"
+              (click)="navigateToEditRecord()">
+              <i class="fas fa-edit"></i> Edit Record
+            </button>
+          </div>
+        </div>
+
+        <!-- Professional Invoice Table -->
+        <div class="table-wrapper">
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Patient Name</th>
+                <th>Registration No.</th>
+                <th>Receipt No.</th>
+                <th>No. of Tests</th>
+                <th>Amount</th>
+                <th *ngIf="false">Mode</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let patient of displayedPaidPatients; let i = index; trackBy: trackByReceipt">
+                <tr class="invoice-row">
+                <td class="serial-no">
+                  <div class="sno-stack">
+                    <div class="sno-top">{{ i + 1 }}</div>
+                    <div class="sno-bottom" *ngIf="patient.hasEditHistory || patient.isEdited">
+                      <span class="edited-badge"><i class="fas fa-pen-to-square"></i> Edited</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="patient-name">
+                  <div class="name-cell">
+                    <strong>{{ patient.patientName }}</strong>
+                    <small class="text-muted d-block"> {{ getPatientAge(patient) || 'N/A' }}, {{ patient.gender || 'N/A' }}</small>
+                  </div>
+                </td>
+                <td class="reg-no">{{ patient.registrationNumber || patient.patientId }}</td>
+                <td class="receipt-no">
+                  <span class="receipt-badge">{{ patient.receiptNumber || (i + 1) }}</span>
+                </td>
+                <td class="test-count">
+                  <span class="test-badge">{{ (patient.testDetails || patient.tests)?.length || 0 }}</span>
+                </td>
+                <td class="amount">
+                  <strong class="amount-text">₹{{ patient.totalAmount | number:'1.0-0' }}</strong>
+                </td>
+                <td class="payment-mode" *ngIf="false">
+                  <span class="mode-badge mode-cash">{{ (patient.mode || pathologyForm.get('mode')?.value || 'OPD') }}</span>
+                </td>
+                <td class="status">
+                  <span class="status-badge status-paid">{{ patient.status || 'PAID' }}</span>
+                </td>
+                <td class="actions">
+                  <div class="action-buttons">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary view-btn"
+                      (click)="viewInvoice(patient)"
+                      title="View">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-success print-btn"
+                      (click)="reprintInvoice(patient)"
+                      title="Print"
+                    >
+                      <i class="fas fa-print"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-warning schedule-btn"
+                      (click)="goToRegistrationFromCash(patient)"
+                      title="Register Sample">
+                      <i class="fas fa-vial"></i>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-primary edit-btn"
+                      (click)="editInvoice(patient)"
+                      title="Edit Invoice">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary audit-btn"
+                      *ngIf="patient.hasEditHistory || patient.isEdited"
+                      (click)="openEditAudit(patient)"
+                      title="Invoice edit details">
+                      <i class="fas fa-lock"></i>
+                    </button>
+                    <!-- <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger delete-btn"
+                      (click)="deleteInvoice(patient)"
+                      title="Delete Invoice">
+                      <i class="fas fa-trash"></i>
+                    </button> -->
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Inline Audit Row (toggle with lock) -->
+              <tr class="inline-audit-row" *ngIf="patient.__inlineAuditOpen">
+                <td colspan="9">
+                  <div class="inline-audit-card">
+                    <div class="inline-audit-header">
+                      <div class="left">
+                        <i class="fas fa-pen-to-square"></i>
+                        <strong>Invoice Edit Details</strong>
+                        <span class="muted">for Receipt {{ patient.receiptNumber }}</span>
+                      </div>
+                      <div class="right">
+                        <span class="credit-debit-chip" [class.debit]="getEditDeltaSimple(patient) > 0" [class.credit]="getEditDeltaSimple(patient) < 0">
+                          {{ getEditDeltaSimple(patient) > 0 ? 'Debited' : (getEditDeltaSimple(patient) < 0 ? 'Credited' : 'Edited') }}
+                        </span>
+                        <span class="credit-debit-amount" [class.debit]="getEditDeltaSimple(patient) > 0" [class.credit]="getEditDeltaSimple(patient) < 0">
+                          ₹{{ formatCurrencyNumber(absValue(getEditDeltaSimple(patient))) }}
+                        </span>
+                        <button class="close-btn sm" (click)="toggleInlineAudit(patient)">×</button>
+                      </div>
+                    </div>
+
+                    <div class="audit-timeline compact" *ngIf="(patient.editHistory || []).length > 0; else noAudit">
+                      <div class="timeline-entry" *ngFor="let e of patient.editHistory; let idx = index">
+                        <div class="timeline-header">
+                          <div class="step-chip">Edit {{ idx + 1 }}</div>
+                          <div class="when-by">
+                            {{ (e.at || e.editedAt) | date:'dd/MM/yyyy, h:mm a' }}
+                            <span class="by" *ngIf="e.by || e.editedBy"> — {{ e.by || e.editedBy }}</span>
+                          </div>
+                          <div class="delta" [class.debit]="getEntryDelta(e, patient) > 0" [class.credit]="getEntryDelta(e, patient) < 0">
+                            {{ getEntryDelta(e, patient) > 0 ? '+₹' : (getEntryDelta(e, patient) < 0 ? '-₹' : '₹') }}{{ formatCurrencyNumber(absValue(getEntryDelta(e, patient))) }}
+                          </div>
+                        </div>
+                        <div class="diff-grid">
+                          <div class="diff-box">
+                            <div class="box-title">Before</div>
+                            <div class="box-amount">₹{{ formatCurrencyNumber(entryPrevAmount(e, patient) || 0) }}</div>
+                            <div class="box-list" *ngIf="(entryPrevTests(e) || []).length > 0; else iEmptyPrev">
+                              <span class="test-chip" *ngFor="let t of entryPrevTests(e)">
+                                {{ t?.name || t?.testName }} <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                              </span>
+                            </div>
+                            <ng-template #iEmptyPrev><div class="box-empty">—</div></ng-template>
+                          </div>
+                          <div class="diff-box">
+                            <div class="box-title">After</div>
+                            <div class="box-amount">₹{{ formatCurrencyNumber(entryAfterAmount(e, patient) || 0) }}</div>
+                            <div class="box-list" *ngIf="(entryAfterTests(e) || []).length > 0; else iEmptyAfter">
+                              <span class="test-chip green" *ngFor="let t of entryAfterTests(e)">
+                                {{ t?.name || t?.testName }} <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                              </span>
+                            </div>
+                            <ng-template #iEmptyAfter><div class="box-empty">—</div></ng-template>
+                          </div>
+                          <div class="diff-box">
+                            <div class="box-title">Added <span class="pill plus">+ ₹{{ formatCurrencyNumber(getAddedTotalForEntry(e)) }}</span></div>
+                            <div class="box-list" *ngIf="(getEntryAddedTests(e) || []).length > 0; else iEmptyAdd">
+                              <span class="test-chip green" *ngFor="let t of getEntryAddedTests(e)">
+                                {{ t?.name || t?.testName }} <small class="muted">(+₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                              </span>
+                            </div>
+                            <ng-template #iEmptyAdd><div class="box-empty">—</div></ng-template>
+                          </div>
+                          <div class="diff-box">
+                            <div class="box-title">Removed <span class="pill minus">- ₹{{ formatCurrencyNumber(getRemovedTotalForEntry(e)) }}</span></div>
+                            <div class="box-list" *ngIf="(getEntryRemovedTests(e) || []).length > 0; else iEmptyRem">
+                              <span class="test-chip" *ngFor="let t of getEntryRemovedTests(e)">
+                                {{ t?.name || t?.testName }} <small class="muted">(-₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                              </span>
+                            </div>
+                            <ng-template #iEmptyRem><div class="box-empty">—</div></ng-template>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <ng-template #noAudit>
+                      <div class="no-audit">No edit activity for this invoice.</div>
+                    </ng-template>
+                  </div>
+                </td>
+              </tr>
+              </ng-container>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    </div> <!-- billing-full -->
+
+
+    </div> <!-- billing-dialog -->
+
+  </form>
+
+<!-- View Modal (same style approach as Edit Record view) -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal-content view-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>Patient Report Details</h4>
+      <button class="close-btn" type="button" (click)="closeViewModal()">×</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedViewRecord as rec">
+      <div class="patient-info-card">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ (rec.patientName || 'P').charAt(0) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ rec.patientName }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ getPatientAge(rec) || 'N/A' }}, {{ rec.gender || 'N/A' }}</span>
+                <span class="phone">📞 {{ rec.contact || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-header-right" *ngIf="rec.isEdited && (rec.lastEditedAt || rec.editHistory?.length)">
+            <div class="edited-info-chip">
+              Last edit: {{ (rec.lastEditedAt || rec.editHistory[rec.editHistory.length-1]?.editedAt) | date:'dd/MM/yyyy, h:mm a' }}
+              <span *ngIf="rec.lastEditedBy || rec.editHistory?.length"> by {{ rec.lastEditedBy || rec.editHistory[rec.editHistory.length-1]?.editedBy }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-details one-row">
+        <div class="detail-item"><strong>Receipt No.:</strong> <span>{{ rec.receiptNumber }}</span></div>
+        <div class="detail-item"><strong>Reg. No.:</strong> <span>{{ rec.registrationNumber || rec.patientId }}</span></div>
+        <div class="detail-item" *ngIf="false"><strong>Mode:</strong> <span>{{ (rec.mode || pathologyForm.get('mode')?.value || 'OPD') }}</span></div>
+      </div>
+
+      <!-- Grouped by Category like Edit Record view -->
+      <div class="tests-list" *ngIf="(rec.__viewCategories || rec.testDetails || rec.tests)?.length">
+        <table class="tests-table">
+          <thead>
+            <tr>
+              <th>TEST</th>
+              <th>AMOUNT</th>
+              <th>PAID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let cat of (rec.__viewCategories || []); let cidx = index">
+              <tr>
+                <th colspan="3" style="text-align:left">{{ cidx + 1 }}) {{ cat.name }}</th>
+              </tr>
+              <tr *ngFor="let t of cat.tests">
+                <td>{{ t.name || t.testName }}</td>
+                <td>₹{{ (t.netAmount || t.cost) | number:'1.0-0' }}</td>
+                <td>PAID</td>
+              </tr>
+              <tr>
+                <td style="text-align:right"><strong>Subtotal</strong></td>
+                <td><strong>₹{{ cat.subtotal | number:'1.0-0' }}</strong></td>
+                <td></td>
+              </tr>
+            </ng-container>
+
+            <!-- Fallback (no grouping prepared) -->
+            <ng-container *ngIf="!(rec.__viewCategories?.length)">
+              <tr *ngFor="let t of (rec.testDetails || rec.tests); let idx = index">
+                <td>{{ t.name || t.testName }}</td>
+
+<!-- Audit modal moved to bottom of the file to avoid nesting inside View modal -->
+
+                <td>₹{{ (t.netAmount || t.cost) | number:'1.0-0' }}</td>
+                <td>PAID</td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+
+
+
+<!-- Edit Audit Modal for Today's Invoices (standalone overlay) -->
+<div *ngIf="showEditAuditModal" class="modal-overlay" (click)="closeEditAudit()">
+  <div class="modal-content wide" (click)="$event.stopPropagation()">
+    <div class="modal-header gradient">
+      <h4><i class="fas fa-pen-to-square"></i> Invoice Edit Details</h4>
+      <div class="header-right">
+        <div class="credit-debit-chip" [class.debit]="getEditDeltaSimple(selectedAuditRecord) > 0" [class.credit]="getEditDeltaSimple(selectedAuditRecord) < 0">
+          {{ getEditDeltaSimple(selectedAuditRecord) > 0 ? 'Debited' : (getEditDeltaSimple(selectedAuditRecord) < 0 ? 'Credited' : 'Edited') }}
+        </div>
+        <div class="credit-debit-amount" [class.debit]="getEditDeltaSimple(selectedAuditRecord) > 0" [class.credit]="getEditDeltaSimple(selectedAuditRecord) < 0">
+          ₹{{ formatCurrencyNumber(absValue(getEditDeltaSimple(selectedAuditRecord))) }}
+        </div>
+        <button class="close-btn" (click)="closeEditAudit()">×</button>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedAuditRecord as rec">
+      <!-- Patient header like Edit Record -->
+      <div class="patient-info-card gradient-chip">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ (getPatientName(rec) || 'P').charAt(0) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ getPatientName(rec) }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ getPatientAge(rec) || 'N/A' }}, {{ getPatientGender(rec) }}</span>
+                <span class="phone">📞 {{ getPatientPhone(rec) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-header-right">
+            <div class="edited-info-chip small">
+              Last edit: {{ getLastEditedAt(rec) | date:'dd/MM/yyyy, h:mm a' }}<span *ngIf="getLastEditedBy(rec)"> by {{ getLastEditedBy(rec) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="patient-details-row compact">
+          <div class="detail-card"><div class="detail-label">REGISTRATION NO</div><div class="detail-value">{{ getRegistrationNumber(rec, 0) }}</div></div>
+          <div class="detail-card"><div class="detail-label">RECEIPT NO</div><div class="detail-value">{{ rec.receiptNumber }}</div></div>
+          <div class="detail-card"><div class="detail-label">INVOICE DATE</div><div class="detail-value">{{ (rec.invoiceDate || rec.bookingDate || rec.createdAt) | date:'dd/MM/yyyy' }}</div></div>
+          <div class="detail-card" *ngIf="false"><div class="detail-label">MODE</div><div class="detail-value"><span class="mode-chip">{{ getVisitMode(rec) }}</span></div></div>
+        </div>
+      </div>
+
+      <!-- Diff rows: Previous vs Edited (EXACT as Edit Record) -->
+      <div class="diff-section">
+        <div class="diff-row">
+          <div class="diff-col">
+            <div class="diff-title">BEFORE EDIT</div>
+            <div class="diff-amount">₹{{ formatCurrencyNumber(getPreviousAmount(rec) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getPreviousTests(rec)" class="test-chip">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+          <div class="diff-col">
+            <div class="diff-title">EDITED</div>
+            <div class="diff-amount edited">₹{{ formatCurrencyNumber(getAmount(rec) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getAfterTests(rec)" class="test-chip green">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="diff-summary" [class.credit]="getEditDelta(rec) < 0" [class.debit]="getEditDelta(rec) > 0">
+          <div class="summary-label">{{ getEditDelta(rec) > 0 ? 'Debited (Added)' : (getEditDelta(rec) < 0 ? 'Credited (Reduced)' : 'Edited') }}</div>
+          <div class="summary-value">₹{{ formatCurrencyNumber(absValue(getEditDelta(rec))) }}</div>
+        </div>
+
+        <!-- Three-box view: Previous | Added | Removed -->
+        <div class="change-grid">
+          <div class="change-box">
+            <div class="box-title">Previous Tests</div>
+            <div class="box-list" *ngIf="(getPreviousTests(rec) || []).length > 0; else emptyPrev">
+              <span class="test-chip" *ngFor="let t of getPreviousTests(rec)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyPrev><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box" *ngIf="(getAddedTests(rec) || []).length > 0">
+            <div class="box-title">Added <span class="pill plus">+ ₹{{ formatCurrencyNumber(getAddedTotal(rec)) }}</span></div>
+            <div class="box-list" *ngIf="(getAddedTests(rec) || []).length > 0; else emptyAdd">
+              <span class="test-chip green" *ngFor="let t of getAddedTests(rec)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(+₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyAdd><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box">
+            <div class="box-title">Removed <span class="pill minus">- ₹{{ formatCurrencyNumber(getRemovedTotal(rec)) }}</span></div>
+            <div class="box-list" *ngIf="(getRemovedTests(rec) || []).length > 0; else emptyRem">
+              <span class="test-chip" *ngFor="let t of getRemovedTests(rec)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(-₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyRem><div class="box-empty">—</div></ng-template>
+          </div>
+        </div>
+
+        <!-- Final tests row -->
+        <div class="final-tests">
+          <div class="final-title">Final Tests</div>
+          <div class="final-list" *ngIf="(getAfterTests(rec) || []).length > 0; else emptyFinal">
+            <span class="test-chip green" *ngFor="let t of getAfterTests(rec)">
+              {{ t?.name || t?.testName }}
+              <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+            </span>
+          </div>
+          <ng-template #emptyFinal><div class="box-empty">—</div></ng-template>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

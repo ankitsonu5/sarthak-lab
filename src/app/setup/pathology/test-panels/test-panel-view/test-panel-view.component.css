@@ -1,0 +1,86 @@
+.panel-view-container{padding:16px ;  min-height: 100vh;
+  background: hsl(211, 100%, 73%);border-radius: 10px;}
+.title-row{margin-bottom:12px}
+.breadcrumb{color:#6b7280;font-size:.8rem;margin-bottom:6px;  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 14px;
+  color: #666;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);}
+.crumb{cursor:pointer;color:#002aff;  text-decoration: underline;}
+.crumb.active{color:#050912;cursor:default; }
+.sep{margin:0 6px;color:#9aa0a6}
+.title-container{
+      display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.title{ font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);}
+.notes{list-style:none;padding:0;margin:6px 0 0 0;color:#000000;}
+.notes li{margin:4px 0}
+.btn.edit{ background: #255dd8;
+  color: white;
+  border: none;
+ padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;}
+.btn.edit:hover{background:#1e40af}
+.helper-row{display:flex;align-items:center;gap:8px;color:#111827;background:#eef2f7;border:1px solid #e5e7eb;padding:10px 12px;border-radius:6px;width:100%;max-width:760px;margin:12px 0;font-size:.9rem}
+.table-wrapper{background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.table-bordered{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+.table-bordered th,.table-bordered td{border-bottom:1px solid #e5e7eb;padding:12px 14px;text-align:left;font-size:.875rem;vertical-align:top}
+.table-bordered th + th,.table-bordered td + td{border-left:1px solid #eef2f7}
+.table-bordered thead th{background:#f3f6fa;font-weight:600;color:#6b7280;font-size:.75rem;letter-spacing:.04em}
+.table-row:hover{background:#f6f9ff}
+.th-order{width:86px}
+.order-col{width:86px;color:#111827;display:flex;align-items:center;gap:10px}
+.drag{display:inline-flex;flex-direction:column;line-height:0;color:#6b7280;opacity:.8;cursor:grab;transition:all 0.2s ease;padding:2px 4px;border-radius:4px}
+.drag:hover{opacity:1;color:#1e40af;transform:scale(1.15);background:rgba(30,64,175,0.1)}
+.drag:active{cursor:grabbing;transform:scale(1.05)}
+.drag i{font-size:12px;line-height:0.6;margin:1px 0}
+.order-dot{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-weight:600}
+.name{font-weight:600;color:#111827}
+
+/* CDK Drag Drop Styles */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.4;
+  background: #f3f4f6;
+  border: 2px dashed #d1d5db;
+}
+
+.cdk-drop-list-dragging .table-row:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.table-row.cdk-drag-animating {
+  transition: transform 300ms cubic-bezier(0, 0, 0.2, 1);
+}
+

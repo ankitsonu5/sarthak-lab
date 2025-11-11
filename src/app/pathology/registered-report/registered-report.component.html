@@ -1,0 +1,203 @@
+<div class="registered-report-container">
+  <!-- Simple Header -->
+  <div class="report-header-section">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="main-title">Registered Reports</h1>
+      </div>
+      <div class="record-info">
+        <div class="record-stats">
+          <span class="total-records">Total Records: {{ totalRecords }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="search-filter-section">
+    <div class="filters-row">
+      <div class="search-field narrow">
+        <label>Search by name</label>
+        <input class="filter-input" type="text" [(ngModel)]="searchTerm" placeholder="Search by patient name" (input)="applyFilters()" (keyup.enter)="onSearchEnter()" />
+      </div>
+
+      <div class="search-field narrow">
+        <label>Receipt No</label>
+        <input #receiptNoFilter class="filter-input" type="text" [(ngModel)]="filterReceiptNo" placeholder="Receipt number (press Enter)" (input)="applyFilters()" (keyup.enter)="applyExactReceiptFilter()" />
+      </div>
+      <div class="search-field narrow">
+        <label>Lab Yearly No</label>
+        <input class="filter-input" type="text" [(ngModel)]="filterRegistrationNo" placeholder="Lab Yearly number (press Enter)" (input)="applyFilters()" (keyup.enter)="applyExactRegistrationFilter()" />
+      </div>
+      <div class="search-field">
+        <label>Test Name</label>
+        <input class="filter-input" type="text" [(ngModel)]="filterTestName" placeholder="Search by test name" (input)="applyFilters()" (keyup.enter)="applyFilters()" />
+      </div>
+      <div class="search-field narrow">
+        <label>Date Range</label>
+        <select class="filter-input" [(ngModel)]="filterDateRange" (change)="onDateRangeChange()">
+          <option value="">All</option>
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+      <div class="search-field narrow">
+        <label>Status</label>
+        <select class="filter-input" [(ngModel)]="filterStatus" (change)="applyStatusLocal()">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="generated">Generated</option>
+        </select>
+      </div>
+      <button class="clear-btn" (click)="clearFilters()">Clear</button>
+      <button class="refresh-btn" (click)="refresh()">Refresh</button>
+    </div>
+
+    <!-- Custom Date Range Row (shown only when custom is selected) -->
+    <div class="custom-date-row" *ngIf="showCustomDateRange">
+      <div class="search-field narrow">
+        <label>From Date</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filterDateFrom" (change)="applyFilters()" />
+      </div>
+      <div class="search-field narrow">
+        <label>To Date</label>
+        <input class="filter-input date-input" type="date" [(ngModel)]="filterDateTo" (change)="applyFilters()" />
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Pagination (Top) -->
+  <div class="pagination-container" *ngIf="!isLoading && filtered.length > 0">
+    <div class="pagination-info">
+      <ng-container *ngIf="!filterStatus; else localPageInfoTop">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ getEndIndex() }} of {{ totalRecords }}
+      </ng-container>
+      <ng-template #localPageInfoTop>
+        Showing {{ paginatedData.length > 0 ? 1 : 0 }}–{{ paginatedData.length }} of {{ filtered.length }}
+      </ng-template>
+    </div>
+    <div class="pagination-controls">
+      <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="reports-table-container" *ngIf="!isLoading">
+    <table class="reports-table">
+      <thead class="table-header">
+        <tr>
+          <th class="serial-no">S/N</th>
+          <th class="receipt-no">Receipt No</th>
+          <th class="patient-name">Patient Name</th>
+          <th class="age-gender">Age | Gender</th>
+          <th class="lab-yearly-no">Lab Yearly No</th>
+          <th class="lab-daily-no">Lab Daily No</th>
+          <th class="test-names">Tests</th>
+          <th class="type">Type</th>
+          <th class="date">Date</th>
+          <th class="permission-header">Permission</th>
+          <th class="actions-header">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-row" *ngFor="let r of paginatedData; let i = index">
+          <td class="serial-no">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
+          <td class="receipt-no">{{ r.receiptNumber }}</td>
+          <td class="patient-name">{{ r.patient?.name }}</td>
+          <td class="age-gender">{{ r.patient?.age }} {{ r.patient?.ageIn || 'Y' }} | {{ r.patient?.gender }}</td>
+          <td class="lab-yearly-no">{{ r.yearNumber }}</td>
+          <td class="lab-daily-no">{{ r.todayNumber }}</td>
+          <td class="test-names">
+            <div class="test-names-list">{{ getTestNamesShort(r) }}</div>
+          </td>
+          <td class="type">
+            <span class="type-badge" [ngClass]="getType(r) === 'IPD' ? 'ipd-type' : 'opd-type'">{{ getType(r) }}</span>
+          </td>
+          <td class="date">{{ (r.registrationDate || r.createdAt) | date:'dd/MM/yyyy' }}</td>
+          <td class="permission">
+            <!-- iOS-style toggle when report not generated; else locked badge -->
+            <ng-container *ngIf="!r.reportGenerated; else lockedPerm">
+              <label class="switch" title="Toggle edit permission for Cash Receipt (allowed only until report is generated)">
+                <input type="checkbox" [checked]="r.cashEditAllowed" (change)="toggleCashEdit(r)" />
+                <span class="slider round"></span>
+              </label>
+            </ng-container>
+            <ng-template #lockedPerm>
+              <span class="lock-badge perm" title="Report generated — Permanent lock">LOCKED</span>
+            </ng-template>
+          </td>
+          <td class="actions">
+            <div class="action-buttons">
+              <ng-container *ngIf="!r.reportGenerated; else generatedTpl">
+                <button class="action-btn generate-btn" (click)="generateReport(r)">Generate Report</button>
+                <button *ngIf="isTopPending(i, r)" class="action-btn delete-btn" title="Delete registration" (click)="promptDelete(r, i)">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </ng-container>
+              <ng-template #generatedTpl>
+                <div class="generated-actions">
+                  <button class="action-btn view-btn" (click)="generateReport(r)">Report Generated</button>
+                </div>
+              </ng-template>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!isLoading && filtered.length > 0">
+    <div class="pagination-info">
+      <ng-container *ngIf="!filterStatus; else localPageInfoBottom">
+        Showing {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ getEndIndex() }} of {{ totalRecords }}
+      </ng-container>
+      <ng-template #localPageInfoBottom>
+        Showing {{ paginatedData.length > 0 ? 1 : 0 }}–{{ paginatedData.length }} of {{ filtered.length }}
+      </ng-template>
+    </div>
+    <div class="pagination-controls">
+      <button class="page-btn" (click)="previousPage()" [disabled]="currentPage === 1">Prev</button>
+      <div class="page-label">Page {{ currentPage }} / {{ totalPages }}</div>
+      <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+
+  <div class="no-reports-message" *ngIf="!isLoading && filtered.length === 0">
+    <div class="no-reports-icon">🗒️</div>
+    <h3>No registrations found</h3>
+    <p>Try adjusting your filters</p>
+
+  </div>
+  <!-- Delete Confirmation Modal (global, not inside empty-state) -->
+  <app-delete-confirmation-modal
+    [show]="showDeleteConfirmation"
+    [title]="'Delete Pathology Registration'"
+    [message]="deleteMessage"
+    [warningText]="'This action cannot be undone'"
+    [confirming]="confirmingDelete"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-delete-confirmation-modal>
+
+  <!-- Delete Success Modal (global) -->
+  <app-delete-success-modal
+    [show]="showDeleteSuccess"
+    [title]="deleteSuccessTitle"
+    [message]="'The registration has been successfully deleted.'"
+    [badgeText]="'Operation completed'"
+    [autoHideDelay]="1200"
+    (closed)="onDeleteSuccessClosed()"
+    (refreshData)="refresh()">
+  </app-delete-success-modal>
+
+</div>
+

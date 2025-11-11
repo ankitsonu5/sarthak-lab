@@ -1,0 +1,270 @@
+
+<div class="search-patient-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-left">
+      <div class="search-icon">
+        <i class="fas fa-search" style="font-size: 32px; color: #0ea5e9"></i>
+      </div>
+      <h2 class="page-title">Search Patient</h2>
+    </div>
+    <div class="header-stats">
+      <span class="total-count">Total: {{ totalPatients }}</span>
+      <span class="filtered-count" *ngIf="!uhidSearchTerm">Showing: {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalPatients }}</span>
+      <span class="filtered-count" *ngIf="uhidSearchTerm">Showing: {{ filteredPatients.length }}</span>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1rem; border-bottom: 1px solid #e5e7eb; background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto;">
+    <nav style="display: flex; gap: 0.75rem; padding: 0 0.75rem; white-space: nowrap; align-items: center; min-height: 44px;" aria-label="Tabs">
+      <button type="button" (click)="navigateToPatientRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 0.6rem 0.25rem; font-size: 0.82rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Patient Registration
+      </button>
+      <button type="button" (click)="navigateToSearchPatient()"
+              style="border-bottom: 2px solid rgba(112, 84, 214, 1); padding: 0.6rem 0.25rem; font-size: 0.82rem; font-weight: 600; color: rgba(112, 84, 214, 1); white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Search Patient
+      </button>
+      <button type="button" (click)="navigateToOpdRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 0.6rem 0.25rem; font-size: 0.82rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Opd Registration
+      </button>
+    </nav>
+  </div>
+
+  <!-- Search and Filter Section styled like Follow-Up -->
+  <div class="filter-card">
+    <div class="filter-grid">
+      <!-- New: UHID-only filter -->
+      <div class="filter-item">
+        <label>Search by Reg. No. / UHID</label>
+        <div class="search-input-row">
+          <div class="search-input-container">
+            <input
+              type="text"
+              [(ngModel)]="uhidSearchTerm"
+              (ngModelChange)="onUhidChange($event)"
+              (keyup.enter)="onUhidSearch()"
+              placeholder="Enter Reg. No. or UHID and press Enter"
+              class="search-input"
+            />
+            <button *ngIf="uhidSearchTerm" (click)="clearUhid()" class="clear-btn" title="Clear UHID">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-item search" style="position:relative;">
+        <div class="label-with-icon">
+          <i class="fas fa-search" style="margin-right: 6px; color:#0ea5e9"></i>
+          <span>Search</span>
+        </div>
+        <div class="search-input-row">
+          <div class="search-input-container">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="onSearchChange($event)"
+              (keyup.enter)="onSearchChange(searchTerm)"
+              placeholder="Search by Name, Mobile, or Aadhar..."
+              class="search-input"
+            />
+            <button *ngIf="searchTerm" (click)="clearSearch()" class="clear-btn" title="Clear">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label>Date Range</label>
+        <select [(ngModel)]="selectedDateFilter" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="all">All Dates</option>
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="thisWeek">This Week</option>
+          <option value="thisMonth">This Month</option>
+          <option value="custom">Custom Date</option>
+        </select>
+      </div>
+
+      <div class="filter-item" *ngIf="selectedDateFilter === 'custom'">
+        <label>Custom Date</label>
+        <input type="date" [(ngModel)]="customDate" (ngModelChange)="onFilterChange()" class="filter-select" />
+      </div>
+
+      <div class="filter-item">
+        <label>Age Filter</label>
+        <select [(ngModel)]="selectedAgeFilter" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="all">All Ages</option>
+          <option value="child">Child (0-12)</option>
+          <option value="teen">Teen (13-19)</option>
+          <option value="adult">Adult (20-59)</option>
+          <option value="senior">Senior (60+) </option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Gender</label>
+        <select [(ngModel)]="selectedGenderFilter" (ngModelChange)="onFilterChange()" class="filter-select">
+          <option value="all">All Genders</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button (click)="clearAllFilters()" class="btn btn-clear" *ngIf="hasActiveFilters()">
+          <i class="fas fa-times"></i> Clear Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Spinner (only for first-ever load with no data) -->
+  <div class="loading-container" *ngIf="isLoading && patients.length === 0">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading patients...</p>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="results-section">
+    <!-- Patients Table -->
+    <div class="table-container" *ngIf="getPaginatedPatients().length > 0">
+      <!-- Lightweight overlay while fetching next/prev -->
+      <div class="table-overlay" *ngIf="isLoading || isPageLoading">
+        <div class="loader"></div>
+      </div>
+      <table class="patients-table">
+        <thead>
+          <tr>
+            <th class="col-serial">S.No</th>
+            <th>Reg. No.</th>
+            <th>Patient Name</th>
+            <th>Age/Gender</th>
+            <th>Contact</th>
+            <th>Address</th>
+            <th>Registration Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let patient of getPaginatedPatients(); let i = index; trackBy: trackByPatientId" class="patient-row">
+            <td class="text-center">{{ getStartIndex() + i }}</td>
+            <td>
+              <span class="uhid" [title]="(patient.patientId || patient.uhid) ? ('UHID: ' + (patient.patientId || patient.uhid)) : ''">{{ displayRegNo(patient) }}</span>
+            </td>
+            <td>
+              <div class="patient-name">
+                <strong>{{ patient.firstName }} {{ patient.lastName || '' }}</strong>
+                <small *ngIf="patient.fatherName">S/O {{ patient.fatherName }}</small>
+              </div>
+            </td>
+            <td>{{ patient.age }}/{{ patient.gender }}</td>
+            <td>
+              <div class="contact">{{ patient.phone || patient.mobile || (patient.emergencyContact?.phone) || '-' }}</div>
+            </td>
+            <td>
+              <div class="address" [title]="getFormattedAddress(patient)">{{ getFormattedAddress(patient) }}</div>
+            </td>
+            <td>{{ patient.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  class="btn btn-sm btn-view"
+                  (click)="viewPatient(patient)"
+                  title="View Patient Details"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  class="btn btn-sm btn-edit"
+                  (click)="editPatient(patient)"
+                  title="Edit Patient"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <!-- <button
+                  class="btn btn-sm btn-delete"
+                  (click)="deletePatient(patient)"
+                  title="Delete Patient"
+                >
+                  <i class="fas fa-trash"></i>
+                </button> -->
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-container" *ngIf="totalPages > 1 && !uhidSearchTerm">
+      <div class="pagination-info">
+        Showing {{ getStartIndex() }} - {{ getEndIndex() }} of {{ totalPatients }}
+      </div>
+      <div class="pagination-controls">
+        <button class="pagination-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1 || isPageLoading">Prev</button>
+        <span class="pagination-info">Page {{ currentPage }} / {{ totalPages }}</span>
+        <button class="pagination-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages || isPageLoading">Next</button>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="getPaginatedPatients().length === 0 && !isLoading">
+      <div class="no-results-content">
+        <i class="fas fa-search no-results-icon"></i>
+        <h3>No patients found</h3>
+        <p *ngIf="hasActiveFilters()">Try adjusting your search criteria or filters</p>
+        <p *ngIf="!hasActiveFilters()">No patients registered yet</p>
+        <button *ngIf="hasActiveFilters()" (click)="clearAllFilters()" class="btn btn-primary">
+          Clear All Filters
+        </button>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirmation" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>{{ deleteMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>
+        <button class="btn btn-danger" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Success Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteSuccess" (click)="showDeleteSuccess = false">
+    <div class="modal-content success-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fas fa-check-circle"></i> Success</h3>
+        <button class="modal-close" (click)="showDeleteSuccess = false">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Patient deleted successfully!</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" (click)="showDeleteSuccess = false">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+

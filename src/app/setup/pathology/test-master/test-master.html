@@ -1,0 +1,273 @@
+
+<div class="test-master-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <i class="fa-solid fa-flask-vial header-icon"></i>
+        <h1>{{ isEditMode ? 'Edit Test Category' : 'Pathology Test Master' }}</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button"
+              style="border-bottom: 2px solid #3b82f6; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Test Categories
+      </button>
+      <button type="button"
+              (click)="navigateToTestParameters()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Test Parameters
+      </button>
+      <button type="button"
+              (click)="navigateToReferenceRanges()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Reference Ranges
+      </button>
+      <button type="button"
+              (click)="navigateToReportTemplates()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Report Templates
+      </button>
+    </nav>
+  </div>
+
+  <!-- Registration Form -->
+  <div class="form-container">
+    <form [formGroup]="testCategoryForm" (ngSubmit)="onSubmit()" class="test-category-form">
+
+      <!-- Form Fields -->
+      <div class="form-grid">
+
+        <!-- Category Name with Buttons -->
+        <div class="form-group">
+          <label for="categoryName" class="form-label">
+            Category Name <span class="required">*</span>
+          </label>
+          <div class="input-with-buttons">
+            <input
+              type="text"
+              id="categoryName"
+              formControlName="name"
+              class="form-input"
+              [class.error]="isFieldInvalid('name')"
+              placeholder="Enter category name (e.g., BIOCHEMISTRY)"
+              (blur)="onCategoryNameBlur($event)"
+              maxlength="100"
+              autocomplete="off">
+
+            <!-- Form Actions -->
+            <div class="form-actions-inline">
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="!testCategoryForm.valid">
+                <i class="fa-solid fa-save"></i>
+                {{ isEditMode ? 'Update Category' : 'Save Category' }}
+              </button>
+
+            </div>
+          </div>
+          <div class="error-message" *ngIf="isFieldInvalid('name')">
+            {{ getFieldError('name') }}
+          </div>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Test Categories List -->
+  <div class="list-container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <div class="search-icon">
+          <dotlottie-wc
+            src="https://lottie.host/8f6f480f-309a-44cb-a3d9-fa7ceca090cc/vyw42i5eZH.lottie"
+            style="width: 50px; height: 50px"
+            speed="1"
+            autoplay
+            loop>
+          </dotlottie-wc>
+        </div>
+        <h1>Search Category</h1>
+      </div>
+      <div class="header-right">
+        <span class="total-count">Total: {{ totalCategories }} Category</span>
+      </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <div class="search-row">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Search by Category Name or ID"
+          class="search-input"
+        />
+        <button class="clear-btn" (click)="searchTerm=''; onSearch();">Clear</button>
+      </div>
+    </div>
+
+<!-- Categories Table -->
+<div class="table-container">
+  <div class="table-header">
+    <h3>Test Categories ({{ filteredCategories.length }})</h3>
+  </div>
+  
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Category ID</th>
+          <th>Category Name</th>
+          <th>Created Date</th>
+          <th class="actions-column">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of filteredCategories; let i = index">
+          <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td>
+            <span class="category-id">{{ category.categoryId || category._id }}</span>
+          </td>
+          <td>
+            <span class="category-name">{{ category.name }}</span>
+          </td>
+          <td>{{ category.createdAt | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <div class="action-buttons">
+              <button
+                (click)="viewTests(category)"
+                class="btn-view"
+                title="View Tests">
+                <i class="fa-solid fa-eye"></i> View Tests
+              </button>
+              <button
+                (click)="editCategory(category)"
+                class="btn-edit"
+                title="Edit Category">
+                <i class="fa-solid fa-edit"></i> Edit
+              </button>
+              <button
+                (click)="showDeleteConfirmationDialog(category)"
+                class="btn-delete"
+                title="Delete Category">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredCategories.length === 0">
+          <td colspan="5" class="no-data">
+            <div class="no-data-message">
+              <i class="fa-solid fa-flask"></i>
+              <p>No test categories found</p>
+              <small>{{ searchTerm ? 'Try adjusting your search criteria' : 'Add your first test category above' }}</small>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+      <!-- Pagination -->
+
+<!-- Pagination -->
+<div class="pagination-container" *ngIf="filteredCategories.length > 0 || currentPage > 1">
+  <div class="pagination-info">
+    <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCategories) }} of {{ totalCategories }} test categories</span>
+  </div>
+  <div class="pagination-controls">
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === 1"
+      (click)="goToPage(currentPage - 1)"
+      title="Previous Page">
+      ← Previous
+    </button>
+
+    <div class="page-numbers">
+      <button
+        *ngFor="let page of getPageNumbers()"
+        class="page-btn"
+        [class.active]="page === currentPage"
+        [disabled]="page === '...'"
+        (click)="goToPage(page)"
+        [title]="'Go to page ' + page">
+        {{ page }}
+      </button>
+    </div>
+
+    <button
+      class="pagination-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="goToPage(currentPage + 1)"
+      title="Next Page">
+      Next →
+    </button>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [message]="deleteMessage"
+  [warningText]="'Think twice before proceeding.'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="closeDeleteConfirmation()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Test Category Deleted!'"
+  [message]="deleteSuccessMessage"
+  [badgeText]="'Deletion Completed'"
+  [autoHideDelay]="2000"
+  (closed)="onDeleteSuccessClosed()"
+  (refreshData)="loadTestCategories()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="'Cannot Delete Test Category'"
+  [message]="deleteBlockedMessage"
+  [details]="[]"
+  [badgeText]="'Dependencies present'"
+  [autoHideDelay]="2000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>
+
+<!-- Success Alert Modal -->
+<app-success-alert
+  [show]="showSuccessAlert"
+  [title]="isEditMode ? '🎉 Updated Successfully!' : '🎉 Registration Successful!'"
+  [message]="successMessage"
+  [badgeText]="isEditMode ? 'Category Updated Successfully' : 'Category Added Successfully'"
+  (close)="closeSuccessAlert()">
+</app-success-alert>
+
+<!-- Record Already Exists Modal -->
+<app-record-exists-modal
+  [show]="showRecordExistsModal"
+  [title]="'Test Category Already Exists!'"
+  [message]="recordExistsMessage"
+  [subMessage]="'Please try with a different category name.'"
+  [badgeText]="'Duplicate Category Found'"
+  [autoHideDelay]="2000"
+  (closed)="onRecordExistsModalClosed()">
+</app-record-exists-modal>

@@ -1,0 +1,122 @@
+<div class="registration-container">
+  <div class="card-header">
+    <div class="header-content">
+      <div class="doctor-avatar">
+        <div class="avatar-placeholder">👤</div>
+      </div>
+      <div class="header-info">
+        <h1 class="page-title">Add Role</h1>
+      </div>
+    </div>
+  </div>
+
+  <div class="registration-card">
+    <div class="card-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="registration-form" autocomplete="off">
+        <div class="form-section">
+          <h3 class="section-title">User Information</h3>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="field-label">Email *</label>
+              <input class="form-input" type="email" formControlName="email" (input)="onEmailInput()" placeholder="Enter email" autocomplete="off"/>
+            </div>
+            <div class="form-field">
+              <label class="field-label">First Name</label>
+              <input class="form-input" formControlName="firstName" (input)="onNameInput('firstName')" placeholder="Enter first name (optional)" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Last Name</label>
+              <input class="form-input" formControlName="lastName" (input)="onNameInput('lastName')" placeholder="Enter last name (optional)" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Phone *</label>
+              <input class="form-input" formControlName="phone" placeholder="Enter phone" />
+            </div>
+            <div class="form-field">
+              <label class="field-label">Role *</label>
+              <select class="form-input" formControlName="role" (change)="onRoleChange($any($event.target).value)">
+                <option value="Admin">Admin</option>
+                <!-- <option value="Doctor">Doctor</option>
+                <option value="Patient">Patient</option> -->
+                <option value="Pathology">Pathology</option>
+                <option value="Pharmacy">Pharmacy</option>
+                <option value="SuperAdmin">SuperAdmin</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="field-label">Password *</label>
+              <input class="form-input" type="password" formControlName="password" placeholder="Temporary password" autocomplete="new-password" />
+            </div>
+          </div>
+          <div class="form-row" *ngIf="availableComponents.length">
+            <div class="form-field" style="grid-column: 1 / -1;">
+              <label class="field-label">Role Components (select allowed)</label>
+              <div class="comp-grid">
+                <div class="comp-item" *ngFor="let it of availableComponents; trackBy: trackComp">
+                  <input type="checkbox" [checked]="it.selected" (change)="it.selected = $any($event.target).checked" />
+                  <span class="comp-label">{{ it.label }}</span>
+                  <span class="comp-sec">({{ it.section }})</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="form-section">
+          <h3 class="section-title">Profile Photo</h3>
+          <div class="profile-photo-uploader">
+            <label class="upload-dropzone">
+              <input #fileInput type="file" accept="image/*" (change)="handleFile($event)" />
+              <span class="upload-text">Choose File</span>
+              <span class="upload-sub">Upload a professional photo of the user (JPG, PNG, max 5MB)</span>
+            </label>
+            <div class="inline-preview" *ngIf="imagePreview">
+              <img [src]="imagePreview" alt="Preview" class="doctor-preview-thumb" (click)="openPreview()" title="Click to preview" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || saving">
+            <span class="btn-icon">💾</span>
+            {{ saving ? 'Saving...' : 'Save User' }}
+          </button>
+        </div>
+
+        <div *ngIf="showSuccess && createdUser" style="margin-top:12px;color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:10px;border-radius:8px">
+          User created. Email: <strong>{{ createdUser.email }}</strong> | Temp Password: <strong>{{ tempPassword }}</strong>
+          <button type="button" class="btn-secondary" style="margin-left:8px" (click)="goToList()">Go to All Users</button>
+          <button type="button" class="btn-secondary" style="margin-left:8px" (click)="goToPermissionsNow()">Set Permissions Now</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Alert on Save -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="successTitle"
+    [message]="successMessage"
+    [badgeText]="'Operation Successful'"
+    [autoHideDelay]="1500"
+    (close)="showSuccessAlert = false">
+  </app-success-alert>
+
+  <!-- Record Exists Modal for duplicates -->
+  <app-record-exists-modal
+    [show]="showRecordExistsModal"
+    [title]="'Record Already Exists!'"
+    [message]="recordExistsMessage"
+    [subMessage]="'Please try with a different email/username.'"
+    [badgeText]="'Duplicate User Found'"
+    [autoHideDelay]="2000"
+    (closed)="onRecordExistsModalClosed()">
+  </app-record-exists-modal>
+</div>
+
+<!-- Full-screen image overlay preview -->
+<div class="image-overlay" *ngIf="showImageOverlay" (click)="closePreview()">
+  <img [src]="imagePreview" alt="Preview" />
+  <button type="button" class="overlay-close" (click)="closePreview(); $event.stopPropagation()">✕</button>
+</div>

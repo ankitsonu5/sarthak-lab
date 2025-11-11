@@ -1,0 +1,309 @@
+<div class="doctor-room-directory-container">
+
+
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title-with-image">
+      <div class="header-image pulse-animation"></div>
+      <h1 class="page-title"> Doctor Room Directory</h1>  
+    </div>
+    <p class="page-subtitle">Assign doctors to specific rooms and departments</p>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button" (click)=" navigateToRoomRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+         Room Registration
+      </button>
+      <button type="button" (click)=" navigateToDocRoomDirectory()"
+             
+              style="border-bottom: 2px solid #ff5900;  padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #ff5900; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+      Doctor Room Directory
+      </button>
+      <button type="button" (click)="navigateToDocSearch()"
+             
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+      Search Doctor
+      </button>
+    </nav>
+  </div>
+
+
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="form-section" #formSection>
+      <h2 class="section-title">
+        {{ isEditMode ? '✏️ Edit Doctor Room' : '➕ Doctor Room' }}
+      </h2>
+      
+      <form [formGroup]="directoryForm" (ngSubmit)="onSubmit()" class="directory-form">
+        <div class="form-row">
+          <!-- Doctor Selection -->
+          <div class="form-group">
+            <label for="doctor" class="form-label">
+              Doctor Name <span class="required">*</span>
+            </label>
+            <select
+              id="doctor"
+              #doctorSelect
+              formControlName="doctor"
+              class="form-select"
+              [class.error]="directoryForm.get('doctor')?.invalid && directoryForm.get('doctor')?.touched"
+              [attr.disabled]="isEditMode ? true : null"
+              [attr.title]="isEditMode ? 'Doctor cannot be changed in edit mode' : null"
+            >
+              <option value="">Select Doctor</option>
+              <option *ngFor="let doctor of doctors" [value]="doctor._id">
+                {{ doctor.name }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="directoryForm.get('doctor')?.invalid && directoryForm.get('doctor')?.touched">
+              Doctor is required
+            </div>
+          </div>
+
+          <!-- Department Display (Auto-filled from doctor) -->
+          <div class="form-group">
+            <label for="department" class="form-label">
+              Department <span class="required">*</span>
+            </label>
+            <input
+              id="department"
+              type="text"
+              class="form-input readonly"
+              [value]="getSelectedDepartmentName()"
+              readonly
+              placeholder="Will be auto-filled when doctor is selected"
+            />
+            <input
+              type="hidden"
+              formControlName="department"
+            />
+            <div class="error-message" *ngIf="directoryForm.get('department')?.invalid && directoryForm.get('department')?.touched">
+              Department is required
+            </div>
+          </div>
+
+          <!-- Room Selection -->
+          <div class="form-group">
+            <label for="room" class="form-label">
+              Room Number <span class="required">*</span>
+            </label>
+            <!-- ULTIMATE FIX: DESTROY & RECREATE SELECT -->
+            <select
+              *ngIf="!isRoomSelectDestroyed"
+              [attr.data-key]="roomSelectKey"
+              id="room"
+              formControlName="room"
+              class="form-select"
+              [class.error]="directoryForm.get('room')?.invalid && directoryForm.get('room')?.touched"
+              [disabled]="!selectedDepartmentId"
+              [attr.data-department]="selectedDepartmentId"
+              [attr.data-rooms-count]="rooms.length"
+            >
+              <option value="">{{ selectedDepartmentId ? 'Select Room' : 'Select Department First' }}</option>
+              <ng-container *ngIf="selectedDepartmentId && rooms.length > 0">
+                <option *ngFor="let room of rooms; let i = index"
+                        [value]="room._id"
+                        [attr.data-room-number]="room.roomNumber"
+                        [attr.data-department]="room.department?.name">
+                  {{ room.roomNumber }}
+                </option>
+              </ng-container>
+            
+            
+            </select>
+
+            <!-- Fallback during destruction -->
+            <select *ngIf="isRoomSelectDestroyed" class="form-select" disabled>
+              <option>🔄 Refreshing rooms...</option>
+            </select>
+            <div class="error-message" *ngIf="directoryForm.get('room')?.invalid && directoryForm.get('room')?.touched">
+              Room is required
+            </div>
+          </div>
+
+          <!-- Empty div for 4th column -->
+          <div class="form-group"></div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="save-btn"
+            [disabled]="directoryForm.invalid"
+          >
+            {{ isEditMode ? '💾 Update ' : '💾 Save ' }}
+          </button>
+          <button
+            type="button"
+            class="reset-btn"
+            (click)="resetForm()"
+          >
+            🔄 Reset
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Directory List Section -->
+  <div class="directory-list-section" >
+        <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="search-icon">🔍</div>
+      <h1>Search Doctor Room</h1>
+    </div>
+    <div class="header-right">
+      <span class="total-count">Total: {{ filteredDirectories.length }} Category</span>
+    </div>
+  </div>
+
+     <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onDoctorFilterChange()"
+        (keyup.enter)="onDoctorFilterChange()"
+         placeholder="Search by Category Name or ID"
+        class="search-input"
+      />
+
+      <!-- Department filter aligned to the right -->
+      <select
+        class="form-select"
+        style="max-width: 260px; margin-left: auto;"
+        [(ngModel)]="departmentFilter"
+        (change)="onDepartmentFilterChange()"
+      >
+        <option value="">All Departments</option>
+        <option *ngFor="let d of departments" [value]="d._id">{{ d.name }}</option>
+      </select>
+
+      <button class="clear-btn" (click)="clearFilters()">Clear</button>
+    </div>
+  </div>
+   
+    
+    <div class="table-container">
+      <table class="directories-table">
+        <thead>
+          <tr>
+            <th>Sr No</th>
+            <th>Directory ID</th>
+            <th>Doctor Name</th>
+            <th>Department</th>
+            <th>Room Number</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let directory of pagedDirectories; let i = index; trackBy: trackByDirectoryId" class="table-row">
+            <!-- Continuous serial number across pages -->
+            <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+            <td class="directory-id">{{ directory.directoryId || 'N/A' }}</td>
+            <td class="doctor-name">
+              Dr. {{ getDoctorName(directory.doctor) }}
+            </td>
+            <td class="department-name">
+              {{ getDepartmentName(directory.department) }}
+            </td>
+            <td class="room-number">
+              {{ getRoomNumber(directory.room) }}
+            </td>
+            <td class="actions">
+              <button
+                class="action-btn edit-btn"
+                (click)="editDirectory(directory)"
+                title="Edit Assignment"
+              >
+          <i class="fa-solid fa-edit"></i> Edit
+              </button>
+              <button
+                class="action-btn delete-btn"
+                (click)="deleteDirectory(directory)"
+                [disabled]="showDeleteConfirmation || isDeleting"
+                title="Delete Assignment"
+              >
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+       <!-- Empty State -->
+  <div class="empty-state" *ngIf="directories.length === 0">
+    <div class="empty-icon">🏥</div>
+    <h3>No Room Assignments Yet</h3>
+    <p>Create your first doctor room assignment using the form above</p>
+  </div>
+
+
+      <!-- Paginator -->
+      <div class="pagination-container" *ngIf="filteredDirectories.length > 0 || currentPage > 1">
+        <div class="pagination-info">
+          <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, filteredDirectories.length) }} of {{ filteredDirectories.length }} assignments</span>
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)" title="Previous Page">← Previous</button>
+          <div class="page-numbers">
+            <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === currentPage" [disabled]="page === '...'" (click)="goToPage(page)" [title]="'Go to page ' + page">{{ page }}</button>
+          </div>
+          <button class="pagination-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)" title="Next Page">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation-modal
+    [show]="showDeleteConfirmation"
+    [title]="'Delete Assignment'"
+    [message]="deleteMessage"
+    [warningText]="'This action cannot be undone'"
+    [confirming]="isDeleting"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-delete-confirmation-modal>
+
+  <!-- Delete Success Modal -->
+  <app-delete-success-modal
+    [show]="showDeleteSuccess"
+    [title]="'Assignment Deleted'"
+    [message]="'The doctor room assignment has been successfully removed from the system.'"
+    [badgeText]="'Operation completed'"
+    [autoHideDelay]="2000"
+    (closed)="onDeleteSuccessClosed()">
+  </app-delete-success-modal>
+
+  <!-- Record Already Exists Modal -->
+  <app-record-exists-modal
+    [show]="showRecordExistsModal"
+    [title]="'Assignment Already Exists!'"
+    [message]="recordExistsMessage"
+    [subMessage]="'This doctor is already assigned to this room.'"
+    [badgeText]="'Duplicate Assignment Found'"
+    [autoHideDelay]="2000"
+    (closed)="onRecordExistsModalClosed()">
+  </app-record-exists-modal>
+
+  <!-- Success Alert Modal -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="isEditMode ? '🎉 Updated Successfully!' : '🎉 Assignment Successful!'"
+    [message]="successMessage"
+    [badgeText]="isEditMode ? 'Doctor Room Assignment Updated' : 'Doctor Room Assignment Added Successfully'"
+    (close)="closeSuccessAlert()">
+  </app-success-alert>
+</div>

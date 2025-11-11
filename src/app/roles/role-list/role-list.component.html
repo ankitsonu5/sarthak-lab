@@ -1,0 +1,108 @@
+<div class="search-container">
+  <!-- Header -->
+  <div class="search-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">👥</div>
+        <div class="header-text">
+          <h1 class="header-title">Role List / Users</h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <p class="header-subtitle">Total: {{ users.length }} users | Showing: {{ filtered.length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-controls">
+      <div class="search-input-group">
+        <input
+          type="text"
+          [(ngModel)]="q"
+          (input)="filter()"
+          placeholder="Search by name, email, role or phone..."
+          class="search-input" />
+      </div>
+      <button type="button" (click)="fetch()" class="refresh-btn">
+        <i class="fa-solid fa-rotate"></i> Refresh
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading users...</div>
+
+  <!-- Results Table -->
+  <div class="results-table" *ngIf="!loading">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Created</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Phone</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of filtered; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="created-cell">
+              <div class="date">{{ u.createdAt | date:'dd-MMM-y' }}</div>
+              <div class="time">{{ u.createdAt | date:'h:mm a' }}</div>
+            </div>
+          </td>
+          <td>{{ (u.firstName || '') + (u.lastName ? (' ' + u.lastName) : '') || u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role }}</td>
+          <td>{{ u.phone }}</td>
+          <td>
+            <ng-container *ngIf="canToggle; else readonlyActive">
+              <label class="switch">
+                <input type="checkbox" [checked]="u.isActive" (change)="toggleActive(u)" [disabled]="updatingId===u._id" />
+                <span class="slider"></span>
+              </label>
+            </ng-container>
+            <ng-template #readonlyActive>
+              <span [class.on]="u.isActive" [class.off]="!u.isActive">{{ u.isActive ? 'Yes' : 'No' }}</span>
+            </ng-template>
+          </td>
+          <td>
+            <a class="btn btn-view" [routerLink]="['/roles/permissions', u._id]" title="Set Component Access">
+              <i class="fa-solid fa-eye"></i> grant permission
+            </a>
+            <button type="button" class="btn btn-delete" (click)="openDelete(u)" title="Delete user">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation-modal
+    [show]="showDeleteConfirmation"
+    [title]="'Delete User'"
+    [message]="deleteMessage"
+    [warningText]="'This action cannot be undone'"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-delete-confirmation-modal>
+
+  <!-- Delete Success Modal -->
+  <app-delete-success-modal
+    [show]="showDeleteSuccess"
+    [title]="deleteSuccessTitle"
+    [message]="'The user has been successfully removed from the system.'"
+    [badgeText]="'Operation completed'"
+    [autoHideDelay]="1200"
+    (closed)="onDeleteSuccessClosed()">
+  </app-delete-success-modal>
+</div>
+

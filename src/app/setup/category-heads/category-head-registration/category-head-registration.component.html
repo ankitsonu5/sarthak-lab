@@ -1,0 +1,318 @@
+<div class="category-head-registration-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="header-left">
+        <i class="fa-solid fa-flask-vial header-icon"></i>
+        <h1>{{ isEditMode ? 'Edit Category Head' : 'Category Head Registration' }}</h1>
+      </div>
+
+    </div>
+  </div>
+
+ <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button"
+              style="border-bottom: 2px solid #3b82f6; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+         Category Registration and Search
+      </button>
+      <button type="button"
+              (click)="navigateToServiceHead()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+      Service Registration
+      </button>
+      <button type="button"
+              (click)="navigateToSearchService()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+      Search Service
+      </button>
+    </nav>
+  </div>
+
+
+  <!-- Registration Form -->
+  <div class="form-container">
+    <form [formGroup]="categoryHeadForm" (ngSubmit)="onSubmit()" class="category-head-form">
+
+      <!-- Form Fields -->
+      <div class="form-grid">
+
+        <!-- Category Name with Buttons -->
+        <div class="form-group full-width">
+          <label for="categoryName" class="form-label">
+            Category Name <span class="required">*</span>
+          </label>
+          <div class="input-with-buttons">
+            <input
+              type="text"
+              id="categoryName"
+              formControlName="categoryName"
+              class="form-input"
+              [class.error]="isFieldInvalid('categoryName')"
+              placeholder="Enter category name"
+              (blur)="onCategoryNameBlur()"
+              maxlength="100">
+
+            <!-- Form Actions -->
+            <div class="form-actions-inline">
+              <button
+                type="button"
+                class="btn-secondary"
+                (click)="resetForm()"
+                [disabled]="isSubmitting" title="Reset">
+                <i class="fa-solid fa-rotate"></i> Reset
+              </button>
+
+              <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="isSubmitting || !categoryHeadForm.valid">
+                <i class="fa-solid fa-save"></i>
+                {{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+              </button>
+
+            </div>
+          </div>
+          <div class="error-message" *ngIf="isFieldInvalid('categoryName')">
+            {{ getFieldError('categoryName') }}
+          </div>
+        </div>
+
+
+        <!-- Icon selection (Font Awesome) -->
+        <div class="form-group full-width">
+          <label for="icon" class="form-label">Icon (FontAwesome)</label>
+          <!-- keep value in form, hide the control -->
+          <input type="hidden" id="icon" formControlName="icon">
+
+          <!-- Icon picker trigger button -->
+          <div class="icon-picker-wrapper">
+            <button type="button"
+                    class="icon-picker-trigger"
+                    (click)="toggleIconPicker($event)">
+              <span class="selected-icon-preview">
+                <i [ngClass]="getIconPreviewClass()"></i>
+              </span>
+              <span class="selected-icon-text">
+                {{ categoryHeadForm.get('icon')?.value || 'Select icon' }}
+              </span>
+              <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </button>
+
+            <!-- Dropdown panel (shown when iconPickerOpen = true) -->
+            <div class="icon-picker-panel" *ngIf="iconPickerOpen">
+              <input
+                type="text"
+                class="icon-search"
+                placeholder="Search icon (e.g. heart, vial, dna)"
+                [ngModel]="iconSearchTerm"
+                (ngModelChange)="onIconSearchChange($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <div class="icon-grid">
+                <button type="button"
+                        class="icon-item"
+                        *ngFor="let opt of filteredIconOptions"
+                        (click)="pickIcon(opt)"
+                        [class.selected]="categoryHeadForm.get('icon')?.value === opt"
+                        [title]="opt">
+                  <i [ngClass]="opt"></i>
+                </button>
+              </div>
+              <div class="selected-display">
+                <span>Selected:</span>
+                <span class="selected-icon"><i [ngClass]="getIconPreviewClass()"></i></span>
+                <span class="selected-text">{{ categoryHeadForm.get('icon')?.value || getIconPreviewClass() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+
+
+    </form>
+  </div>
+
+  <!-- Category Heads List -->
+  <div class="list-container">
+
+
+      <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="search-icon">
+        <dotlottie-wc
+          src="https://lottie.host/8f6f480f-309a-44cb-a3d9-fa7ceca090cc/vyw42i5eZH.lottie"
+          style="width: 50px; height: 50px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      </div>
+      <h1>Search Category</h1>
+    </div>
+    <div class="header-right">
+      <span class="total-count">Total: {{ totalCategoryHeads }} Category</span>
+    </div>
+  </div>
+
+     <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchTermChange(searchTerm)"
+         placeholder="Search by Category Name or ID"
+        class="search-input"
+      />
+      <button class="clear-btn" (click)="searchTerm=''; onSearch();">Clear</button>
+    </div>
+  </div>
+
+    <div class="table-container">
+      <div class="table-wrapper">
+        <table class="category-heads-table">
+          <thead>
+            <tr>
+              <th>Sr No</th>
+              <th>Date</th>
+              <th>Category ID</th>
+              <th>Category Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let categoryHead of filteredCategoryHeads; let i = index; trackBy: trackByCategoryHeadId" class="table-row">
+              <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+              <td>{{ formatDate(categoryHead.createdAt) }}</td>
+              <td>
+                <span class="category-id">{{ categoryHead.categoryId || categoryHead._id }}</span>
+              </td>
+              <td class="category-name">{{ categoryHead.categoryName }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button
+                    (click)="editCategoryHead(categoryHead)"
+                    class="btn-edit"
+                    title="Edit Category Head">
+                    <i class="fa-solid fa-edit"></i> Edit
+                  </button>
+                  <button
+                    (click)="showDeleteConfirmationDialog(categoryHead)"
+                    class="btn-delete"
+                    title="Delete Category Head">
+                    <i class="fa-solid fa-trash"></i> Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Empty State -->
+            <tr *ngIf="filteredCategoryHeads.length === 0" class="empty-row">
+              <td colspan="5" class="empty-message">
+                <div class="empty-state">
+                  <i class="fa-solid fa-inbox empty-icon"></i>
+                  <h3>No Category Heads Found</h3>
+                  <p>{{ categoryHeads.length === 0 ? 'No category heads have been registered yet.' : 'No category heads match your search criteria.' }}</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container" *ngIf="filteredCategoryHeads.length > 0 || currentPage > 1">
+        <div class="pagination-info">
+          <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalCategoryHeads) }} of {{ totalCategoryHeads }} category heads</span>
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn"
+            [disabled]="currentPage === 1"
+            (click)="goToPage(currentPage - 1)"
+            title="Previous Page">
+            ← Previous
+          </button>
+
+          <div class="page-numbers">
+            <button
+              *ngFor="let page of getPageNumbers()"
+              class="page-btn"
+              [class.active]="page === currentPage"
+              [disabled]="page === '...'"
+              (click)="goToPage(page)"
+              [title]="'Go to page ' + page">
+              {{ page }}
+            </button>
+          </div>
+
+          <button
+            class="pagination-btn"
+            [disabled]="currentPage === totalPages"
+            (click)="goToPage(currentPage + 1)"
+            title="Next Page">
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Alert Modal -->
+<app-success-alert
+  [show]="showSuccessAlert"
+  [title]="isEditMode ? '🎉 Category Updated Successfully!' : '🎉 Category Registration Successful!'"
+  [message]="successMessage"
+  [badgeText]="isEditMode ? 'Category Updated Successfully' : 'Category Added Successfully'"
+  (close)="closeSuccessAlert()">
+</app-success-alert>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [message]="deleteMessage"
+  [warningText]="'Think twice before proceeding.'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="closeDeleteConfirmation()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Category Deleted!'"
+  [message]="deleteSuccessMessage"
+  [badgeText]="'Deletion Completed'"
+  [autoHideDelay]="1000"
+  (closed)="onDeleteSuccessClosed()"
+  (refreshData)="refreshData()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="'Cannot Delete Category'"
+  [message]="deleteBlockedMessage"
+  [details]="[]"
+  [badgeText]="'Dependencies present'"
+  [rooms]="[]"
+  [doctors]="[]"
+  [autoHideDelay]="2000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>
+
+<!-- Record Already Exists Modal -->
+<app-record-exists-modal
+  [show]="showRecordExistsModal"
+  [title]="'Category Already Exists!'"
+  [message]="recordExistsMessage"
+  [subMessage]="'Please try with a different category name.'"
+  [badgeText]="'Duplicate Category Found'"
+  [autoHideDelay]="2000"
+  (closed)="onRecordExistsModalClosed()">
+</app-record-exists-modal>

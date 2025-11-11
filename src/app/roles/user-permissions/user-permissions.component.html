@@ -1,0 +1,65 @@
+<div class="container">
+  <!-- Fancy header with avatar -->
+  <div class="header-card" *ngIf="user">
+    <div class="header-left">
+      <div class="avatar" [class.placeholder]="!user.profilePicture">
+        <img *ngIf="user.profilePicture" [src]="user.profilePicture" alt="Profile" />
+        <span *ngIf="!user.profilePicture">{{ (user.firstName || user.username || 'U') | slice:0:1 | uppercase }}</span>
+      </div>
+      <div class="user-meta">
+        <div class="page-title">User Permissions</div>
+        <div class="name-email">
+          <span class="name">{{ user.firstName || user.username }}</span>
+          <span class="dot">•</span>
+          <span class="email">{{ user.email }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="role-badge">{{ user.role }}</span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading && user" class="card">
+    <!-- Component Access by Section (routes) -->
+    <div class="groups" style="margin-top: 12px;">
+      <div class="group" *ngFor="let sec of routeSections">
+        <div class="group-title">
+          {{ sec.title }}
+          <label style="float:right; font-weight: normal; font-size: 12px;">
+            <input type="checkbox" [checked]="areAllRoutesChecked(sec)"
+                   (change)="toggleAllRoutes(sec, $any($event.target).checked)" />
+            Select All
+          </label>
+        </div>
+        <div class="items">
+          <div class="item" *ngFor="let ch of sec.children">
+            <input type="checkbox"
+                   [checked]="isRouteChecked(ch.route)"
+                   (change)="toggleRoute(ch.route, $any($event.target).checked)" />
+            <span class="label">{{ ch.label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="actions">
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving">Save</button>
+      <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Success Alert on Save -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="alertTitle"
+    [message]="alertMessage"
+    [badgeText]="'Changes saved'"
+    [autoHideDelay]="1200"
+    (close)="onSuccessAlertClose()">
+  </app-success-alert>
+</div>
+

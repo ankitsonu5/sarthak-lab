@@ -1,0 +1,637 @@
+<div class="edit-record-container">
+  <!-- Invoice Records Management Header -->
+  <div class="invoice-records-header">
+    <div class="header-content">
+      <div class="header-icon">📋</div>
+      <div class="header-text">
+        <h2>Invoice Records Management</h2>
+        <span class="record-count">Total: {{ totalItems }} invoices | Showing: {{ paginatedRecords.length }} | Page {{ currentPage }}/{{ totalPages }}</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="refresh-btn" (click)="refreshData()" [disabled]="isLoading">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+
+
+  <!-- Compact Header Section -->
+  <div class="compact-header">
+    <div class="header-left">
+      <!-- Invoices text removed -->
+    </div>
+    <div class="header-right">
+      <button class="new-invoice-btn" (click)="createNewInvoice()">
+        <i class="fas fa-plus"></i> New Invoice
+      </button>
+    </div>
+  </div>
+
+  <!-- Colorful Stats Cards Section -->
+  <div class="stats-cards-colorful">
+    <div class="stats-row-colorful">
+      <div class="stat-card-colorful purple-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <span class="stat-number">{{ totalItems }}</span>
+          <span class="stat-label">Total Invoices</span>
+          <span class="stat-amount">₹{{ getTotalAmount() }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card-colorful green-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <span class="stat-number">₹{{ getTodayAmount() }}</span>
+          <span class="stat-label">Today's Net</span>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+
+
+  <!-- Filter Section -->
+  <div class="filter-section-original">
+    <div class="filter-row-original">
+      <div class="filter-item">
+        <label>Receipt No.</label>
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="Enter receipt number"
+          [(ngModel)]="receiptNoTerm"
+          (input)="onReceiptNoChange()"
+          (keyup.enter)="onReceiptNoChange()">
+      </div>
+
+      <div class="filter-item">
+        <label>Search</label>
+        <input
+          type="text"
+          class="filter-input"
+          placeholder="Search by name, Reg. No., UHID, phone..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          (keyup.enter)="onSearchChange(true)">
+      </div>
+
+      <div class="filter-item">
+        <label>Date Range</label>
+        <input
+          type="date"
+          class="filter-input"
+          [(ngModel)]="dateFilter"
+          (change)="onDateFilterChange()">
+      </div>
+
+      <!-- Payment Method Filter -->
+      <div class="filter-item">
+        <label>Payment Mode</label>
+        <select class="filter-select" [(ngModel)]="paymentModeFilter" (change)="onPaymentModeFilterChange()">
+          <option value="">All</option>
+          <option value="CASH">Cash</option>
+          <option value="UPI">UPI</option>
+        </select>
+      </div>
+
+      <!-- Visit Mode Filter (OPD/IPD) -->
+      <div class="filter-item" *ngIf="false">
+        <label>Visit</label>
+        <select class="filter-select" [(ngModel)]="visitModeFilter" (change)="onVisitModeFilterChange()">
+          <option value="">All</option>
+          <option value="OPD">OPD</option>
+          <option value="IPD">IPD</option>
+        </select>
+      </div>
+
+      <div class="filter-item filter-actions">
+        <button class="clear-filter-btn" (click)="clearFilters()">
+          🗑️ Clear Filter
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="spinner"></div>
+    <p>Loading records...</p>
+  </div>
+
+  <!-- Professional Invoice Table -->
+    <!-- Top Paginator (like Alter-OPD) -->
+    <div class="pagination-container" *ngIf="!isLoading && totalItems > 0">
+      <div class="pagination-info">
+        Showing {{ paginatedRecords.length ? ((currentPage - 1) * itemsPerPage + 1) : 0 }}-
+        {{ (currentPage - 1) * itemsPerPage + paginatedRecords.length }} of {{ totalItems }}
+      </div>
+      <div class="pagination-controls">
+        <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 1 || isPageLoading">Prev</button>
+        <span>Page {{ currentPage }} / {{ totalPages }}</span>
+        <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages || isPageLoading">Next</button>
+      </div>
+    </div>
+
+  <div *ngIf="!isLoading" class="invoice-table-section">
+    <!-- Professional Table -->
+    <div class="professional-table-container">
+      <table class="invoice-table">
+        <thead class="table-header">
+          <tr>
+            <th class="col-sno">S.NO</th>
+            <th class="col-patient-name">PATIENT NAME</th>
+            <th class="col-registration">REGISTRATION NO.</th>
+            <th class="col-receipt">RECEIPT NO.</th>
+            <th class="col-tests">NO. OF TESTS</th>
+            <th class="col-amount">AMOUNT</th>
+            <th class="col-mode" *ngIf="false">MODE</th>
+            <th class="col-status">DATE</th>
+            <th class="col-actions">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <ng-container *ngFor="let record of paginatedRecords; let i = index">
+            <tr class="table-row" [class.row-even]="i % 2 === 0" [class.row-odd]="i % 2 === 1">
+              <!-- S.NO -->
+              <td class="cell-sno">
+                <div class="sno-stack">
+                  <div class="sno-top">
+                    <span class="serial-number">{{ (currentPage - 1) * itemsPerPage + i + 1 }}</span>
+                  </div>
+                  <div class="sno-bottom" *ngIf="hasEditHistory(record)">
+                    <span class="edited-badge"><i class="fas fa-pen-to-square"></i> Edited</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- PATIENT NAME -->
+              <td class="cell-patient-name">
+                <div class="patient-info">
+                  <div class="patient-avatar">
+                    <i class="fas fa-user-circle"></i>
+                  </div>
+                  <div class="patient-details">
+                    <div class="patient-name">{{ getPatientName(record) }}</div>
+                    <div class="patient-meta">
+                      <span class="age-gender">{{ getPatientAge(record) }}, {{ getPatientGender(record) }}</span>
+                      <span class="phone">📞{{ getPatientPhone(record) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- REGISTRATION NO. -->
+              <td class="cell-registration">
+                <span class="registration-number">{{ getRegistrationNumber(record, i) }}</span>
+              </td>
+
+              <!-- RECEIPT NO. -->
+              <td class="cell-receipt">
+                <span class="receipt-number">{{ getReceiptNumber(record, i) }}</span>
+              </td>
+
+              <!-- NO. OF TESTS -->
+              <td class="cell-tests">
+                <span class="test-count">{{ getTestCount(record) }}</span>
+                <small class="test-details">{{ getTestSummary(record) }}</small>
+              </td>
+
+              <!-- AMOUNT -->
+              <td class="cell-amount">
+                <ng-container *ngIf="!isFullyRefunded(record); else refundedTpl">
+                  <div class="amount-stack">
+                    <span class="amount-value">₹{{ formatCurrency(getAmount(record)) }}</span>
+                    <small class="payment-method" [ngClass]="getPaymentModeClass(record)">
+                      {{ getPaymentMethod(record) }}
+                    </small>
+                  </div>
+                </ng-container>
+                <ng-template #refundedTpl>
+                  <div class="amount-stack">
+                    <span class="amount-value" style="color:#d9534f;font-weight:700">REFUNDED</span>
+                    <small class="refund-delta" style="color:#d9534f;font-weight:600">-₹{{ formatCurrencyNumber(absValue(getEditDelta(record))) }}</small>
+                  </div>
+                </ng-template>
+              </td>
+
+              <!-- MODE now shows Visit Type (OPD/IPD) -->
+              <td class="cell-mode" *ngIf="false">
+                <span class="visit-mode" [ngClass]="{ 'visit-opd': getVisitMode(record) === 'OPD', 'visit-ipd': getVisitMode(record) === 'IPD' }">
+                  {{ getVisitMode(record) }}
+                </span>
+              </td>
+
+              <!-- DATE (bookingDate) -->
+              <td class="cell-status">
+                <span class="date-text">
+                  {{ (record.bookingDate || record.createdAt) | date:'dd/MM/yyyy' }}
+                </span>
+              </td>
+
+              <!-- ACTIONS -->
+              <td class="cell-actions">
+                <div class="action-buttons">
+                  <button class="action-btn btn-view" (click)="viewRecord(record)" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="action-btn btn-edit" (click)="editRecord(record)" title="Edit Record">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn btn-print" (click)="printRecord(record)" title="Print Invoice">
+                    <i class="fas fa-print"></i>
+                  </button>
+                  <button class="action-btn btn-delete" *ngIf="isLastReceipt(record)" (click)="deleteRecord(record)" title="Delete (archive + hard delete)">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  <button class="action-btn btn-edited" *ngIf="hasEditHistory(record)" (click)="openEditAudit(record)" title="Invoice edit details">
+                    <i class="fas fa-lock"></i>
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+            <!-- Previous values expandable row (paired with this record) -->
+            <tr class="previous-row" *ngIf="expandedRows[(record?._id || record?.id || record?.receiptNumber)]">
+              <td colspan="9">
+                <div class="previous-box">
+                  <div class="prev-header">
+                    <strong>Previous values</strong>
+                    <span class="prev-meta" *ngIf="getPreviousAmount(record) !== null">Amount before: ₹{{ getPreviousAmount(record) }}</span>
+                  </div>
+                  <div class="prev-tests" *ngIf="getPreviousTests(record)?.length">
+                    <span class="test-chip" *ngFor="let t of getPreviousTests(record)">{{ t?.testName || t?.name }}</span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+
+
+
+
+
+    <!-- No Records Message -->
+    <div *ngIf="filteredRecords.length === 0" class="no-records">
+      <div class="empty-state">
+        <i class="fas fa-receipt fa-3x"></i>
+        <h4>No Records Found</h4>
+
+
+        <p>No invoice records available. Make some payments first!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal (styled like All-Reports header + grouped tests) -->
+<div *ngIf="showViewModal" class="modal-overlay" (click)="closeViewModal()">
+  <div class="modal-content view-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>Patient Report Details</h4>
+      <button class="close-btn" (click)="closeViewModal()">×</button>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedViewRecord">
+      <!-- Header card -->
+      <div class="patient-info-card">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ (getPatientName(selectedViewRecord) || 'P').charAt(0) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ getPatientName(selectedViewRecord) }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ getPatientAge(selectedViewRecord) }}, {{ getPatientGender(selectedViewRecord) }}</span>
+                <span class="phone">📞 {{ getPatientPhone(selectedViewRecord) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-header-right" *ngIf="hasEditHistory(selectedViewRecord)">
+            <div class="edited-info-chip">
+              Last edit: {{ (selectedViewRecord.lastEditedAt || selectedViewRecord.updateDate || selectedViewRecord.updatedAt) | date:'dd/MM/yyyy, h:mm a' }}
+            </div>
+          </div>
+        </div>
+        <div class="patient-details-row">
+          <div class="detail-card"><div class="detail-label">Receipt No</div><div class="detail-value">{{ selectedViewRecord.receiptNumber }}</div></div>
+          <div class="detail-card"><div class="detail-label">Registration No</div><div class="detail-value">{{ getRegistrationNumber(selectedViewRecord, 0) }}</div></div>
+          <div class="detail-card" *ngIf="false"><div class="detail-label">Mode</div><div class="detail-value"><span class="mode-chip"> {{ getVisitMode(selectedViewRecord) }}</span></div></div>
+          <div class="detail-card"><div class="detail-label">Status</div><div class="detail-value">{{ getPaymentStatus(selectedViewRecord) }}</div></div>
+        </div>
+      </div>
+
+      <!-- Grouped categories -->
+      <div class="test-results-section" *ngFor="let cat of getViewCategories(selectedViewRecord)">
+        <div class="category-header"><h4>{{ cat.name }}</h4></div>
+        <div class="test-results-table">
+          <table class="results-table">
+            <thead>
+              <tr class="table-header">
+                <th class="test-col">TEST</th>
+                <th class="qty-col">QTY</th>
+                <th class="amount-col">AMOUNT</th>
+                <th class="status-col">PAID</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let t of cat.tests" class="test-row">
+                <td class="test-cell test-col"><span>{{ t?.name || t?.testName }}</span></td>
+                <td class="test-cell qty-col">{{ t?.quantity || 1 }}</td>
+                <td class="test-cell amount-col">₹{{ formatCurrency(t?.netAmount || ((t?.cost || t?.amount) * (t?.quantity || 1) - (t?.discount || 0)) || t?.cost) }}</td>
+                <td class="test-cell status-col">{{ getPaymentStatus(selectedViewRecord) }}</td>
+              </tr>
+              <tr class="test-row">
+                <td class="test-cell test-col" style="text-align:right;font-weight:600">Subtotal</td>
+                <td class="test-cell qty-col"></td>
+                <td class="test-cell amount-col" style="font-weight:700">₹{{ formatCurrency(cat.subtotal) }}</td>
+                <td class="test-cell status-col"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="patient-details-row">
+        <div class="detail-card" style="flex:1 1 100%">
+          <div class="detail-label">Total</div>
+          <div class="detail-value" style="font-weight:800;font-size:1.2rem">₹{{ formatCurrency(getRecordTotalAmount(selectedViewRecord)) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h4>✏️ Edit Invoice Record</h4>
+      <button class="close-btn" (click)="closeEditModal()">×</button>
+    </div>
+
+    <form [formGroup]="editForm" (ngSubmit)="saveRecord()">
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Receipt Number:</label>
+            <input type="text" class="form-control" formControlName="receiptNumber" readonly>
+          </div>
+          <div class="form-group col-md-6">
+            <label>Patient Name:</label>
+            <input type="text" class="form-control" formControlName="patientName" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label>Total Amount:</label>
+            <input type="number" class="form-control" formControlName="totalAmount" required>
+          </div>
+          <div class="form-group col-md-6">
+            <label>Payment Method:</label>
+            <select class="form-control" formControlName="paymentMethod">
+              <option value="CASH">Cash</option>
+              <option value="CARD">Card</option>
+              <option value="UPI">UPI</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!editForm.valid || isLoading">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Audit Modal -->
+<div *ngIf="showEditAuditModal" class="modal-overlay" (click)="closeEditAudit()">
+  <div class="modal-content wide" (click)="$event.stopPropagation()">
+    <div class="modal-header gradient">
+      <h4><i class="fas fa-pen-to-square"></i> Invoice Edit Details</h4>
+      <div class="header-right">
+        <div class="credit-debit-chip" [class.debit]="getEditDelta(selectedAuditRecord) > 0" [class.credit]="getEditDelta(selectedAuditRecord) < 0">
+          {{ getEditDelta(selectedAuditRecord) > 0 ? 'Debited' : (getEditDelta(selectedAuditRecord) < 0 ? 'Credited' : 'Edited') }}
+        </div>
+        <div class="credit-debit-amount" [class.debit]="getEditDelta(selectedAuditRecord) > 0" [class.credit]="getEditDelta(selectedAuditRecord) < 0">
+          ₹{{ formatCurrencyNumber(absValue(getEditDelta(selectedAuditRecord))) }}
+        </div>
+        <button class="close-btn" (click)="closeEditAudit()">×</button>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedAuditRecord">
+      <!-- Patient header like screenshot -->
+      <div class="patient-info-card gradient-chip">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ (getPatientName(selectedAuditRecord) || 'P').charAt(0) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ getPatientName(selectedAuditRecord) }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ getPatientAge(selectedAuditRecord) }}, {{ getPatientGender(selectedAuditRecord) }}</span>
+                <span class="phone">📞 {{ getPatientPhone(selectedAuditRecord) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-header-right">
+            <div class="edited-info-chip small" *ngIf="hasEditHistory(selectedAuditRecord); else createdChip">
+              Last edit: {{ getLastEditedAt(selectedAuditRecord) | date:'dd/MM/yyyy, h:mm a' }} by {{ getLastEditedBy(selectedAuditRecord) || 'System' }}
+            </div>
+            <ng-template #createdChip>
+              <div class="edited-info-chip small muted">Created: {{ (selectedAuditRecord?.createdAt || selectedAuditRecord?.bookingDate) | date:'dd/MM/yyyy, h:mm a' }}</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="patient-details-row compact">
+          <div class="detail-card"><div class="detail-label">REGISTRATION NO</div><div class="detail-value">{{ getRegistrationNumber(selectedAuditRecord, 0) }}</div></div>
+          <div class="detail-card"><div class="detail-label">RECEIPT NO</div><div class="detail-value">{{ selectedAuditRecord.receiptNumber }}</div></div>
+          <div class="detail-card"><div class="detail-label">INVOICE DATE</div><div class="detail-value">{{ (selectedAuditRecord.invoiceDate || selectedAuditRecord.bookingDate || selectedAuditRecord.createdAt) | date:'dd/MM/yyyy' }}</div></div>
+          <div class="detail-card" *ngIf="false"><div class="detail-label">MODE</div><div class="detail-value"><span class="mode-chip">{{ getVisitMode(selectedAuditRecord) }}</span></div></div>
+        </div>
+      </div>
+
+      <!-- Diff rows: Previous vs Edited -->
+      <div class="diff-section">
+        <div class="diff-row">
+          <div class="diff-col">
+            <div class="diff-title">BEFORE EDIT</div>
+            <div class="diff-amount">₹{{ formatCurrencyNumber(getPreviousAmount(selectedAuditRecord) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getPreviousTests(selectedAuditRecord)" class="test-chip">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+          <div class="diff-col">
+            <div class="diff-title">EDITED</div>
+            <div class="diff-amount edited">₹{{ formatCurrencyNumber(getAmount(selectedAuditRecord) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getAfterTests(selectedAuditRecord)" class="test-chip green">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="diff-summary" [class.credit]="getEditDelta(selectedAuditRecord) < 0" [class.debit]="getEditDelta(selectedAuditRecord) > 0">
+          <div class="summary-label">{{ getEditDelta(selectedAuditRecord) > 0 ? 'Debited (Added)' : (getEditDelta(selectedAuditRecord) < 0 ? 'Credited (Reduced)' : 'Edited') }}</div>
+          <div class="summary-value">₹{{ formatCurrencyNumber(absValue(getEditDelta(selectedAuditRecord))) }}</div>
+        </div>
+
+        <!-- Three-box view: Previous | Added | Removed -->
+        <div class="change-grid">
+          <div class="change-box">
+            <div class="box-title">Previous Tests</div>
+            <div class="box-list" *ngIf="(getPreviousTests(selectedAuditRecord) || []).length > 0; else emptyPrev">
+              <span class="test-chip" *ngFor="let t of getPreviousTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyPrev><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box" *ngIf="(getAddedTests(selectedAuditRecord) || []).length > 0">
+            <div class="box-title">Added <span class="pill plus">+ ₹{{ formatCurrencyNumber(getAddedTotal(selectedAuditRecord)) }}</span></div>
+            <div class="box-list" *ngIf="(getAddedTests(selectedAuditRecord) || []).length > 0; else emptyAdd">
+              <span class="test-chip green" *ngFor="let t of getAddedTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(+₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyAdd><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box">
+            <div class="box-title">Removed <span class="pill minus">- ₹{{ formatCurrencyNumber(getRemovedTotal(selectedAuditRecord)) }}</span></div>
+            <div class="box-list" *ngIf="(getRemovedTests(selectedAuditRecord) || []).length > 0; else emptyRem">
+              <span class="test-chip" *ngFor="let t of getRemovedTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(-₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyRem><div class="box-empty">—</div></ng-template>
+          </div>
+        </div>
+
+        <!-- Final tests row -->
+        <div class="final-tests">
+          <div class="final-title">Final Tests</div>
+          <div class="final-list" *ngIf="(getAfterTests(selectedAuditRecord) || []).length > 0; else emptyFinal">
+            <span class="test-chip green" *ngFor="let t of getAfterTests(selectedAuditRecord)">
+              {{ t?.name || t?.testName }}
+              <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+            </span>
+          </div>
+          <ng-template #emptyFinal><div class="box-empty">—</div></ng-template>
+
+        <!-- Full Edit History (latest on top, first at bottom) -->
+        <div class="audit-timeline" *ngIf="getEditCount(selectedAuditRecord) > 0">
+          <div class="timeline-entry" *ngFor="let e of getHistoryDesc(selectedAuditRecord); let i = index">
+            <div class="timeline-header" style="display:flex;align-items:center;gap:12px;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="step-chip" style="background:#eef2ff;color:#3730a3;border-radius:14px;padding:4px 10px;font-weight:700;">
+                  {{ ordinal(getEditCount(selectedAuditRecord) - i) }} edit
+                </div>
+                <div class="when-by" style="color:#6b7280;font-weight:600;">
+                  {{ (e.at || e.editedAt) | date:'dd/MM/yyyy, h:mm a' }}
+                  <span class="by" *ngIf="e.by || e.editedBy"> — {{ e.by || e.editedBy }}</span>
+                </div>
+              </div>
+              <div class="delta" [class.debit]="getEntryDelta(e, selectedAuditRecord) > 0" [class.credit]="getEntryDelta(e, selectedAuditRecord) < 0"
+                   style="font-weight:800;">
+                {{ getEntryDelta(e, selectedAuditRecord) > 0 ? '+₹' : (getEntryDelta(e, selectedAuditRecord) < 0 ? '-₹' : '₹') }}{{ formatCurrencyNumber(absValue(getEntryDelta(e, selectedAuditRecord))) }}
+              </div>
+            </div>
+
+            <!-- Per-edit change summary (Before | After | Added | Removed) -->
+            <div class="change-grid" style="margin-top:10px;">
+              <div class="change-box">
+                <div class="box-title">Before</div>
+                <div class="box-list" *ngIf="(entryPrevTests(e) || []).length > 0; else iEmptyPrev">
+                  <span class="test-chip" *ngFor="let t of entryPrevTests(e)">
+                    {{ t?.name || t?.testName }}
+                    <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                  </span>
+                </div>
+                <ng-template #iEmptyPrev><div class="box-empty">—</div></ng-template>
+              </div>
+              <div class="change-box">
+                <div class="box-title">After</div>
+                <div class="box-list" *ngIf="(entryAfterTests(e) || []).length > 0; else iEmptyAfter">
+                  <span class="test-chip green" *ngFor="let t of entryAfterTests(e)">
+                    {{ t?.name || t?.testName }}
+                    <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                  </span>
+                </div>
+                <ng-template #iEmptyAfter><div class="box-empty">—</div></ng-template>
+              </div>
+              <div class="change-box">
+                <div class="box-title">Added <span class="pill plus">+ ₹{{ formatCurrencyNumber(getAddedTotalForEntry(e)) }}</span></div>
+                <div class="box-list" *ngIf="(getEntryAddedTests(e) || []).length > 0; else iEmptyAdd">
+                  <span class="test-chip green" *ngFor="let t of getEntryAddedTests(e)">
+                    {{ t?.name || t?.testName }}
+                    <small class="muted">(+₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                  </span>
+                </div>
+                <ng-template #iEmptyAdd><div class="box-empty">—</div></ng-template>
+              </div>
+              <div class="change-box">
+                <div class="box-title">Removed <span class="pill minus">- ₹{{ formatCurrencyNumber(getRemovedTotalForEntry(e)) }}</span></div>
+                <div class="box-list" *ngIf="(getEntryRemovedTests(e) || []).length > 0; else iEmptyRem">
+                  <span class="test-chip" *ngFor="let t of getEntryRemovedTests(e)">
+                    {{ t?.name || t?.testName }}
+                    <small class="muted">(-₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+                  </span>
+                </div>
+                <ng-template #iEmptyRem><div class="box-empty">—</div></ng-template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Delete Confirmation Modal (shared component like Alter OPD) -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="'Delete Receipt'"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  [confirmLabel]="'Delete'"
+  [cancelLabel]="'Cancel'"
+  [confirming]="deleting"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-delete-confirmation-modal>
+
+<!-- Optional: Delete Success Modal (not shown by default) -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="deleteSuccessTitle"
+  [message]="deleteSuccessMessage"
+  (closed)="showDeleteSuccess = false"
+  (refreshData)="refreshData()">
+</app-delete-success-modal>

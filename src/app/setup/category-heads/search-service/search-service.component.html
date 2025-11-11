@@ -1,0 +1,183 @@
+<div class="search-service-container">
+
+ <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="search-icon">
+        <dotlottie-wc
+          src="https://lottie.host/8f6f480f-309a-44cb-a3d9-fa7ceca090cc/vyw42i5eZH.lottie"
+          style="width: 30px; height: 30px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      </div>
+      <h1>Search Services</h1>
+    </div>
+    <div class="header-right">
+      <span class="total-count">{{ selectedCategoryName }}: {{ totalServicesCount }} service{{ totalServicesCount !== 1 ? 's' : '' }}</span>
+    </div>
+  </div>
+
+
+  
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button"
+              (click)="navigateToCategoryRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Category Registration and Search
+      </button>
+      <button type="button"
+              (click)="navigateToServiceHead()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Service Registration
+      </button>
+      <button type="button"
+              style="border-bottom: 2px solid #3b82f6; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Search Service
+      </button>
+    </nav>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchTermChange(searchTerm)"
+        placeholder="Search by name or code..."
+        class="search-input"
+      />
+      <button type="button" class="clear-btn" (click)="clearSearch()" [disabled]="!searchTerm">
+        <i class="fa-solid fa-trash"></i> Clear Search
+      </button>
+      
+       <!-- Category Filter -->
+      <div class="form-group">
+        <label for="selectedCategory" class="form-label">Select Category:</label>
+        <select
+          id="selectedCategory"
+          [(ngModel)]="selectedCategoryId"
+          (change)="onCategoryChange()"
+          class="department-dropdown">
+          <option value="ALL">All</option>
+          <option *ngFor="let category of categoryOptions" [value]="category._id">
+            {{ category.categoryName }}
+          </option>
+        </select>
+      </div>
+
+
+      
+    </div>
+  </div>
+
+ 
+
+  <!-- Services by Category -->
+  <div class="services-container">
+    <div class="category-section" *ngIf="searchResults.length > 0">
+
+      <!-- Category Header -->
+      <div class="category-header">
+        <h2>{{ selectedCategoryName }}</h2>
+        <span class="service-count">{{ totalServicesCount }} Services</span>
+      </div>
+
+      <!-- Services Table -->
+      <div class="table-container">
+        <table class="services-table">
+          <thead>
+            <tr>
+              <th>Sr No</th>
+              <th>Category</th>
+              <th>Service Name</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="selectedCategoryId === 'ALL'; else categoryRows">
+              <tr *ngFor="let service of paginatedResults; let i = index" class="table-row">
+                <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+                <td class="category-name">
+                   {{ getCategoryName(service.category) }}
+                </td>
+                <td class="service-name">{{ service.testName }}</td>
+                <td class="price">{{ formatPrice(service.price) }}</td>
+                <td class="actions-column">
+                  <div class="action-buttons">
+                    <button (click)="editService(service)" class="action-btn edit-btn" title="Edit Service">
+                      <i class="fa-solid fa-edit"></i> Edit
+                    </button>
+                    <button (click)="deleteService(service)" class="action-btn delete-btn" title="Delete Service">
+                      <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+
+            <ng-template #categoryRows>
+              <tr *ngFor="let service of searchResults; let i = index" class="table-row">
+                <td>{{ i + 1 }}</td>
+                <td class="category-name">
+                   {{ getCategoryName(service.category) }}
+                </td>
+                <td class="service-name">{{ service.testName }}</td>
+                <td class="price">{{ formatPrice(service.price) }}</td>
+                <td class="actions-column">
+                  <div class="action-buttons">
+                    <button (click)="editService(service)" class="action-btn edit-btn" title="Edit Service">
+                      <i class="fa-solid fa-edit"></i> Edit
+                    </button>
+                    <button (click)="deleteService(service)" class="action-btn delete-btn" title="Delete Service">
+                      <i class="fa-solid fa-trash"></i> Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </table>
+
+        <!-- Pagination: visible only for ALL CATEGORIES -->
+        <div *ngIf="selectedCategoryId === 'ALL' && totalPages > 1" style="display:flex; justify-content: space-between; align-items:center; padding-top: 12px;">
+          <div>
+            Showing {{ displayStart }}-{{ displayEnd }} of {{ totalServicesCount }}
+          </div>
+          <div style="display:flex; gap: 8px; align-items:center;">
+            <button class="action-btn" (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+            <span>Page {{ currentPage }} / {{ totalPages }}</span>
+            <button class="action-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="'Delete Service'"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  [confirming]="isDeleting"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Service Deleted'"
+  [message]="'The service has been successfully removed from the system.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="2000"
+  (closed)="onDeleteSuccessClosed()">
+</app-delete-success-modal>

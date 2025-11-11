@@ -1,0 +1,27 @@
+.app-footer {
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(180, 180, 180, 0.12),
+    rgba(140, 140, 140, 0.12)
+  );
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 12px 20px;
+  margin-top: auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.footer-content {
+  text-align: center;
+  color: #979393;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Print: Hide footer */
+@media print {
+  .app-footer {
+    display: none !important;
+  }
+}

@@ -1,0 +1,214 @@
+<div class="room-list-container">
+  <!-- Header Section -->
+  <div class="header">
+    <div class="header-left">
+      <div class="search-icon">
+        <dotlottie-wc
+          src="https://lottie.host/8f6f480f-309a-44cb-a3d9-fa7ceca090cc/vyw42i5eZH.lottie"
+          style="width: 70px; height: 70px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      </div>
+      <div class="header-text">
+        <h1 class="page-title">Search Rooms</h1>
+        <p class="total-count">Total: {{ totalRooms }} rooms | Showing: {{ Math.min(pageSize, rooms.length) }}</p>
+      </div>
+    </div>
+  </div>
+
+
+
+  
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button" (click)="navigateToDepartmentRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+         Department Registration
+      </button>
+      <button type="button" (click)="navigateToDocRoomSearch()"
+              style="border-bottom: 2px solid #0062ff; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #0062ff; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+         Search Room
+      </button>
+      <button type="button" (click)="navigateToRoomRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+       Room Registration
+      </button>
+      <button type="button" (click)="navigateToDocRoomDirectory()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+       Doctor Room Directory
+      </button>
+    </nav>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-controls">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchTermChange(searchTerm)"
+        class="search-input"
+        placeholder="Search by room number..."
+      >
+
+      <select
+        [(ngModel)]="roomNumberFilter"
+        (change)="onRoomNumberFilterChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let roomNum of roomNumbers" [value]="roomNum === 'All' ? '' : roomNum">
+          {{ roomNum === 'All' ? 'All Room Numbers' : roomNum }}
+        </option>
+      </select>
+
+      <select
+        [(ngModel)]="departmentFilter"
+        (change)="onDepartmentFilterChange(departmentFilter)"
+        class="filter-select"
+      >
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept._id">
+          {{ dept.name }}
+        </option>
+      </select>
+
+    
+    </div>
+  </div>
+
+  
+
+  <!-- Error State -->
+  <div class="error-container" *ngIf="error">
+    <div class="error-icon">⚠️</div>
+    <h3>Error Loading Rooms</h3>
+    <p>{{ error }}</p>
+    <button (click)="loadRooms()" class="btn btn-primary">Retry</button>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-container" *ngIf="!error">
+    <table class="rooms-table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Registration Date</th>
+          <th>Room Number</th>
+          <th>Department</th>
+          <!-- REMOVED: Status column as requested -->
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let room of rooms; let i = index; trackBy: trackByRoomId" class="table-row">
+          <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td>{{ formatDate(room.createdAt!) }}</td>
+          <td class="room-number">{{ room.roomNumber }}</td>
+          <td>{{ getDepartmentName(room.department) }}</td>
+          <!-- REMOVED: Status column as requested -->
+          <td class="actions">
+            <button 
+              (click)="editsRoom(room)"
+              class="action-btn btn-edit"
+              title="Edit Room"
+            >
+            <i class="fa-solid fa-edit"></i> Edit
+
+            </button>
+            <button 
+              (click)="deleteRoom(room)"
+              class="action-btn btn-delete"
+              title="Delete Room"
+            >
+      <i class="fa-solid fa-trash"></i> Delete
+            </button>
+
+ 
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="rooms.length === 0">
+      <div class="empty-icon">🏠</div>
+      <h3>No Rooms Found</h3>
+      <p>No rooms match your search criteria</p>
+      <button (click)="navigateToRoomRegistration()" class="btn btn-primary">
+        Add First Room
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1 && !error">
+    <div class="pagination">
+      <button 
+        (click)="onPageChange(currentPage - 1)"
+        [disabled]="currentPage === 1"
+        class="pagination-btn"
+      >
+        ← Previous
+      </button>
+      
+      <button 
+        *ngFor="let page of getPaginationPages()"
+        (click)="onPageChange(page)"
+        [class.active]="page === currentPage"
+        class="pagination-btn page-btn"
+      >
+        {{ page }}
+      </button>
+      
+      <button 
+        (click)="onPageChange(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+        class="pagination-btn"
+      >
+        Next →
+      </button>
+    </div>
+    
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to
+      {{ Math.min(currentPage * pageSize, totalRooms) }} of {{ totalRooms }} rooms
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="'Delete Room'"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Room Deleted'"
+  [message]="'The room has been successfully removed from the system.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="1000"
+  (closed)="onDeleteSuccessClosed()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="'Cannot Delete Room'"
+  [message]="deleteBlockedMessage"
+  [details]="deleteBlockedDetails"
+  [badgeText]="'Dependencies present'"
+  [rooms]="[]"
+  [doctors]="blockedDoctors"
+  [autoHideDelay]="3000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>

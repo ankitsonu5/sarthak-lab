@@ -1,0 +1,30 @@
+<div class="page-header">
+  <h2>Designation/Prefix Master</h2>
+  <button (click)="addNew()" class="btn btn-primary">+ Add Prefix</button>
+</div>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<table class="table" *ngIf="!isLoading">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Gender</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of prefixes">
+      <td>{{ p.name }}</td>
+      <td>{{ p.gender }}</td>
+      <td>
+        <button (click)="edit(p)">Edit</button>
+        <button (click)="delete(p)">Delete</button>
+      </td>
+    </tr>
+    <tr *ngIf="prefixes.length === 0">
+      <td colspan="3">No prefixes found.</td>
+    </tr>
+  </tbody>
+</table>
+

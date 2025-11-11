@@ -1,0 +1,132 @@
+<div class="department-form-container">
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button" (click)="navigateToRoomRegistration()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Room  Registration
+      </button>
+      <button type="button" (click)="DepartmentRegistration()"
+              style="border-bottom: 2px solid #3b82f6; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+       Department Registration
+      </button>
+      <button type="button" (click)="SearchDepartment()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Search Departments
+      </button>
+    </nav>
+  </div>
+
+  
+  <!-- Header -->
+  <div class="form-header">
+    <div class="header-content">
+      <h2>{{ isEditMode ? 'Registered Department Update' : 'Department Registration' }}</h2>
+      <div class="header-image pulse-animation"></div>
+    </div>
+    <p class="form-subtitle">{{ isEditMode ? 'Update department information' : 'Create a new department for the hospital' }}</p>
+  </div>
+
+  
+
+  <!-- Form -->
+  <form [formGroup]="departmentForm" (ngSubmit)="onSubmit()" class="department-form">
+    <div class="form-grid">
+      <!-- Department Name -->
+      <div class="form-group">
+        <label for="name" class="form-label required">Department Name</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="form-input department-name-input"
+          [class.error]="isFieldInvalid('name')"
+          placeholder="Enter department name (e.g., EMERGENCY MEDICINE)"
+          maxlength="100"
+          (blur)="capitalizeDepartmentName($event)"
+          (input)="onNameChange($event); capitalizeDepartmentName($event)"
+          #departmentNameInput
+        />
+        <div class="field-error" *ngIf="isFieldInvalid('name')">
+          {{ getFieldError('name') }}
+        </div>
+      </div>
+
+      <!-- Department Code -->
+      <div class="form-group">
+        <label for="code" class="form-label">Department Code</label>
+        <input
+          type="text"
+          id="code"
+          formControlName="code"
+          class="form-input"
+          [class.error]="isFieldInvalid('code')"
+          placeholder="Auto-generated or enter custom code"
+          maxlength="10"
+          style="text-transform: uppercase;"
+          (input)="onCodeInput()"
+        />
+        <div class="field-hint">Auto-generated from department name or enter custom code</div>
+        <div class="field-error" *ngIf="isFieldInvalid('code')">
+          {{ getFieldError('code') }}
+        </div>
+      </div>
+
+     
+
+
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        (click)="onCancel()"
+        class="btn btn-secondary"
+        [disabled]="loading"
+      >
+        Cancel
+      </button>
+      
+      <button
+        type="button"
+        (click)="onReset()"
+        class="btn btn-outline"
+        [disabled]="loading"
+      >
+        Reset
+      </button>
+      
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="loading || departmentForm.invalid"
+      >
+        <span *ngIf="loading" class="loading-spinner"></span>
+        {{ loading ? 'Saving...' : (isEditMode ? 'Update Department' : 'Create Department') }}
+      </button>
+
+    </div>
+  </form>
+
+  <!-- Success Alert Modal -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="isEditMode ? '🎉 Updated Successfully!' : '🎉 Registration Successful!'"
+    [message]="successMessage"
+    [badgeText]="isEditMode ? 'Department Updated Successfully' : 'Department Added Successfully'"
+    (close)="closeSuccessAlert()">
+  </app-success-alert>
+
+</div>
+
+<!-- Record Already Exists Modal -->
+<app-record-exists-modal
+  [show]="showRecordExistsModal"
+  [title]="'Department Already Exists!'"
+  [message]="recordExistsMessage"
+  [subMessage]="'Please try with a different department name.'"
+  [badgeText]="'Duplicate Department Found'"
+  [autoHideDelay]="2000"
+  (closed)="onRecordExistsModalClosed()">
+</app-record-exists-modal>

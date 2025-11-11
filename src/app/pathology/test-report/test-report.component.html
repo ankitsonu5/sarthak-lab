@@ -1,0 +1,585 @@
+<div class="test-report-container">
+  <!-- Header Section -->
+  <div class="report-header">
+    <div class="header-left">
+      <h2 class="report-title">GENERATE REPORT</h2>
+    </div>
+    <div class="header-right">
+      <div class="statistics-display">
+        <div class="stat-item">
+          <i class="fas fa-users"></i>
+          <span>Total: {{ totalRegistrations }}</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-calendar-day"></i>
+          <span>Today: {{ todayRegistrations }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient & Receipt Information Section -->
+  <div class="patient-receipt-info">
+    <div class="info-header">
+      <h3>Patient & Receipt Information</h3>
+    </div>
+
+    <!-- First Row -->
+    <div class="info-row">
+      <div class="field-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="reportDate" class="form-input" [disabled]="isEditMode">
+      </div>
+
+
+      <div class="field-group">
+        <label>Search Date</label>
+        <input type="date" [(ngModel)]="searchDate" class="form-input" [disabled]="isEditMode">
+      </div>
+      <div class="field-group">
+        <label>Patient Name
+          <ng-container *ngIf="isEditMode">
+            <span class="badge edited-badge" *ngIf="isEdited" (click)="$event.stopPropagation(); showLocalEdit = !showLocalEdit" style="cursor:pointer; margin-left:6px;">Edited ▶</span>
+          </ng-container>
+        </label>
+        <input type="text" [(ngModel)]="patientName" class="form-input" placeholder="Auto-filled from receipt" readonly>
+        <div *ngIf="isEditMode && showLocalEdit" class="edited-dropdown" style="position:absolute; background:#fff; border:1px solid #ddd; padding:6px; margin-top:4px; z-index:2; max-width:260px;">
+          <small *ngIf="editHistory?.length">Last edit: {{ editHistory[editHistory.length-1]?.editedAt | date:'dd/MM/yyyy, h:mm a' }}</small>
+          <div *ngIf="editHistory?.length">
+            <div *ngFor="let ch of editHistory.slice(-1)">
+              <div *ngFor="let kv of (ch?.changes | keyvalue)">
+                <small>• {{ kv.key }}: {{ $any(kv.value)?.before }} → <strong>{{ $any(kv.value)?.after }}</strong></small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="info-row">
+      <div class="field-group">
+        <label>Receipt No. <span class="required">*</span></label>
+        <div class="input-row" style="display:flex; gap:8px; align-items:center;">
+          <input
+            type="text"
+            [(ngModel)]="receiptNo"
+            class="form-input"
+            [disabled]="isEditMode"
+            [class.error-input]="!isReceiptNoValid"
+            placeholder="Enter receipt number and press Enter or click Search"
+            (input)="onReceiptNoChange()"
+            (keyup.enter)="searchByReceiptNo()"
+            (blur)="onReceiptNoBlur()"
+            #receiptInput
+            autofocus>
+          <button type="button" class="btn btn-primary" (click)="searchByReceiptNo()">Search</button>
+        </div>
+        <div class="error-message" *ngIf="!isReceiptNoValid && receiptNoError">
+          {{ receiptNoError }}
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Registration No.</label>
+        <input
+          type="text"
+          [(ngModel)]="registrationNo"
+          class="form-input"
+          placeholder="Enter registration number"
+          (keyup.enter)="searchByRegistrationNo()"
+          readonly>
+      </div>
+      <div class="field-group">
+        <label>Doctor Ref. No.</label>
+        <input type="text" [(ngModel)]="doctorRefNo" class="form-input" placeholder="Auto-filled" readonly>
+      </div>
+      <div class="field-group">
+        <label>Doctor Name</label>
+        <input type="text" [(ngModel)]="doctorName" class="form-input" placeholder="Auto-filled" readonly>
+      </div>
+      <div class="field-group age-inline">
+        <label>Age</label>
+        <div class="age-row">
+          <input type="text" [(ngModel)]="age" class="form-input age-input" placeholder="Auto-filled" readonly>
+          <input type="text" [(ngModel)]="ageIn" class="form-input agein-input" placeholder="Age In" readonly>
+        </div>
+      </div>
+    </div>
+
+    <!-- Third Row -->
+    <div class="info-row">
+      <div class="field-group">
+        <label>Type</label>
+        <select [(ngModel)]="patientType" class="form-input" [disabled]="receiptNo">
+          <option value="OPD">OPD</option>
+          <option value="IPD">IPD</option>
+          <option value="Emergency">Emergency</option>
+        </select>
+        <small *ngIf="receiptNo" class="help-text">Type is locked from Receipt</small>
+      </div>
+      <div class="field-group">
+        <label>Gender</label>
+        <select [(ngModel)]="gender" class="form-input" (ngModelChange)="onPatientContextChanged()" [disabled]="true">
+          <option value="">Select</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label>Amount</label>
+        <input type="text" [(ngModel)]="amount" class="form-input" placeholder="0" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Results Section -->
+  <div class="test-results-section" *ngIf="receiptNo">
+
+    <!-- Debug Info -->
+    <!-- <div class="debug-info" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border: 1px solid #ccc;">
+      <p><strong>🔍 Debug Info:</strong></p>
+      <p><strong>Receipt No:</strong> {{ receiptNo }}</p>
+      <p><strong>Registration No:</strong> {{ registrationNo }}</p>
+      <p><strong>Lab Yearly No:</strong> {{ labYearlyNo }}</p>
+      <p><strong>Lab Daily No:</strong> {{ labDailyNo }}</p>
+      <p><strong>Patient Data:</strong> {{ patientData ? 'Found ✅' : 'Not Found ❌' }}</p>
+      <p><strong>Test Results Length:</strong> {{ testResults.length }}</p>
+      <p><strong>Patient Name:</strong> {{ patientData?.patient?.name || 'N/A' }}</p>
+      <p><strong>Tests:</strong> {{ patientData?.tests?.length || 0 }} tests found</p>
+    </div> -->
+
+    <!-- Category-wise Test Results -->
+    <div *ngFor="let category of getTestCategories(); let catIndex = index" class="category-section">
+
+      <!-- Category Header - Top (BIOCHEMISTRY) -->
+      <div class="category-header-top">
+        <h2 class="category-title-main">{{ category.toUpperCase() }}</h2>
+      </div>
+
+      <!-- Table Header Row (TEST | NORMAL VALUE | RESULT | UNIT | MAX | MIN) -->
+      <div class="table-headers">
+        <div class="header-row">
+          <div class="header-cell test-col">TEST</div>
+          <div class="header-cell normal-value-col">NORMAL VALUE</div>
+          <div class="header-cell value-col">RESULT</div>
+          <div class="header-cell unit-col">UNIT</div>
+          <div class="header-cell min-col">MIN</div>
+          <div class="header-cell max-col">MAX</div>
+          <div class="header-cell hide-col no-print">HIDE IN PRINT</div>
+        </div>
+      </div>
+
+
+
+
+      <!-- Tests in this Category -->
+      <div *ngFor="let test of getTestsByCategory(category); let testIndex = index" class="test-section" [class.print-hide]="!hasAnyResultInTest(test)">
+
+        <!-- Test Name Header - SERUM LIPID PROFILE -->
+        <div class="test-name-header-main" style="display:flex; align-items:center; gap:10px;">
+          <h3 class="test-title-main" style="flex:1 1 auto;">{{ test.testName.toUpperCase() }}</h3>
+          <!-- Exclude entire test from print -->
+          <label class="no-print" style="flex:0 0 auto; font-weight:500; font-size:12px; display:flex; align-items:center; gap:6px;">
+            <input type="checkbox"
+                   [(ngModel)]="test.excludeFromPrint"
+                   [ngModelOptions]="{standalone: true}"
+                   (change)="onToggleTestHide(test)"/>
+            Hide test in print
+          </label>
+        </div>
+
+        <!-- Parameters Table - Clean Style -->
+        <div class="test-table-wrapper">
+          <table class="medical-report-table">
+            <colgroup>
+              <col style="width:24%">
+              <col style="width:18%">
+              <col style="width:18%">
+              <col style="width:8%">
+              <col style="width:8%">
+              <col style="width:8%">
+              <col style="width:6%">
+            </colgroup>
+
+            <tbody>
+              <!-- Main Parameters -->
+              <ng-container *ngFor="let param of test.parameters; let paramIndex = index">
+                <!-- Outer (included test) Header Row for Panel items -->
+                <tr *ngIf="param.outerGroup && (paramIndex === 0 || test.parameters[paramIndex - 1]?.outerGroup !== param.outerGroup)" class="outer-group-row">
+                  <td class="outer-group-cell" colspan="7">{{ param.outerGroup }}</td>
+                </tr>
+                <!-- Group Header Row (within an outer group) -->
+                <tr *ngIf="param.groupBy && (paramIndex === 0 || test.parameters[paramIndex - 1]?.groupBy !== param.groupBy || test.parameters[paramIndex - 1]?.outerGroup !== param.outerGroup)" class="group-row">
+                  <td class="group-cell" colspan="7">{{ param.groupBy }}</td>
+                </tr>
+                <!-- Main Parameter Row (hide if removed) -->
+                <tr *ngIf="!param.removed" [ngClass]="{'danger-row': param.status === 'high' || param.status === 'low' || param.status === 'critical', 'normal-row': param.status === 'normal'}" [class.print-hide]="!hasAnyResult(param)">
+
+                  <!-- Test Name - Left Aligned -->
+                  <td class="test-name-cell">
+                    {{ param.name }}
+                  </td>
+
+                  <!-- Normal Value shown as multi-line (split by comma/newline) -->
+                  <td class="normal-value-cell">
+                    <ng-container *ngFor="let ln of splitLines(param.type === 'Text' ? param.textValue : (param.displayInReport || param.normalRange))">
+                      <div>{{ ln }}</div>
+                    </ng-container>
+                  </td>
+
+                  <!-- Value Input - Larger for typing -->
+                  <td class="value-cell">
+                    <div class="value-input-container">
+                      <ng-container [ngSwitch]="param.resultType">
+                        <!-- Dropdown parameter -->
+                        <select *ngSwitchCase="'dropdown'"
+                                class="value-input large-input"
+                                [(ngModel)]="param.selectedOptionId"
+                                [ngModelOptions]="{standalone: true}"
+                                (change)="onDropdownChange(param)"
+                                (keydown)="onResultKeyDown($event)">
+                          <option *ngFor="let opt of param.options" [value]="opt.id">{{ opt.label }}</option>
+                        </select>
+                        <!-- Formula parameter (read-only) -->
+                        <input *ngSwitchCase="'formula'"
+                               type="text"
+                               [value]="param.result"
+                               class="value-input large-input"
+                               placeholder="Auto-calculated"
+                               readonly
+                               (keydown)="onResultKeyDown($event)">
+                        <!-- Manual/Fixed parameter -->
+                        <input *ngSwitchDefault
+                               type="text"
+                               [(ngModel)]="param.result"
+                               [ngModelOptions]="{standalone: true}"
+                               class="value-input large-input"
+                               placeholder=""
+                               (keydown)="onResultKeyDown($event)"
+                               (input)="checkParameterStatus(param)"
+                               (blur)="checkParameterStatus(param)"
+                               [ngClass]="{'abnormal-input': param.status !== 'normal' && param.status !== 'pending'}">
+                      </ng-container>
+                    </div>
+                  </td>
+
+                  <!-- Unit -->
+                  <td class="unit-cell">
+                    {{ param.unit }}
+                  </td>
+
+                  <!-- Min Value (lowerValue from database) -->
+                  <td class="min-cell">
+                    {{ param.lowerValue || getMinValue(param.normalRange) || '' }}
+                  </td>
+
+                  <!-- Max Value (upperValue from database) -->
+                  <td class="max-cell">
+                    {{ param.upperValue || getMaxValue(param.normalRange) || '' }}
+                  </td>
+
+                  <!-- Hide in print column -->
+                  <td class="hide-cell no-print" style="text-align:center;">
+                    <input type="checkbox"
+                           [(ngModel)]="param.excludeFromPrint"
+                           [ngModelOptions]="{standalone: true}"
+                           (change)="onParamExcludeChange(test, param)">
+                  </td>
+                </tr>
+
+                <!-- Remark row for selected Normal Value (shows even if result empty) -->
+                <tr *ngIf="!param.excludeFromPrint && param.normalRemark && param.normalRemark.trim()" class="remark-row">
+                  <td class="remark-cell" colspan="7">
+                    {{ param.normalRemark }}
+                  </td>
+                </tr>
+
+
+                <!-- Sub-parameters (like DLC breakdown) -->
+                <tr *ngFor="let subParam of param.subParameters"
+                    class="sub-parameter-row"
+                    [style.display]="subParam?.removed ? 'none' : ''"
+                    [ngClass]="{'danger-row': subParam.status === 'high' || subParam.status === 'low' || subParam.status === 'critical', 'normal-row': subParam.status === 'normal'}" [class.print-hide]="!hasAnyResult(subParam)">
+
+                  <td class="sub-test-name">
+                    {{ subParam.name }}
+                  </td>
+
+                  <td class="normal-value-cell">
+                    <ng-container *ngFor="let ln of splitLines(subParam.type === 'Text' ? subParam.textValue : (subParam.displayInReport || subParam.normalRange))">
+                      <div>{{ ln }}</div>
+                    </ng-container>
+                  </td>
+
+                  <td class="value-cell">
+                    <div class="value-input-container">
+                      <input
+                        type="text"
+                        [(ngModel)]="subParam.result"
+                        [ngModelOptions]="{standalone: true}"
+                        class="value-input large-input sub-value-input"
+                        (keydown)="onResultKeyDown($event)"
+                        (input)="checkParameterStatus(subParam)"
+                        (blur)="checkParameterStatus(subParam)"
+                        [ngClass]="{'abnormal-input': subParam.status !== 'normal' && subParam.status !== 'pending'}">
+                    </div>
+                  </td>
+
+                  <td class="unit-cell">
+                    {{ subParam.unit }}
+                  </td>
+
+                  <td class="min-cell">
+                    {{ subParam.lowerValue || getMinValue(subParam.normalRange) || '' }}
+                  </td>
+
+                  <td class="max-cell">
+                    {{ subParam.upperValue || getMaxValue(subParam.normalRange) || '' }}
+                  </td>
+
+                  <!-- Hide in print column (sub-parameter) -->
+                  <td class="hide-cell no-print" style="text-align:center;">
+                    <input type="checkbox"
+                           [(ngModel)]="subParam.excludeFromPrint"
+                           [ngModelOptions]="{standalone: true}"
+                           (change)="onParamExcludeChange(test, param)">
+                  </td>
+                </tr>
+
+                <!-- Total row for DLC -->
+                <tr *ngIf="param.name.includes('DIFFERENTIAL') || param.name.includes('DLC')" class="total-row">
+                  <td class="total-label">Total: 100</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td class="no-print"></td>
+                </tr>
+              </ng-container>
+
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- No Tests Message -->
+    <div *ngIf="testResults.length === 0" class="no-tests-message">
+      <p>No tests found for this receipt number</p>
+    </div>
+
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons" *ngIf="testResults.length > 0">
+    <!-- Normal Mode Buttons -->
+    <ng-container *ngIf="!isEditMode && !isViewMode">
+      <button
+        type="button"
+        class="action-btn save-only-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="$event.stopPropagation(); saveReport({ navigateAfterSave: false, resetAfterSave: true })">
+        💾 Save Only
+      </button>
+      <button
+        type="button"
+        class="action-btn save-print-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="$event.stopPropagation(); saveAndPrintReport()">
+        🖨️ Save & Print
+      </button>
+      <button
+        type="button"
+        class="action-btn whatsapp-share-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="openWhatsAppShareModal()">
+        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+      </button>
+    </ng-container>
+
+    <!-- Edit Mode Buttons -->
+    <ng-container *ngIf="isEditMode">
+      <button
+        type="button"
+        class="action-btn update-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="$event.stopPropagation(); updateReport()">
+        🔄 Update Report
+      </button>
+      <button
+        type="button"
+        class="action-btn update-print-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="updateAndPrintReport()">
+        🖨️ Update & Print
+      </button>
+      <button
+        type="button"
+        class="action-btn whatsapp-share-btn"
+        [disabled]="!isFormValid"
+        [class.disabled]="!isFormValid"
+        (click)="openWhatsAppShareModal()">
+        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+      </button>
+    </ng-container>
+
+  <!-- Success Alert Modal - Temporarily disabled to use AlertService -->
+  <!-- <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="'🎉 Saved Successfully!'"
+    [message]="successMessage"
+    [badgeText]="successBadge"
+    [autoHideDelay]="1500"
+    (close)="showSuccessAlert = false">
+  </app-success-alert> -->
+
+
+    <!-- View Mode Buttons -->
+    <ng-container *ngIf="isViewMode">
+      <button
+        type="button"
+        class="action-btn print-btn"
+        (click)="printReport()">
+        🖨️ Print Report
+      </button>
+      <button
+        type="button"
+        class="action-btn whatsapp-share-btn"
+        (click)="openWhatsAppShareModal()">
+        <i class="fab fa-whatsapp"></i> Share on WhatsApp
+      </button>
+      <button
+        type="button"
+        class="action-btn back-btn"
+        (click)="goBackToAllReports()">
+        ← Back to All Reports
+      </button>
+    </ng-container>
+  </div>
+
+  <!-- WhatsApp Share Modal -->
+  <div class="whatsapp-share-modal" *ngIf="showWhatsAppModal" (click)="closeWhatsAppModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3><i class="fab fa-whatsapp"></i> Share Test Report</h3>
+        <button class="close-btn" (click)="closeWhatsAppModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Patient Info Display -->
+        <div class="patient-info-display">
+          <h4>Patient: {{ patientName }}</h4>
+          <p>Receipt No: {{ receiptNo }} | Date: {{ reportDate | date:'dd/MM/yyyy' }}</p>
+        </div>
+
+        <!-- Contact Number Section -->
+        <div class="contact-section">
+          <label>WhatsApp Number</label>
+
+          <!-- DEBUG: Show patient data structure -->
+          <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
+            <strong>DEBUG - Patient Data:</strong><br>
+            Form Mobile: {{ reportForm.get('mobileNumber')?.value }}<br>
+            Patient Data Phone: {{ patientData?.phone }}<br>
+            Patient Data Mobile: {{ patientData?.mobile }}<br>
+            Nested Patient Phone: {{ patientData?.patient?.phone }}<br>
+            Current WhatsApp Number: {{ whatsappNumber }}
+          </div>
+
+          <input
+            type="tel"
+            [(ngModel)]="whatsappNumber"
+            class="form-input"
+            placeholder="Enter WhatsApp number (with country code)"
+            (input)="validateWhatsAppNumber()">
+          <small class="help-text">Format: +91XXXXXXXXXX</small>
+
+          <!-- Auto-populate button -->
+          <button type="button"
+                  (click)="initializeWhatsAppNumber()"
+                  style="background: #28a745; color: white; padding: 5px 10px; margin: 5px 0; border: none; border-radius: 3px;">
+            🔄 Auto-Fill Patient Number
+          </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-section" *ngIf="isGeneratingReport">
+          <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+          </div>
+          <p>Generating report... Please wait</p>
+        </div>
+
+        <!-- Share Options -->
+        <div class="share-options" [class.disabled]="isGeneratingReport">
+          <h4>Choose Sharing Format:</h4>
+
+          <!-- Smart Share Option (New!) -->
+          <div class="option-card smart-share" (click)="!isGeneratingReport && shareSmartly()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">🚀</div>
+            <div class="option-content">
+              <h5>Smart Share <span class="new-badge">NEW!</span></h5>
+              <p>AI-powered sharing with direct file attachment</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card" (click)="!isGeneratingReport && shareAsText()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📝</div>
+            <div class="option-content">
+              <h5>Text Format</h5>
+              <p>Share as formatted text message</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+
+
+          <!-- Share Options -->
+          <div class="option-card enhanced" (click)="!isGeneratingReport && shareAsPDF()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📄</div>
+            <div class="option-content">
+              <h5>Share PDF <span class="enhanced-badge">ENHANCED</span></h5>
+              <p>Generate PDF with smart attachment</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card enhanced" (click)="!isGeneratingReport && shareAsImage()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">🖼️</div>
+            <div class="option-content">
+              <h5>Share Image <span class="enhanced-badge">ENHANCED</span></h5>
+              <p>High-quality image with clipboard support</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+
+          <div class="option-card" (click)="!isGeneratingReport && shareDirectly()" [class.disabled]="isGeneratingReport">
+            <div class="option-icon">📱</div>
+            <div class="option-content">
+              <h5>Direct Share</h5>
+              <p>Open WhatsApp directly</p>
+            </div>
+            <div class="option-arrow">→</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeWhatsAppModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>

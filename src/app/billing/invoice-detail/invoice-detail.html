@@ -1,0 +1,132 @@
+<ng-container *ngIf="invoiceData"><ng-container *ngFor="let group of groupedCategories; let gi = index"><div class="invoice-container">
+  <!-- Hospital Header -->
+  <div class="hospital-header">
+    <div class="logo-section">
+      <img src="/assets/images/upgov.png"
+           alt="Government Logo"
+           class="gov-logo"
+           style="background: white; padding: 5px; border-radius: 5px;"
+           onerror="this.style.display='none'">
+    </div>
+    <div class="hospital-info">
+      <h1 class="hospital-name">{{ invoiceData.labInfo.name }}</h1>
+      <p class="hospital-address">{{ invoiceData.labInfo.address }}</p>
+      <h2 class="receipt-title">Hospital Cash Receipt</h2>
+    </div>
+  </div>
+
+  <!-- Receipt Details -->
+  <div class="receipt-details">
+    <div class="receipt-row">
+      <div class="receipt-left">
+        <span class="label">Receipt No.:</span>
+        <span class="value">{{ getReceiptNumber() }}</span>
+      </div>
+      <div class="receipt-right">
+        <span class="label">Date:</span>
+        <span class="value">{{ formatDate(invoiceData.bookingDate) }}</span>
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-left">
+        <span class="label">Patient Reg. No.:</span>
+        <span class="value">{{ invoiceData.patient.patientId }}</span>
+      </div>
+      <div class="receipt-right">
+        <span class="label">Age:</span>
+        <span class="value">{{ invoiceData.patient.age }}</span>
+        <span class="label">Gender:</span>
+        <span class="value">{{ invoiceData.patient.gender }}</span>
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-left">
+        <span class="label">Name:</span>
+        <span class="value">{{ invoiceData.patient.name }}</span>
+      </div>
+      <div class="receipt-right">
+        <span class="label">OPD/IPD:</span>
+        <span class="value">{{ invoiceData.mode || 'OPD' }}</span>
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-left">
+        <span class="label">Address:</span>
+        <span class="value">{{ invoiceData.patient.address }}</span>
+      </div>
+      <div class="receipt-right">
+        <span class="label">Department:</span>
+        <span class="value">{{ invoiceData.doctor?.specialization || '' }}</span>
+      </div>
+    </div>
+
+    <div class="receipt-row">
+      <div class="receipt-right">
+        <span class="label">Doctor:</span>
+        <span class="value">{{ invoiceData.doctor?.name || '' }}</span>
+      </div>
+    </div>
+  </div>
+  <!-- Category Banner -->
+  <div class="category-banner">
+    <span class="label">Category:</span>
+    <span class="value">{{ group.category }}</span>
+  </div>
+
+
+  <!-- Services Table -->
+  <div class="services-table">
+    <table class="bill-table">
+      <thead>
+        <tr>
+          <th class="description-col">Description</th>
+          <th class="amount-col">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let test of group.tests; let i = index">
+          <td class="description-cell">
+            <div class="service-number">{{ i + 1 }}) {{ test.name }}</div>
+          </td>
+          <td class="amount-cell">
+            <div class="amount-value">₹{{ test.netAmount }}</div>
+          </td>
+        </tr>
+
+        <!-- Empty rows for spacing -->
+        <tr class="empty-row">
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr class="empty-row">
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+        <tr class="empty-row">
+          <td>&nbsp;</td>
+          <td>&nbsp;</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Total Amount -->
+  <div class="total-section">
+    <div class="total-row">
+      <span class="total-label">Total Amount</span>
+      <span class="total-amount">₹{{ group.total }}</span>
+    </div>
+  </div>
+
+  <!-- Print Button (hidden in print) -->
+  <div class="print-actions no-print">
+    <button class="print-btn" (click)="printInvoice()">
+      <i class="fas fa-print"></i> Print Receipt ({{ group.category }})
+    </button>
+  </div>
+</div>
+<div class="page-break" *ngIf="gi < groupedCategories.length - 1"></div>
+</ng-container></ng-container>

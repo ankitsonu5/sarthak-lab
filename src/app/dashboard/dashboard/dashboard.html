@@ -1,0 +1,329 @@
+<div class="modern-dashboard">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="dashboard-title">Rajkiya Ayurvedic College And Hospital Dashboard</h1>
+        <p class="dashboard-subtitle">Welcome back! Here's your hospital overview</p>
+      </div>
+      <div class="header-right">
+        <div class="weather-info" *ngIf="weatherData">
+          <div class="weather-temp">{{ weatherData.temperature }}°C {{ weatherData.icon }}</div>
+          <div class="weather-condition">{{ weatherData.condition }}</div>
+        </div>
+        <div class="datetime-info">
+          <div class="current-date">{{ currentDateTime.date }}</div>
+          <div class="current-time">{{ currentDateTime.time }}</div>
+          <div class="greeting">{{ currentDateTime.greeting }}</div>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+          <span class="user-role">{{ currentUser?.role }}</span>
+          <span class="system-admin" *ngIf="currentUser?.role === 'Admin'">System Administration</span>
+          <!-- Profile icon near Super Admin text -->
+          <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards Grid -->
+  <div class="stats-grid">
+    <!-- Total Patients Card -->
+    <div class="stat-card patients-card">
+      <div class="stat-icon">
+        <span class="icon">👥</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.totalPatients }}</div>
+        <div class="stat-label">TOTAL PATIENTS</div>
+        <div class="stat-change">+{{ stats.todayPatients }} today <span class="live-indicator">🔴</span></div>
+      </div>
+    </div>
+
+    <!-- Total OPD Card -->
+    <div class="stat-card opd-card">
+      <div class="stat-icon">
+        <span class="icon">📋</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.totalOPD }}</div>
+        <div class="stat-label">TOTAL OPD</div>
+        <div class="stat-change">+{{ stats.todayOPD }} today <span class="live-indicator">🔴</span></div>
+      </div>
+    </div>
+
+    <!-- Total Registration Card -->
+    <div class="stat-card registration-card">
+      <div class="stat-icon">
+        <span class="icon">📋</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.totalRegistrations }}</div>
+        <div class="stat-label">TOTAL REGISTRATION</div>
+        <div class="stat-change">+{{ stats.todayRegistrations }} today <span class="live-indicator">🔴</span></div>
+      </div>
+    </div>
+
+    <!-- IPD Patients Card -->
+    <!-- <div class="stat-card ipd-card">
+      <div class="stat-icon">
+        <span class="icon">🏥</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ stats.ipdPatients }}</div>
+        <div class="stat-label">IPD PATIENTS</div>
+        <div class="stat-change">Currently admitted</div>
+      </div>
+    </div> -->
+
+    <!-- Total Revenue + One-Rupee Revenue (split card with double vertical line) -->
+    <!-- <div class="stat-card earnings-card split">
+      <div class="stat-content">
+        <div class="stat-number">₹{{ stats.totalRevenue | number }}</div>
+        <div class="stat-label">CASH-RECIEPT<br> REVENUE</div>
+        <div class="stat-change">+₹{{ stats.todayRevenue | number }} today <span class="live-indicator">�</span></div>
+      </div>
+
+      <div class="double-divider" aria-hidden="true"></div>
+
+      <div class="stat-content one-rupee">
+        <div class="stat-number">₹{{ (stats.totalRegistrations || 0) | number }}</div>
+        <div class="stat-label">ONE-RUPEE<br> REVENUE</div>
+        <div class="stat-change">+₹{{ (stats.todayRegistrations || 0) | number }} today <span class="live-indicator">🔴</span></div>
+      </div>
+    </div> -->
+
+    <!-- Grand Total Revenue Card -->
+    <!-- <div class="stat-card revenue-card">
+      <div class="stat-icon">
+        <span class="icon">💰</span>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">₹{{ ((stats.totalRevenue || 0) + (stats.totalRegistrations || 0)) | number }}</div>
+        <div class="stat-label">TOTAL REVENUE</div>
+        <div class="stat-change">+₹{{ ((stats.todayRevenue || 0) + (stats.todayRegistrations || 0)) | number }} today <span class="live-indicator">🔴</span></div>
+      </div>
+    </div> -->
+
+
+
+
+  </div>
+
+  <!-- Analytics Section -->
+  <div class="analytics-section">
+    <div class="analytics-grid">
+      <!-- Patient Trends Chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>OPD Trends</h3>
+          <div class="chart-controls-group">
+            <div class="chart-controls">
+              <button class="period-btn compact" [class.active]="trendPeriod === 'daily'" (click)="switchTrendPeriod('daily')">Daily</button>
+              <button class="period-btn compact" [class.active]="trendPeriod === 'monthly'" (click)="switchTrendPeriod('monthly')">Monthly</button>
+            </div>
+            <div class="trend-controls">
+              <button class="period-btn compact" (click)="prevWindow()">⟨ Prev</button>
+              <input class="trend-slider" type="range" [(ngModel)]="trendOffset" (change)="onOffsetChange()"
+                     [min]="0" [max]="getMaxOffset()" [step]="1" />
+              <button class="period-btn compact" (click)="nextWindow()" [disabled]="trendOffset === 0">Next ⟩</button>
+              <span class="trend-range">{{ getCurrentRangeText() }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="patientTrendsChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Calendar Widget -->
+      <div class="calendar-card">
+        <div class="calendar-header">
+          <h3>Hospital Calendar</h3>
+          <div class="calendar-date">{{ currentDateTime.date }}</div>
+        </div>
+        <div class="calendar-container">
+          <div class="calendar-grid">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+
+            <!-- Calendar days (simplified) -->
+            <div class="calendar-day" *ngFor="let day of getCalendarDays()"
+                 [class.today]="day.isToday"
+                 [class.has-events]="day.hasEvents">
+              {{ day.date }}
+            </div>
+          </div>
+          <div class="calendar-events">
+            <div class="event-item">
+              <span class="event-time">09:00 AM</span>
+              <span class="event-title">Staff Meeting</span>
+            </div>
+            <div class="event-item">
+              <span class="event-time">02:00 PM</span>
+              <span class="event-title">Department Review</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Quick Actions Section -->
+  <div class="quick-actions-section">
+    <div class="section-header">
+      <h2 class="section-title">Quick Actions</h2>
+      <p class="section-subtitle">Frequently used hospital operations</p>
+    </div>
+
+    <div class="quick-actions-grid">
+      <div class="action-card" routerLink="/reception/patient-registration">
+        <div class="action-icon">👤</div>
+        <div class="action-title">New Patient</div>
+        <div class="action-subtitle">Register new patient</div>
+      </div>
+
+
+      <!-- Receive Cash (Cash Receipt) -->
+      <div class="action-card" routerLink="/cash-receipt/register-opt-ipd">
+        <div class="action-icon">₹</div>
+        <div class="action-title">Receive Cash</div>
+        <div class="action-subtitle">Cash Receipt / Billing</div>
+      </div>
+
+      <!-- Edit Records (Cash Receipt) -->
+      <div class="action-card" routerLink="/cash-receipt/edit-record">
+        <div class="action-icon">✏️</div>
+        <div class="action-title">Edit Records</div>
+        <div class="action-subtitle">Modify saved receipts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reporting Section -->
+  <div class="reporting-section">
+    <div class="section-header">
+      <h2 class="section-title">📈 Reporting & Analytics</h2>
+      <p class="section-subtitle">Generate and view hospital reports</p>
+    </div>
+
+    <div class="reporting-grid">
+      <div class="report-card" routerLink="/reporting/consolidated-opd-report">
+        <div class="report-icon">📊</div>
+        <div class="report-title">Consolidated OPD Report</div>
+        <div class="report-subtitle">Department-wise OPD summary</div>
+        <div class="report-badge">LIVE</div>
+        <div class="report-metric"><span class="label">Total OPD</span><span class="value">{{ stats.totalOPD || 0 }}</span></div>
+      </div>
+
+      <div class="report-card" routerLink="/reporting/daily-opd-report">
+        <div class="report-icon">📋</div>
+        <div class="report-title">Daily OPD Report</div>
+        <div class="report-subtitle">Daily patient statistics</div>
+        <div class="report-badge">LIVE</div>
+        <div class="report-metric"><span class="label">Today</span><span class="value">{{ stats.todayOPD || 0 }}</span></div>
+      </div>
+
+      <div class="report-card" routerLink="/reporting/central-opd-report">
+        <div class="report-icon">🗂️</div>
+        <div class="report-title">Central OPD Report</div>
+        <div class="report-subtitle">Daily list with Yearly/M. No./D. No.</div>
+        <div class="report-badge">NEW</div>
+        <div class="report-metric"><span class="label">Today</span><span class="value">{{ stats.todayOPD || 0 }}</span></div>
+      </div>
+
+      <div class="report-card" routerLink="/reporting/daily-cash-report">
+        <div class="report-icon">💰</div>
+        <div class="report-title">Daily Cash Report</div>
+        <div class="report-subtitle">Department-wise cash collection</div>
+        <div class="report-badge">LIVE</div>
+        <div class="report-metric"><span class="label">Today</span><span class="value">₹{{ (stats.todayRevenue || 0) | number }}</span></div>
+      </div>
+
+      <div class="report-card" routerLink="/reporting/monthly-opd-report">
+        <div class="report-icon">📈</div>
+        <div class="report-title">Monthly OPD Report</div>
+        <div class="report-subtitle">Monthly analytics & trends</div>
+        <div class="report-badge">LIVE</div>
+        <div class="report-metric"><span class="label">This Month</span><span class="value">{{ stats.monthlyPatients || 0 }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Section -->
+  <div class="recent-activity-section">
+    <div class="section-header">
+      <h2 class="section-title">Recent Activity</h2>
+      <p class="section-subtitle">Latest hospital activities</p>
+    </div>
+
+    <div class="activity-grid">
+      <!-- Today's Patients -->
+      <div class="activity-card">
+        <div class="activity-header">
+          <h3>Today's Patients <span class="live-indicator">🔴 LIVE</span></h3>
+          <span class="activity-count">{{ stats.todayPatients || recentPatients.length }}</span>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let patient of recentPatients | slice:0:5; let i = index">
+            <span class="activity-time">{{ patient.time }}</span>
+            <span class="activity-text">{{ patient.activity }}</span>
+            <span class="new-badge" *ngIf="i < 2">NEW</span>
+          </div>
+          <div class="no-data" *ngIf="recentPatients.length === 0">
+            <span>No patients registered today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Receipts -->
+      <div class="activity-card">
+        <div class="activity-header">
+          <h3>Today's Receipts <span class="live-indicator">💰 LIVE</span></h3>
+          <span class="activity-count">{{ cashReceiptPatients.length }}</span>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item" *ngFor="let receipt of cashReceiptPatients | slice:0:5; let i = index">
+            <span class="activity-time">{{ receipt.time }}</span>
+            <span class="activity-text">{{ receipt.activity }}</span>
+            <span class="new-badge" *ngIf="i < 2">NEW</span>
+          </div>
+          <div class="no-data" *ngIf="cashReceiptPatients.length === 0">
+            <span>No receipts today</span>
+          </div>
+        </div>
+      </div>
+
+
+
+      <!-- Revenue Summary - Hidden until actual billing data is available -->
+      <!--
+      <div class="activity-card">
+        <div class="activity-header">
+          <h3>Revenue Summary</h3>
+          <span class="activity-amount">₹{{ getTotalRevenue() | number }}</span>
+        </div>
+        <div class="revenue-breakdown">
+          <div class="revenue-item">
+            <span class="revenue-label">OPD Consultations</span>
+            <span class="revenue-value">₹{{ (stats.todayRevenue * 0.6) | number:'1.0-0' }}</span>
+          </div>
+          <div class="revenue-item">
+            <span class="revenue-label">Lab Tests</span>
+            <span class="revenue-value">₹{{ stats.labRevenue | number }}</span>
+          </div>
+
+        </div>
+      </div>
+      -->
+    </div>
+  </div>
+</div>

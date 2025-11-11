@@ -1,0 +1,63 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <h1>Sarthak Diagnostic Network</h1>
+      <p>Register</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input id="firstName" formControlName="firstName" class="form-input" placeholder="First name">
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input id="lastName" formControlName="lastName" class="form-input" placeholder="Last name">
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" formControlName="username" class="form-input" placeholder="Username">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" type="email" formControlName="email" class="form-input" placeholder="Email">
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input id="phone" formControlName="phone" class="form-input" placeholder="Phone">
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" class="form-input" formControlName="role">
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" type="password" formControlName="password" class="form-input" placeholder="Password">
+      </div>
+
+      <div *ngIf="error" class="error-alert">
+        {{ error }}
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" [disabled]="registerForm.invalid || loading">
+        <span *ngIf="loading">Creating account...</span>
+        <span *ngIf="!loading">Create Account</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>
+        Already have an account?
+        <a routerLink="/auth/login" class="link">Login</a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+/* Match Reports Records look & feel */
+.reports-records-container { padding: 20px; background: #f8fafc; min-height: 100vh; }
+
+/* 1. Header */
+.page-header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 20px 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.1); }
+.header-left .page-title { font-size: 28px; font-weight: 700; color: #1e40af; margin: 0; }
+.header-right { display: flex; gap: 20px; align-items: center; }
+.record-count, .showing-count { font-size: 14px; font-weight: 600; color: #374151; background: #f0f9ff; padding: 8px 15px; border-radius: 20px; border: 1px solid #bfdbfe; }
+.header-actions { display: flex; gap: 8px; }
+.header-actions .print-btn { background: #8b5cf6; color: #fff; border: 0; padding: 8px 12px; border-radius: 8px; }
+.header-actions .pdf-btn { background: #059669; color: #fff; border: 0; padding: 8px 12px; border-radius: 8px; }
+
+/* 2. Filters */
+.filters-section { background: #fff; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,.1); }
+.filter-row { display: flex; gap: 15px; align-items: end; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 150px; }
+.filter-group label { font-size: 13px; font-weight: 600; color: #374151; }
+.form-input, .form-select { padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #fff; }
+.form-input:focus, .form-select:focus { outline: none; border-color: #1e40af; box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
+.filter-actions { display: flex; gap: 10px; align-items: end; }
+.clear-btn, .refresh-btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+.clear-btn { background: #ef4444; color: #fff; }
+.refresh-btn { background: #10b981; color: #fff; }
+.clear-btn:hover { background: #dc2626; }
+.refresh-btn:hover { background: #059669; }
+
+/* 3. Hospital Header */
+.hospital-header-section { background: #fff; padding: 16px 18px; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border: 1.5px solid #1e40af; }
+.logo-section { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.govt-logo { width: 130px; height: auto; }
+.hospital-info { text-align: center; }
+.hospital-info h2 { margin: 0; color: #1e40af; font-size: 18px; line-height: 1.2; font-weight: 800; }
+.hospital-info h3 { margin: 4px 0 2px; color: #1f2937; font-size: 14px; line-height: 1.2; font-weight: 700; }
+.hospital-info p { margin: 0; color: #6b7280; font-size: 12px; line-height: 1.2; }
+
+/* 4. Table */
+.table-container { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,.1); margin-bottom: 25px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table thead { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); color: #fff; }
+.data-table th { padding: 15px 12px; text-align: center; font-weight: 600; font-size: 13px; letter-spacing: 0.5px; color: #fff; }
+.data-table tbody tr { border-bottom: 1px solid #e5e7eb; }
+.data-table tbody tr:nth-child(even) { background: #f8fafc; }
+.data-table tbody tr:hover { background: #e0f2fe; }
+.data-table td { padding: 12px; vertical-align: middle; font-size: 13px; text-align: center; }
+
+/* 5. No Data */
+.no-data-message { text-align: center; padding: 60px; color: #6b7280; font-style: italic; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,.1); margin-bottom: 25px; }
+
+
+/* 6. Pagination */
+.pagination-controls { display:flex; justify-content:center; align-items:center; gap:10px; padding:12px; }
+.pagination-controls button { padding:6px 12px; border-radius:8px; border:1px solid #cbd5e1; background:#fff; cursor:pointer; font-weight:600; color:#1f2937; }
+.pagination-controls button:hover:not(:disabled) { background:#f1f5f9; }
+.pagination-controls button:disabled { opacity:.5; cursor:not-allowed; }
+
+/* PDF export adjustments */
+.reports-records-container.pdf-export .page-header,
+.reports-records-container.pdf-export .filters-section,
+.reports-records-container.pdf-export .pagination-controls { display:none !important; }
+/* Hide screen-only elements during PDF export to prevent duplicate sections */
+.reports-records-container.pdf-export .screen-only { display:none !important; }
+.reports-records-container.pdf-export .print-only { display:block !important; }
+
+/* Print adjustments */
+
+/* Signature section (screen hidden, print/PDF visible) */
+.print-only{ display:none; }
+.signature-section{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; padding:20px 12px; }
+.signature-section .sig-title{ font-weight:700; color:#1f2937; margin-top:6px; }
+/* Left title with line above */
+.signature-section .sig-left .sig-title{ position:relative; }
+.signature-section .sig-left .sig-title::before{ content:''; display:block; width:200px; border-top:2px solid #9ca3af; margin-bottom:8px; }
+/* Right title with line above aligned to right edge */
+.signature-section .sig-right{ flex:1; text-align:right; position:relative; }
+.signature-section .sig-right .sig-title{ position:relative; display:inline-block; }
+.signature-section .sig-right .sig-title::before{ content:''; position:absolute; right:0; top:-12px; width:200px; border-top:2px solid #9ca3af; }
+.signature-section .sig-field{ margin-top:12px; color:#374151; font-weight:600; }
+.signature-section .sig-field .line{ display:inline-block; min-width:160px; border-bottom:1px solid #9ca3af; margin-left:8px; transform:translateY(-3px); }
+.signature-section .sig-field .line.short{ min-width:120px; }
+.signature-section .sig-left{ flex:1; }
+
+@media print {
+  @page { size: A4 portrait; margin: 8mm; }
+  .page-header, .filters-section, .pagination-controls, .screen-only { display: none !important; }
+  .print-only { display: block !important; }
+  .govt-logo { width: 80px !important; }
+  .table-container { box-shadow: none !important; margin: 0 !important; }
+  .data-table thead th { background: #1e40af !important; color: #fff !important; padding: 6px 4px !important; font-size: 11px !important; }
+  .data-table tbody td { padding: 6px 4px !important; font-size: 11px !important; }
+}
+

@@ -1,0 +1,59 @@
+<!-- Delete Success Modal -->
+<div class="delete-success-overlay" *ngIf="show">
+  <div class="delete-success-modal">
+    <!-- Close Button -->
+    <button 
+      *ngIf="showCloseButton"
+      class="close-alert-btn" 
+      (click)="onClose()">
+      ✕
+    </button>
+    
+    <div class="delete-success-content">
+      <!-- Success Animation -->
+      <div class="delete-success-animation">
+        <!-- Prefer dotlottie-player if available -->
+        <dotlottie-player
+          *ngIf="hasDotLottiePlayer; else wcOrFallback"
+          [attr.src]="lottieSrc"
+          style="width: 140px; height: 140px"
+          autoplay
+          loop>
+        </dotlottie-player>
+
+        <ng-template #wcOrFallback>
+          <!-- Fallback to dotlottie-wc if available -->
+          <dotlottie-wc
+            *ngIf="hasDotLottieWC; else iconFallback"
+            [attr.src]="lottieSrc"
+            style="width: 140px; height: 140px"
+            speed="1"
+            autoplay
+            loop>
+          </dotlottie-wc>
+
+          <!-- Final fallback: static icon -->
+          <ng-template #iconFallback>
+            <i class="fa-solid fa-check-circle" style="font-size: 64px; color: #22c55e"></i>
+          </ng-template>
+        </ng-template>
+      </div>
+
+      <!-- Success Title -->
+      <h2 class="delete-success-title">
+        <i class="fa-solid fa-trash"></i> {{ title }}
+      </h2>
+
+      <!-- Success Message -->
+      <div class="delete-success-message-display">
+        <p class="delete-success-message">{{ message }}</p>
+      </div>
+
+      <!-- Badge -->
+      <div class="delete-success-badge">
+        <span class="success-badge-icon">✅</span>
+        <span>{{ badgeText }}</span>
+      </div>
+    </div>
+  </div>
+</div>

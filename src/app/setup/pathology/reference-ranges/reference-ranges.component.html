@@ -1,0 +1,252 @@
+<!-- Reference Ranges Management -->
+<div class="reference-ranges-container">
+
+  <!-- Header Section - Styled like Doctor List header -->
+  <div class="search-header">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="header-icon">🧪</div>
+        <div class="header-text">
+          <h1 class="header-title">Reference Ranges</h1>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()" placeholder="Search tests by name, category, type..." />
+          @if (searchTerm) {
+            <button class="clear-btn" (click)="searchTerm=''; onSearch()" aria-label="Clear search">
+              <i class="fas fa-times"></i>
+            </button>
+          }
+        </div>
+        <div class="header-stats">
+          <span class="stats-pill">Total: {{ getTotalEligibleTestsCount() }}</span>
+          <span class="stats-pill primary">Showing: {{ getTestsByCategory().length }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Selection -->
+  <div class="category-selection">
+    <label>Select category:</label>
+    <div class="category-buttons">
+      @for (category of testCategories; track category._id) {
+        <button
+          [class.active]="selectedCategoryId === category._id"
+          (click)="category._id && selectCategory(category._id)"
+          class="category-btn">
+          {{ category.name }}
+        </button>
+      }
+    </div>
+  </div>
+
+
+  <!-- Selected Category Tests -->
+  @if (selectedCategoryName) {
+    <div class="category-section">
+      <div class="section-header">
+        <h3>{{ selectedCategoryName }} tests</h3>
+        <div class="test-count">{{ getTestsByCategory().length }} tests</div>
+      </div>
+
+      <div class="tests-list">
+        @for (test of getTestsByCategory(); track test._id) {
+          <!-- Main Test Category Header -->
+          <div class="test-category-header">
+            <h2 class="category-title">
+              {{ test.name }}
+              @if ((!test.parameters || test.parameters.length === 0) && test?.unit) {
+                <span class="unit-display">({{ test?.unit?.name || test?.unit }})</span>
+              }
+            </h2>
+            @if (!test.parameters || test.parameters.length === 0) {
+              <button class="edit-normal-btn" (click)="editNormalValues(test)">
+                <i class="fas fa-edit"></i> Edit normal values
+              </button>
+            }
+          </div>
+
+          <!-- For nested tests with parameters - grouped by groupBy -->
+          @if (((test.testType || '').toLowerCase() === 'nested') && test.parameters && test.parameters.length > 0) {
+            @for (group of getParameterGroups(test); track group.name) {
+              <div class="parameter-card">
+                <!-- Group Header -->
+                <div class="parameter-header group-header">
+                  <div class="parameter-title">
+                    <h3 class="parameter-name group-title">{{ group.name }}</h3>
+                  </div>
+                </div>
+
+                <!-- Parameters in this group -->
+                @for (parameter of group.items; track parameter.name) {
+                  <div class="parameter-content">
+                    <div class="parameter-header" style="background:#fff">
+                      <div class="parameter-title">
+                        <h3 class="parameter-name">{{ parameter.name }}@if (parameter.unit) { ({{ parameter.unit?.name || parameter.unit }}) }</h3>
+                      </div>
+                      <button class="edit-normal-btn" (click)="editParameterNormalValues(test, parameter)">
+                        <i class="fas fa-edit"></i> Edit normal values
+                      </button>
+                    </div>
+
+                    <!-- Parameter Content with Vertical Lines -->
+                    <div class="parameter-content">
+                      <div class="values-section">
+                        @if (parameter.normalValues && parameter.normalValues.length > 0) {
+                          @for (normalValue of parameter.normalValues; track normalValue._id) {
+                            <div class="value-item">
+                              <div class="gender-row">
+                                <span class="gender-badge" [ngClass]="getGenderBadgeClass(normalValue.gender)">{{ normalValue.gender || 'Any' }}</span>
+                                <span class="age-range">{{ normalValue.minAge }}{{ normalValue.ageUnit || 'D' }} - {{ normalValue.maxAge }}{{ normalValue.ageUnit || 'Y' }}</span>
+                              </div>
+                              <div class="range-row">
+                                <span class="range-value">
+                                  @if (normalValue.type === 'Numeric range') {
+                                    {{ normalValue.lowerValue }} - {{ normalValue.upperValue }}
+                                  } @else {
+                                    {{ normalValue.textValue }}
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          }
+                        } @else {
+                          <div class="value-item">
+                            <div class="gender-row">
+                              <span class="gender-label">Any</span>
+                            </div>
+                            <div class="range-row">
+                              <span class="range-value no-values">No normal values defined</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          } @else if (test.parameters && test.parameters.length > 0) {
+            <!-- For multiple tests: list parameters (no group headers) -->
+            <div class="parameter-card">
+              @for (parameter of getOrderedParameters(test); track parameter.name) {
+                <div class="parameter-content">
+                  <div class="parameter-header" style="background:#fff">
+                    <div class="parameter-title">
+                      <h3 class="parameter-name">{{ parameter.name }}@if (parameter.unit) { ({{ parameter.unit?.name || parameter.unit }}) }</h3>
+                    </div>
+                    <button class="edit-normal-btn" (click)="editParameterNormalValues(test, parameter)">
+                      <i class="fas fa-edit"></i> Edit normal values
+                    </button>
+                  </div>
+                  <div class="parameter-content">
+                    <div class="values-section">
+                      @if (parameter.normalValues && parameter.normalValues.length > 0) {
+                        @for (normalValue of parameter.normalValues; track normalValue._id) {
+                          <div class="value-item">
+                            <div class="gender-row">
+                              <span class="gender-badge" [ngClass]="getGenderBadgeClass(normalValue.gender)">{{ normalValue.gender || 'Any' }}</span>
+                              <span class="age-range">{{ normalValue.minAge }}{{ normalValue.ageUnit || 'D' }} - {{ normalValue.maxAge }}{{ normalValue.ageUnit || 'Y' }}</span>
+                            </div>
+                            <div class="range-row">
+                              <span class="range-value">
+                                @if (normalValue.type === 'Numeric range') {
+                                  {{ normalValue.lowerValue }} - {{ normalValue.upperValue }}
+                                } @else {
+                                  {{ normalValue.textValue }}
+                                }
+                              </span>
+                            </div>
+                          </div>
+                        }
+                      } @else {
+                        <div class="value-item">
+                          <div class="gender-row">
+                            <span class="gender-label">Any</span>
+                          </div>
+                          <div class="range-row">
+                            <span class="range-value no-values">No normal values defined</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <!-- For single tests -->
+            <div class="parameter-card">
+              <div class="parameter-content">
+                <div class="values-section">
+                  @if (getNormalValuesForTest(test).length > 0) {
+                    @for (normalValue of getNormalValuesForTest(test); track normalValue._id) {
+                      <div class="value-item">
+                        <div class="gender-row">
+                          <span class="gender-badge" [ngClass]="getGenderBadgeClass(normalValue.gender)">{{ normalValue.gender || 'Any' }}</span>
+                          <span class="age-range">{{ normalValue.minAge }}{{ normalValue.ageUnit || 'D' }} - {{ normalValue.maxAge }}{{ normalValue.ageUnit || 'Y' }}</span>
+                        </div>
+                        <div class="range-row">
+                          <span class="range-value">
+                            @if (normalValue.type === 'Numeric range') {
+                              {{ normalValue.lowerValue }} - {{ normalValue.upperValue }}
+                            } @else {
+                              {{ normalValue.textValue }}
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  } @else {
+                    <div class="value-item">
+                      <div class="gender-row">
+                        <span class="gender-label">Any</span>
+                      </div>
+                      <div class="range-row">
+                        <span class="range-value no-values">No normal values defined</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Success Alert -->
+  @if (showAlert) {
+    <div class="alert-container">
+      <div class="alert alert-success">
+        <div class="alert-content">
+          <i class="fas fa-check-circle"></i>
+          <span>{{ alertMessage }}</span>
+        </div>
+        <button class="alert-close" (click)="showAlert = false">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Normal Value Modal -->
+  @if (showNormalValueModal) {
+    <div class="modal-overlay" (click)="closeNormalValueModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <app-normal-value-editor
+          [parameter]="selectedParameter"
+          [normalValues]="selectedParameter?.normalValues || []"
+          (save)="saveNormalValues($event)"
+          (cancel)="closeNormalValueModal()"
+          (close)="closeNormalValueModal()">
+        </app-normal-value-editor>
+      </div>
+    </div>
+  }
+
+</div>

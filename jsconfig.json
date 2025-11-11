@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2020"
+  },
+  "exclude": [
+    "node_modules",
+    "back-end/dist",
+    "back-end/dist",
+    "out-tsc",
+    "**/dist/**",
+    "**/back-end/dist/**",
+    "**/out-tsc/**"
+  ]
+}
+

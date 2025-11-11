@@ -1,0 +1,266 @@
+<div class="custom-modal-overlay">
+  <div class="custom-modal-container">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>
+        <span *ngIf="isViewMode">View Patient Details</span>
+        <span *ngIf="isEditMode">Book Appointment</span>
+        <span *ngIf="isBookAppointmentMode">Book Appointment</span>
+      </h2>
+      <button class="close-btn" (click)="onCancel()">✕</button>
+    </div>
+
+    <!-- Content -->
+    <div class="modal-content">
+      <form [formGroup]="patientForm" class="patient-form">
+
+        <!-- OPD Details Section -->
+        <div class="section-header">
+          <h3>🏥 OPD Details</h3>
+        </div>
+
+        <!-- Row 6: Registration Date & Weight -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Registration Date</label>
+            <input type="date" formControlName="registrationDate" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label>Weight (Kg)</label>
+            <input type="number" formControlName="weightKg" class="form-input"
+                   placeholder="Enter weight" step="0.1" [readonly]="isViewMode">
+          </div>
+        </div>
+
+        <!-- Row 7: Department & Doctor (Room) - Always visible -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Department *</label>
+            <!-- Edit/Book Appointment Mode: Dropdown -->
+            <select *ngIf="isEditMode || isBookAppointmentMode" formControlName="department" class="form-input" (change)="onDepartmentChange($event)">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments; trackBy: trackByDepartmentId" [value]="dept._id">{{ dept.name }}</option>
+            </select>
+            <!-- View Mode: Read-only input -->
+            <input *ngIf="isViewMode" type="text" class="form-input" readonly
+                   [value]="data.appointment?.department?.name || 'N/A'">
+          </div>
+          <div class="form-group">
+            <label>Doctor/Room *</label>
+            <!-- Edit/Book Appointment Mode: Dropdown -->
+            <select *ngIf="isEditMode || isBookAppointmentMode" formControlName="doctor" class="form-input" [disabled]="!selectedDepartmentId">
+              <option value="">Select Doctor</option>
+              <option *ngFor="let room of (filteredRooms || []); trackBy: trackByRoomId" [value]="room._id">{{ room.roomNumber }}</option>
+            </select>
+            <!-- View Mode: Read-only input -->
+            <input *ngIf="isViewMode" type="text" class="form-input" readonly
+                   [value]="data.appointment?.room?.roomNumber || 'N/A'">
+          </div>
+        </div>
+
+        <!-- Row 8: Remarks -->
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Remarks</label>
+            <textarea formControlName="remark" class="form-input" rows="3"
+                      placeholder="Enter any remarks" [readonly]="isViewMode"></textarea>
+          </div>
+        </div>
+
+        <!-- Row 9: Fee (always visible in edit/book modes) -->
+        <div class="form-row" *ngIf="isEditMode || isBookAppointmentMode">
+          <div class="form-group" style="max-width:180px;">
+            <label>Fee (₹)</label>
+            <input type="number" formControlName="fee" class="form-input" [readonly]="true" value="1">
+          </div>
+          <div class="form-group" style="max-width:240px;">
+            <label>Payment Method</label>
+            <select formControlName="paymentMethod" class="form-input">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+            </select>
+          </div>
+        </div>
+
+
+        <!-- Personal Information Section -->
+        <div class="section-header">
+          <h3>📋 Personal Information</h3>
+        </div>
+
+        <!-- Row 1: Registration No., Registration Date, Aadhaar No. -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Registration No.</label>
+            <input type="text" formControlName="registrationNumber" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" formControlName="date" class="form-input" readonly>
+          </div>
+          <div class="form-group">
+            <label>Aadhaar No</label>
+            <input type="text" formControlName="aadharNo" class="form-input"
+                   placeholder="Enter 12-digit Aadhaar" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)"
+                   maxlength="12" inputmode="numeric" pattern="[0-9]*"
+                   (input)="onNumericInput($event, 12, 'aadharNo')">
+          </div>
+        </div>
+
+        <!-- Row 2: Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name *</label>
+            <input type="text" formControlName="firstName" class="form-input"
+                   placeholder="Enter first name" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" formControlName="lastName" class="form-input"
+                   placeholder="Enter last name" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+        </div>
+
+        <!-- Row 3: Age & Gender -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age *</label>
+            <input type="number" formControlName="age" class="form-input"
+                   placeholder="Enter age" min="0" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+          <div class="form-group">
+            <label>Age In *</label>
+            <select formControlName="ageIn" class="form-input" [disabled]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+              <option value="Years">Years</option>
+              <option value="Months">Months</option>
+              <option value="Days">Days</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select formControlName="gender" class="form-input" [disabled]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 4: Contact -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Contact *</label>
+            <input type="tel" formControlName="contact" class="form-input"
+                   placeholder="Enter 10-digit mobile number" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)"
+                   maxlength="10" inputmode="numeric" pattern="[0-9]*"
+                   (input)="onNumericInput($event, 10, 'contact')">
+          </div>
+        </div>
+
+        <!-- Row 5: Address -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" formControlName="address" class="form-input"
+                   placeholder="Enter address" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" formControlName="city" class="form-input"
+                   placeholder="Enter city" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+          <div class="form-group">
+            <label>Post</label>
+            <input type="text" formControlName="post" class="form-input"
+                   placeholder="Enter postal code" [readonly]="isViewMode || (disablePersonalInfo && !isBookAppointmentMode)">
+          </div>
+        </div>
+
+
+      </form>
+
+      <!-- Appointment Details (View Mode Only) -->
+      <div class="appointment-details" *ngIf="isViewMode && data.appointment">
+        <h3>📅 Appointment Information</h3>
+        <div class="appointment-info">
+          <div class="info-row">
+            <span class="label">Appointment ID:</span>
+            <span class="value">{{ data.appointment.appointmentId }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Date & Time:</span>
+            <span class="value">{{ data.appointment.appointmentDate | date:'dd/MM/yyyy' }} at {{ data.appointment.appointmentTime }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Department:</span>
+            <span class="value">{{ data.appointment.department?.name || 'N/A' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Room:</span>
+            <span class="value">{{ data.appointment.room?.roomNumber || 'N/A' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Status:</span>
+            <span class="value status-badge">{{ data.appointment.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <!-- Edit Mode Buttons -->
+      <button type="button" class="btn btn-success" (click)="onSave()"
+              *ngIf="isEditMode" [disabled]="patientForm.invalid">
+        Save
+      </button>
+
+      <button type="button" class="btn btn-primary print-btn" (click)="onPrint()"
+              *ngIf="isEditMode && isAppointmentBooked">
+        <i class="fas fa-print"></i> Print
+      </button>
+
+      <!-- Book Appointment Mode Buttons -->
+      <button type="button" class="btn btn-success" (click)="onSave()"
+              *ngIf="isBookAppointmentMode && !isAppointmentBooked" [disabled]="!canBookAppointment()">
+        Book Appointment
+      </button>
+
+      <ng-container *ngIf="isBookAppointmentMode && isAppointmentBooked">
+        <button type="button" class="btn btn-primary print-btn" (click)="onPrint()" *ngIf="!hasPrinted">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button type="button" class="btn btn-secondary" disabled *ngIf="hasPrinted">
+          <i class="fas fa-check"></i> Printed
+        </button>
+      </ng-container>
+
+      <!-- <button type="button" class="btn btn-success" (click)="onDone()"
+              *ngIf="isBookAppointmentMode && isAppointmentBooked">
+        <i class="fas fa-check"></i> Done
+      </button> -->
+
+      <button type="button" class="btn btn-secondary" (click)="onCancel()"
+              *ngIf="isBookAppointmentMode">
+        Cancel
+      </button>
+
+      <!-- View Mode Button -->
+      <button type="button" class="btn btn-secondary" (click)="onCancel()"
+              *ngIf="isViewMode">
+        Close
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Success Alert Modal -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="'🎉 Appointment Success!'"
+    [message]="successMessage"
+    [badgeText]="'Appointment Operation Completed Successfully'"
+    [autoHideDelay]="1000"
+    (close)="closeSuccessAlert()">
+  </app-success-alert>
+</div>

@@ -1,0 +1,42 @@
+<!-- Record Already Exists Modal -->
+<div class="record-exists-overlay" *ngIf="show" [@fadeInOut]>
+  <div class="record-exists-modal" [@slideInOut]>
+    <!-- Close Button -->
+    <button class="close-btn" (click)="closeModal()" aria-label="Close">
+      <i class="fa-solid fa-times"></i>
+    </button>
+
+    <div class="record-exists-content">
+      <!-- Warning Animation -->
+      <div class="warning-animation">
+         <dotlottie-wc
+          src="https://lottie.host/40bc95f3-c265-4d25-83ee-b8823cacf78e/9ygtk7LeD4.lottie"
+          style="width: 140px; height: 140px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      
+      </div>
+
+      <!-- Warning Title -->
+      <h2 class="warning-title">
+        <i class="fa-solid fa-exclamation-triangle"></i>
+        {{ title }}
+      </h2>
+
+      <!-- Warning Message -->
+      <div class="warning-message-display">
+        <p class="warning-message">{{ message }}</p>
+        <p class="sub-message" *ngIf="subMessage">{{ subMessage }}</p>
+      </div>
+
+      <!-- Warning Badge -->
+      <div class="warning-badge">
+        <span class="badge-icon">🤖</span>
+        <span>{{ badgeText || 'Duplicate Record Found' }}</span>
+      </div>
+
+    </div>
+  </div>
+</div>

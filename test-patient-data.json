@@ -1,0 +1,46 @@
+{
+  "receiptNo": "RCP001",
+  "registrationNo": "REG001",
+  "labYearlyNo": "LAB2024001",
+  "labDailyNo": "DAILY001",
+  "labNumber": "LAB001",
+  "patientData": {
+    "firstName": "राम",
+    "lastName": "शर्मा",
+    "age": "35",
+    "gender": "Male",
+    "phone": "9876543210",
+    "address": "चौकाघाट, वाराणसी",
+    "aadhaar": "123456789012",
+    "registrationNumber": "REG001",
+    "bloodGroup": "B+",
+    "email": "ram.sharma@email.com"
+  },
+  "department": "Pathology",
+  "doctor": "Dr. Singh",
+  "testResults": [
+    {
+      "testName": "SERUM LIPID PROFILE",
+      "category": "PATHOLOGY",
+      "parameters": [
+        {
+          "name": "Total Cholesterol",
+          "value": "180",
+          "unit": "mg/dL",
+          "normalRange": "125-200",
+          "status": "Normal"
+        },
+        {
+          "name": "HDL Cholesterol",
+          "value": "45",
+          "unit": "mg/dL",
+          "normalRange": "> 40",
+          "status": "Normal"
+        }
+      ]
+    }
+  ],
+  "reportDate": "2024-01-15",
+  "reportStatus": "Completed",
+  "createdBy": "Test User"
+}

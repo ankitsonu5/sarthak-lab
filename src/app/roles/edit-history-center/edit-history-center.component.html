@@ -1,0 +1,83 @@
+<div class="ehc">
+  <div class="ehc-header">
+    <div>
+      <h2>Edit History (Daily)</h2>
+      <p class="muted">All edits grouped by module for the selected day</p>
+    </div>
+    <div class="tools">
+      <div class="date-tools">
+        <button class="btn ghost" (click)="prevDay()" title="Previous Day">◀</button>
+        <input type="date" [(ngModel)]="date" (change)="load()" />
+        <button class="btn ghost" (click)="nextDay()" title="Next Day">▶</button>
+        <button class="btn" (click)="today()">Today</button>
+      </div>
+      <button class="btn" (click)="load()" [disabled]="loading">Refresh</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button *ngFor="let t of tabs" (click)="setActive(t.key)" [class.active]="t.key===active">
+      {{t.label}}
+      <span class="count-badge">{{ getCountFor(t.key) }}</span>
+    </button>
+  </div>
+
+  <div class="filters">
+    <div class="field grow">
+      <input type="text" placeholder="Search by UHID / Receipt / User / Field change" [(ngModel)]="qText" (input)="onFilterChange()" />
+    </div>
+    <div class="field">
+      <select [(ngModel)]="qAction" (change)="onFilterChange()">
+        <option value="UPDATE">Update</option>
+        <option value="ALL">All</option>
+        <option value="CREATE">Create</option>
+        <option value="DELETE">Delete</option>
+      </select>
+    </div>
+    <button class="btn" (click)="qText=''; qAction='UPDATE'; onFilterChange()">Clear</button>
+  </div>
+
+  <div class="table-wrap" *ngIf="!loading">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th style="width:160px">Time</th>
+          <th style="width:120px">Action</th>
+          <th style="width:220px">ID</th>
+          <th style="width:180px">User</th>
+          <th>Changes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of entriesForActive(); let i = index">
+          <td>{{ e.at | date:'dd/MM/yyyy, h:mm a' }}</td>
+          <td>
+            <span class="chip" [class.c]="e.action==='CREATE'" [class.u]="e.action==='UPDATE'" [class.d]="e.action==='DELETE'">{{ e.action }}</span>
+          </td>
+          <td class="mono">
+            <span *ngIf="e.meta?.patientId">UHID: {{ e.meta.patientId }}</span>
+            <span *ngIf="e.meta?.appointmentId">Appt: {{ e.meta.appointmentId }}</span>
+            <span *ngIf="e.meta?.receiptNumber">Receipt: {{ e.meta.receiptNumber }}</span>
+            <span *ngIf="!e.meta?.patientId && !e.meta?.appointmentId && !e.meta?.receiptNumber">{{ e.entityId }}</span>
+          </td>
+          <td>{{ e.by?.name || e.by?.role || 'System' }}</td>
+          <td class="changes-cell">
+            <ng-container *ngIf="shouldShowDetailed(e); else defaultChanges">
+              <div class="change-row" *ngFor="let c of changeItems(e)">
+                <span class="field">{{c.label}}:</span>
+                <span *ngIf="c.type==='remove' || c.type==='edit'" class="badge removed" title="removed">- {{ showVal(c.before, c.field) }}</span>
+                <span *ngIf="c.type==='add' || c.type==='edit'" class="badge added" title="added">+ {{ showVal(c.after, c.field) }}</span>
+              </div>
+            </ng-container>
+            <ng-template #defaultChanges>
+              <span class="changes" [title]="previewChanges(e)">{{ previewChanges(e) }}</span>
+            </ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty" *ngIf="entriesForActive().length===0">No edits found for this day.</div>
+  </div>
+
+  <div class="loading" *ngIf="loading">Loading…</div>
+</div>

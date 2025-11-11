@@ -1,0 +1,198 @@
+<!-- Print Layout Container -->
+<div class="print-container">
+
+  <!-- Print Button (Only visible on screen, not in print) -->
+  <div class="print-controls no-print">
+    <button type="button" class="print-btn" (click)="printReport()">
+      🖨️ Print Report
+    </button>
+  </div>
+
+  <!-- Pathology Report Print Layout -->
+
+  <div id="pathology-report-print" class="pathology-report-print" [ngClass]="{ 'tpl-classic': (labSettings?.printLayout?.template || 'classic')==='classic', 'tpl-compact': labSettings?.printLayout?.template==='compact', 'tpl-minimal': labSettings?.printLayout?.template==='minimal' }">
+    <!-- Print-time overlay frame and fixed footer -->
+    <div class="print-fixed-footer only-print" *ngIf="labSettings?.printLayout?.showFooter !== false">
+      <div class="page-footer">
+        <div class="footer-row tri">
+          <div class="sign-col">
+            <span class="signature-label">Technician</span>
+            <div class="signature-line"></div>
+          </div>
+          <div class="sign-col">
+            <span class="signature-label">Pathologist 1</span>
+            <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" style="height:28px; display:block; margin:4px auto;">
+            <div class="signature-line"></div>
+          </div>
+          <div class="sign-col">
+            <span class="signature-label">Pathologist 2</span>
+            <div class="signature-line"></div>
+          </div>
+        </div>
+        <div class="footer-note">
+          <p>{{ labSettings?.footerNote || 'Not Valid for MedicoLegal Purpose.' }}</p>
+          <p>{{ labSettings?.reportDisclaimer || 'Please Correlate Clinically.' }}</p>
+        </div>
+    <div class="chevron chevron-top"></div>
+      </div>
+    </div>
+
+    <!-- Hospital Header (first page only) -->
+    <div class="report-header-block" *ngIf="labSettings?.printLayout?.showHeader !== false">
+      <table class="header-table" role="presentation" style="width:100%;">
+        <tr>
+          <td class="logo-cell" style="width:140px; vertical-align:middle">
+            <img [src]="labSettings?.logoDataUrl || 'assets/images/myupgov.png'" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+          </td>
+          <td class="hospital-info-cell" style="text-align:center">
+            <div class="hospital-info">
+              <h1 class="hospital-name">{{ labSettings?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय' }}</h1>
+              <h2 class="hospital-location">
+                {{ (labSettings?.addressLine1 || '') }} {{ labSettings?.addressLine2 || '' }} {{ labSettings?.city || '' }} {{ labSettings?.state || '' }} {{ labSettings?.pincode || '' }}
+              </h2>
+              <div class="header-note" *ngIf="labSettings?.headerNote">{{ labSettings?.headerNote }}</div>
+            </div>
+          </td>
+          <td class="right-logo-cell" style="width:140px; vertical-align:middle; text-align:right">
+            <img *ngIf="labSettings?.sideLogoDataUrl" [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <!-- Top spacer for header on every printed page -->
+        <tr class="top-spacer only-print">
+          <th colspan="3"></th>
+        </tr>
+        <!-- Patient Info Box (repeats on every page) -->
+        <tr class="patient-info-row">
+          <th colspan="3" class="patient-cell">
+            <div class="patient-info-section">
+              <div class="patient-row first-row">
+                <div class="patient-field-medium no-wrap">
+                  <span class="field-label">Patient Name :</span>
+                  <span class="field-value inline-value">{{ formatName(patientName || patientData?.fullName ||
+                    patientData?.firstName + ' ' + patientData?.lastName || '') }}</span>
+                </div>
+                <div class="patient-field-small no-wrap">
+                  <span class="field-label">Reg. No. :</span>
+                  <span class="field-value">{{ registrationNo || '' }}</span>
+                </div>
+                <div class="patient-field-small no-wrap">
+                  <span class="field-label date-label">Date :</span>
+                  <span class="field-value date-nowrap">{{ formatReportDate(pathologyRegDate) }}</span>
+                </div>
+              </div>
+              <div class="patient-row">
+                <div class="patient-field-medium no-wrap">
+                  <span class="field-label">Referred By :</span>
+                  <span class="field-value">{{ doctorName }}</span>
+                </div>
+                <div class="patient-field-small no-wrap">
+                  <span class="field-label">Age :</span>
+                  <span class="field-value">{{ formatAgeWithUnit((age || patientData?.age), (reportData?.ageIn ||
+                    reportData?.ageUnit || patientData?.ageIn || patientData?.ageUnit)) }}</span>
+                </div>
+                <div class="patient-field-small no-wrap">
+                  <span class="field-label">Gender :</span>
+                  <span class="field-value">{{ formatGender(gender || patientData?.gender) }}</span>
+                </div>
+              </div>
+              <div class="patient-row">
+                <div class="patient-field-medium no-wrap">
+                  <span class="field-label">Lab Sr.No. :</span>
+                  <span class="field-value">{{ (labYearlyNo || '') }}/{{ (labDailyNo || '') }}</span>
+                </div>
+                <div class="patient-field-small no-wrap">
+                  <span class="field-label">IPD/OPD :</span>
+                  <span class="field-value"
+                    [ngClass]="{ 'ipd-highlight': (patientType || '').toUpperCase() === 'IPD' }">{{ patientType || ''
+                    }}</span>
+                </div>
+                <div class="patient-field-small"></div>
+              </div>
+            </div>
+              <div class="patient-barcode" style="text-align:right; margin-top:6px;">
+                <svg id="reportBarcode"></svg>
+              </div>
+          </th>
+        </tr>
+        <!-- Column headers (repeat on every page) -->
+        <tr class="columns-header">
+          <th class="test-column">TEST</th>
+          <th class="result-column">RESULT</th>
+          <th class="normal-column">NORMAL VALUE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Group tests by category and print once per category -->
+        <ng-container *ngFor="let group of categoryGroups">
+          <tr class="category-row">
+            <td colspan="3" class="center-text"><strong>{{ group.category }}</strong></td>
+          </tr>
+          <ng-container *ngFor="let testResult of group.tests">
+            <tr class="testname-row">
+              <td colspan="3">{{ testResult.testName }}</td>
+            </tr>
+            <ng-container *ngFor="let row of (testResult.displayRows || []); let i = index">
+              <tr class="group-row" *ngIf="row.kind === 'group' && hasGroupAnyValue((testResult.displayRows || []), i)">
+                <td colspan="3" class="group-title">{{ row.name }}</td>
+              </tr>
+              <tr class="param-row"
+                *ngIf="row.kind === 'param' && paramShouldPrint((testResult.displayRows || []), i, row)"
+                [ngClass]="getRowStatusClass(row.status || '')">
+                <td class="test-name" [style.padding-left.px]="10 + (row.level || 0) * 12">{{ row.name }}</td>
+                <td class="test-result" [ngClass]="getStatusClass(row.status || '')">
+                  {{ row.value }} <span class="unit" *ngIf="row.unit">{{ row.unit }}</span>
+                </td>
+                <td class="test-range" style="text-align:center;">
+                  <ng-container *ngFor="let ln of splitRange(row.normalRange)">
+                    <div>{{ ln }}</div>
+                  </ng-container>
+                </td>
+              </tr>
+              <!-- Remark row following a parameter -->
+              <tr class="remark-row" *ngIf="row.kind === 'remark'">
+                <td class="remark-cell" colspan="3" [style.padding-left.px]="10 + (row.level || 0) * 12">
+                  {{ row.remarkText }}
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">
+            <!-- Screen preview footer (visible on screen, hidden in print by CSS) -->
+            <div class="page-footer" *ngIf="labSettings?.printLayout?.showFooter !== false">
+              <div class="footer-row tri">
+                <div class="sign-col">
+                  <span class="signature-label">Technician</span>
+                  <div class="signature-line"></div>
+                </div>
+                <div class="sign-col">
+                  <span class="signature-label">Pathologist 1</span>
+                  <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" style="height:28px; display:block; margin:4px auto;">
+                  <div class="signature-line"></div>
+                </div>
+                <div class="sign-col">
+                  <span class="signature-label">Pathologist 2</span>
+                  <div class="signature-line"></div>
+                </div>
+              </div>
+              <div class="footer-note">
+                <p>{{ labSettings?.footerNote || 'Not Valid for MedicoLegal Purpose.' }}</p>
+                <p>{{ labSettings?.reportDisclaimer || 'Please Correlate Clinically.' }}</p>
+              </div>
+            </div>
+          </td>
+        </tr>
+
+      </tfoot>
+    </table>
+    <div class="chevron chevron-bottom"></div>
+  </div>
+</div>

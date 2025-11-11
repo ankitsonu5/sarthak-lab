@@ -1,0 +1,130 @@
+<div class="reports-records-container">
+  <!-- 1. Page Header (match Reports Records look) -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Test Summary</h1>
+    </div>
+    <div class="header-right">
+      <span class="record-count">Total Records: {{ rows.length }}</span>
+      <span class="showing-count">Showing: {{ showingCount }} records</span>
+      <div class="header-actions" *ngIf="filtered.length > 0">
+        <button class="print-btn" (click)="printSummary()"><i class="fas fa-print"></i> Print</button>
+        <button class="pdf-btn" (click)="generateSummaryPDF()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Filters Section -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>From Date:</label>
+        <input type="date" [(ngModel)]="fromDate" (change)="applyFilters()" class="form-input" />
+      </div>
+      <div class="filter-group">
+        <label>To Date:</label>
+        <input type="date" [(ngModel)]="toDate" (change)="applyFilters()" class="form-input" />
+      </div>
+      <div class="filter-group">
+        <label>Category:</label>
+        <select [(ngModel)]="categoryFilter" (change)="applyFilters()" class="form-select">
+          <option value="">All Categories</option>
+          <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search:</label>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search test/category" class="form-input" />
+      </div>
+      <div class="filter-actions">
+        <button class="clear-btn" (click)="clearFilters()">Clear</button>
+        <button class="refresh-btn" (click)="refreshData()">Refresh</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Hospital Header with Logo (for print/PDF consistency) -->
+  <div class="hospital-header-section">
+    <div class="logo-section">
+      <img src="assets/images/myupgov.png" alt="UP Government Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+      <div class="hospital-info">
+        <h2>राजकीय आयुर्वेद कॉलेज एवं अस्पताल वाराणसी</h2>
+        <h3>RAJKIYA AYURVEDA COLLEGE AND HOSPITAL VARANASI</h3>
+        <p>Government Ayurvedic Medical College & Hospital</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Table -->
+  <div class="table-container screen-only" *ngIf="filtered.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>S/N</th>
+          <th>Test Category</th>
+          <th>Test Name</th>
+          <th>No. of Patients</th>
+          <th>Total Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of paged; let i = index">
+          <td>{{ ((currentPage - 1) * pageSize) + i + 1 }}</td>
+          <td>{{ r.category }}</td>
+          <td>{{ r.testName }}</td>
+          <td>{{ r.patients }}</td>
+          <td>{{ r.totalAmount | number:'1.0-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination-controls">
+      <span>Showing {{showingFrom}}-{{showingTo}} of {{filtered.length}}</span>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  <!-- Print/PDF table with ALL rows -->
+  <div class="table-container print-only" *ngIf="filtered.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>S/N</th>
+          <th>Test Category</th>
+          <th>Test Name</th>
+          <th>No. of Patients</th>
+          <th>Total Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filtered; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ r.category }}</td>
+          <td>{{ r.testName }}</td>
+          <td>{{ r.patients }}</td>
+          <td>{{ r.totalAmount | number:'1.0-2' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Signature section (print/PDF only) -->
+  <div class="signature-section print-only">
+    <div class="sig-left">
+      <div class="sig-title">Department Signature</div>
+      <div class="sig-field">Name <span class="line"></span></div>
+      <div class="sig-field">Designation <span class="line short"></span></div>
+    </div>
+    <div class="sig-right">
+      <div class="sig-title">Senior Medical Officer</div>
+    </div>
+  </div>
+
+
+  <!-- No Data -->
+  <div class="no-data-message" *ngIf="!isLoading && filtered.length === 0">
+    <p>No data found. Please adjust your filters or refresh.</p>
+  </div>
+</div>
+

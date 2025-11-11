@@ -1,0 +1,35 @@
+<!-- Delete Blocked Modal -->
+<div class="blocked-overlay" *ngIf="show" (click)="close()">
+  <div class="blocked-modal" (click)="$event.stopPropagation()">
+    <div class="content">
+      <div class="icon">
+        <dotlottie-wc
+          src="https://lottie.host/18d32987-6d6e-4d59-8945-3b06b96eeeb6/Iqo3a8T4kW.lottie"
+          style="width: 150px; height: 150px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      </div>
+
+      <h2 class="title">
+        <i class="fa-solid fa-ban"></i>
+        {{ title }}
+      </h2>
+
+      <div class="message">
+        <p>{{ message }}</p>
+        <ul *ngIf="details && details.length">
+          <li *ngFor="let d of details">• {{ d }}</li>
+        </ul>
+      </div>
+
+      <div class="badge">
+        <span class="badge-icon">⛔</span>
+        <span>{{ badgeText }}</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+

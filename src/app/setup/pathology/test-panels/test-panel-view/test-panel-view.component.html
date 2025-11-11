@@ -1,0 +1,50 @@
+<div class="panel-view-container" *ngIf="panel">
+  <!-- Breadcrumb & Title Row -->
+  <div class="title-row">
+    <div class="left">
+      <div class="breadcrumb">
+        <span class="crumb" (click)="goBack()">TEST PANELS</span>
+        <span class="sep">/</span>
+        <span class="crumb active">{{ panel.name }}</span>
+      </div>
+      <div class="title-container">
+      <h1 class="title">{{ panel.name }}</h1>
+      <div class="right">
+      <button class="btn edit" (click)="editPanel()"><i class="fa-regular fa-pen-to-square"></i> Edit</button>
+    </div>
+      </div>
+      <ul class="notes">
+        <li> Category : <b>{{ getCategoryName() || '-' }}</b></li>
+      </ul>
+    </div>
+    
+  </div>
+
+
+  <!-- Tests table -->
+  <div class="table-wrapper"
+       cdkDropList
+       (cdkDropListDropped)="onDrop($event)">
+    <table class="table-bordered">
+      <thead>
+        <tr>
+          <th class="th-order">ORDER</th>
+          <th>LAB TESTS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tests; let i = index" class="table-row"  cdkDrag >
+          <td class="order-col">
+            <span class="drag" aria-hidden="true">
+              <i class="fa-solid fa-caret-up"></i>
+              <i class="fa-solid fa-caret-down"></i>
+            </span>
+            <span class="order-dot">{{ i + 1 }}.</span>
+          </td>
+          <td class="name">{{ t.name }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

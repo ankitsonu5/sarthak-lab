@@ -1,0 +1,73 @@
+.central-opd-report { background: #fff; padding: 1rem; border-radius: 8px; }
+.search-section { background:#fff; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 1rem; margin-bottom: .75rem; padding: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+.search-section .title { font-weight: 700; font-size: 16px; }
+.filter-inputs { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.action-buttons { display: flex; gap: .5rem; justify-content: flex-end; }
+.btn { background: #2563eb; color: #fff; border: none; padding: .5rem .75rem; border-radius: 6px; cursor: pointer; }
+.btn.secondary { background: #ef4444; }
+.report-header { display: grid; grid-template-columns: 120px 1fr 120px; align-items: center; text-align: center; margin: .5rem 0 .75rem; padding: 6px 12px; background:#f8f9fa; border-bottom: 2px solid #1e40af; }
+.report-header .logo { height: 64px; }
+.report-header h1 { font-size: 18px; margin: 0; }
+.report-header h2 { font-size: 14px; margin: 2px 0 0; }
+.report-header h3 { font-size: 13px; margin: 4px 0 0; font-weight: 600; }
+.meta { margin-bottom: .25rem; font-size: 12px; }
+.table-wrap { overflow: auto; margin-top: .25rem; }
+.opd-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.opd-table th, .opd-table td { border: 1px solid #e5e7eb; padding: 6px 6px; text-align: left; word-break: break-word; white-space: normal; }
+.opd-table thead th { background: #f3f4f6; font-weight: 600; }
+/* Column widths (screen) */
+/* Reg No, Yearly, M., D., Patient, Address, Age, Gender, Dept., R. No., Date */
+.opd-table th:nth-child(1), .opd-table td:nth-child(1) { width: 8%; }
+.opd-table th:nth-child(2), .opd-table td:nth-child(2) { width: 6%; }
+.opd-table th:nth-child(3), .opd-table td:nth-child(3) { width: 6.5%; }
+.opd-table th:nth-child(4), .opd-table td:nth-child(4) { width: 6.5%; }
+.opd-table th:nth-child(5), .opd-table td:nth-child(5) { width: 17%; }
+.opd-table th:nth-child(6), .opd-table td:nth-child(6) { width: 18%; }
+.opd-table th:nth-child(7), .opd-table td:nth-child(7) { width: 5.5%; }
+.opd-table th:nth-child(8), .opd-table td:nth-child(8) { width: 7.5%; }
+.opd-table th:nth-child(9), .opd-table td:nth-child(9) { width: 14%; }
+.opd-table th:nth-child(10), .opd-table td:nth-child(10) { width: 6%; }
+.opd-table th:nth-child(11), .opd-table td:nth-child(11) { width: 6.5%; }
+.pagination { display: flex; gap: .5rem; align-items: center; justify-content: flex-end; margin-top: .5rem; font-size: 12px; }
+.pagination .muted { color: #6b7280; }
+.search-section input[type="date"], .search-section select {
+  height: 36px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+.print-only.visible-for-pdf { display: block !important; }
+
+.print-only { display: none; }
+.loading { padding: 1rem; }
+/* PDF export specific overrides to match print */
+#print-root.pdf-export, #central-opd-print-root.pdf-export { display: block !important; }
+
+#central-opd-print-root.pdf-export thead { display: table-header-group; }
+#central-opd-print-root.pdf-export tfoot { display: table-footer-group; }
+#central-opd-print-root.pdf-export table { width: 100%; border-collapse: collapse; }
+#central-opd-print-root.pdf-export th,
+#central-opd-print-root.pdf-export td { page-break-inside: avoid; }
+#central-opd-print-root.pdf-export tr { page-break-inside: avoid; }
+
+/* Control logo size for PDF */
+/* Styles for the print-root header used by both Print and PDF download */
+#central-opd-print-root .print-header { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 12px; margin-bottom: 6mm; }
+#central-opd-print-root .print-logo img { height: 64px; }
+#central-opd-print-root .print-title .hn { font-size: 18px; font-weight: 700; text-align: center; }
+#central-opd-print-root .print-title .hl { font-size: 14px; text-align: center; margin-top: 2px; }
+#central-opd-print-root .print-title .hr { font-size: 13px; text-align: center; margin-top: 4px; font-weight: 600; }
+
+/* Ensure table headers repeat on every printed page too */
+@media print {
+  #central-opd-print-root thead { display: table-header-group; }
+  #central-opd-print-root tfoot { display: table-footer-group; }
+}
+
+#central-opd-print-root.pdf-export img { max-width: 110px; height: auto; }
+
+@media print {
+  @page { size: A4 portrait; margin: 4mm 6mm 6mm 6mm; }
+  .search-section, .table-wrap, .pagination { display: none !important; }
+  .central-opd-report { padding: 0; }
+  .print-only { display: block !important; }
+}

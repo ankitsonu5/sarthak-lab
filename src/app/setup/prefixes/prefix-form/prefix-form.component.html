@@ -1,0 +1,27 @@
+<h2>{{ isEdit ? 'Edit' : 'Add' }} Prefix</h2>
+
+<div *ngIf="error" class="error">{{ error }}</div>
+
+<form [formGroup]="form" (ngSubmit)="save()" class="form-card">
+  <div class="row">
+    <label>Name:</label>
+    <input formControlName="name" placeholder="e.g., Mr, Mrs, Miss, Dr" />
+  </div>
+  <div class="row">
+    <label>Gender:</label>
+    <select formControlName="gender">
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select>
+  </div>
+  <div class="row">
+    <label>Active:</label>
+    <input type="checkbox" formControlName="isActive" />
+  </div>
+  <div class="actions">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="button" class="btn" (click)="save()">Save & Close</button>
+  </div>
+</form>
+

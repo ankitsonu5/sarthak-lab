@@ -1,0 +1,186 @@
+<div class="central-opd-report">
+  <!-- Top controls/header styled like Daily Cash Report header -->
+  <div class="search-section">
+    <div class="title">Central OPD Report</div>
+    <div class="filter-inputs">
+      <label>From:
+        <input type="date" [(ngModel)]="startDate" name="startDate">
+      </label>
+      <label>To:
+        <input type="date" [(ngModel)]="endDate" name="endDate">
+      </label>
+      <label>Month Filter:
+        <select [(ngModel)]="monthFilter" name="monthFilter" (ngModelChange)="onMonthFilterChange($event)">
+          <option>All</option>
+          <option>Jan</option>
+          <option>Feb</option>
+          <option>Mar</option>
+          <option>Apr</option>
+          <option>May</option>
+          <option>Jun</option>
+          <option>Jul</option>
+          <option>Aug</option>
+          <option>Sep</option>
+          <option>Oct</option>
+          <option>Nov</option>
+          <option>Dec</option>
+        </select>
+      </label>
+      <label>Gender:
+        <select [(ngModel)]="genderFilter" name="genderFilter" (ngModelChange)="onFiltersChanged()">
+          <option>All</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label>ID Source:
+        <select [(ngModel)]="idSourceFilter" name="idSourceFilter" (ngModelChange)="onFiltersChanged()">
+          <option>All</option>
+          <option value="Aadhaar">Aadhaar</option>
+          <option value="Contact">Contact</option>
+        </select>
+      </label>
+    </div>
+    <div class="action-buttons">
+      <button class="btn secondary" (click)="onDownload()">Download</button>
+      <button class="btn" (click)="onSearch()">Search</button>
+      <button class="btn" (click)="onPrint()">Print</button>
+    </div>
+  </div>
+
+  <!-- Header with logo and title -->
+  <div class="report-header">
+    <div class="logo-container">
+      <img src="./assets/images/myupgov.png" alt="UP Gov" class="logo" loading="eager" />
+    </div>
+    <div class="header-text">
+      <h1>राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
+      <h2>चौकाघाट, वाराणसी</h2>
+      <h3>Central OPD Report : {{ startDate }} to {{ endDate }}</h3>
+    </div>
+    <div class="logo-spacer"></div>
+  </div>
+
+  <div class="meta">
+    <div>
+      Total Records: {{ total }}
+      <span style="margin-left:12px;">|</span>
+      <span style="margin-left:12px;">Male: <strong>{{ stats.male }}</strong></span>
+      <span style="margin-left:12px;">Female: <strong>{{ stats.female }}</strong></span>
+    <span style="margin-left:12px;">Other: <strong>{{ stats.other }}</strong></span>
+      <span style="margin-left:12px;">Aadhaar: <strong>{{ stats.aadhaar }}</strong></span>
+      <span style="margin-left:12px;">Contact: <strong>{{ stats.contact }}</strong></span>
+    </div>
+  </div>
+  <!-- Paginator moved to top -->
+  <div class="pagination top">
+    <button class="btn" (click)="prev()" [disabled]="currentPage === 1">Prev</button>
+    <span>Page {{ currentPage }} / {{ totalPages }}</span>
+    <button class="btn" (click)="next()" [disabled]="currentPage === totalPages">Next</button>
+    <span class="muted">Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, total) }} of {{ total }}</span>
+  </div>
+
+
+  <!-- Display only current page on screen -->
+  <div class="table-wrap" *ngIf="!loading || rows.length > 0; else loadingTpl">
+    <table class="opd-table">
+      <thead>
+        <tr>
+          <th>Reg. No.</th>
+          <th>Yearly No.</th>
+          <th>M. No.</th>
+          <th>D. No.</th>
+          <th>Patient Name</th>
+          <th>Address</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Dept.</th>
+          <th>R. No.</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rows; index as i; trackBy: trackByRow">
+          <td>{{ r.regNo || '' }}</td>
+          <td></td>
+          <td>{{ r.monthlyNo || '-' }}</td>
+          <td>{{ r.dailyNo || '-' }}</td>
+          <td>{{ r.patientName }}</td>
+          <td>{{ formatAddress(r.address) }}</td>
+          <td>{{ r.age }} {{ (r.ageIn || '').toLowerCase().startsWith('y') ? 'Y' : ((r.ageIn || '').toLowerCase().startsWith('m') ? 'M' : ((r.ageIn || '').toLowerCase().startsWith('d') ? 'D' : '')) }}</td>
+          <td>{{ (r.gender || '').toLowerCase().startsWith('f') ? 'Female' : ((r.gender || '').toLowerCase().startsWith('m') ? 'Male' : (r.gender || '')) }}</td>
+          <td>{{ r.department }}</td>
+          <td>{{ r.roomNo }}</td>
+          <td>{{ r.date }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+
+  </div>
+
+  <!-- Hidden print root to render ALL rows with page breaks after every 100 records -->
+  <div id="central-opd-print-root" class="print-only">
+    <div class="print-page">
+      <div class="print-header">
+        <div class="print-logo">
+          <img src="./assets/images/myupgov.png" alt="UP Gov" />
+        </div>
+        <div class="print-title">
+          <div class="hn">राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</div>
+          <div class="hl">चौकाघाट, वाराणसी</div>
+          <div class="hr">Central OPD Report</div>
+        </div>
+      </div>
+      <div class="print-meta" style="text-align:center; font-size:12px; margin: 2mm 0 4mm;">
+        <span><strong>Month:</strong> {{ monthLabel }}</span>
+        <span style="margin: 0 12px;">|</span>
+        <span><strong>Date Range:</strong> {{ dateRangeLabel }}</span>
+      </div>
+
+
+      <table class="opd-table">
+        <thead>
+          <tr>
+            <th>Reg. No.</th>
+            <th>Yearly No.</th>
+            <th>M. No.</th>
+            <th>D. No.</th>
+            <th>Patient Name</th>
+            <th>Address</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Dept.</th>
+            <th>R. No.</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let r of rows; index as i; trackBy: trackByRow">
+            <tr>
+              <td>{{ r.regNo || '' }}</td>
+              <td></td>
+              <td>{{ r.monthlyNo || '-' }}</td>
+              <td>{{ r.dailyNo || '-' }}</td>
+              <td>{{ r.patientName }}</td>
+              <td>{{ formatAddress(r.address) }}</td>
+              <td>{{ r.age }} {{ (r.ageIn || '').toLowerCase().startsWith('y') ? 'Y' : ((r.ageIn || '').toLowerCase().startsWith('m') ? 'M' : ((r.ageIn || '').toLowerCase().startsWith('d') ? 'D' : '')) }}</td>
+              <td>{{ (r.gender || '').toLowerCase().startsWith('f') ? 'Female' : ((r.gender || '').toLowerCase().startsWith('m') ? 'Male' : (r.gender || '')) }}</td>
+              <td>{{ r.department }}</td>
+              <td>{{ r.roomNo }}</td>
+            </tr>
+          </ng-container>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="10"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading">Loading...</div>
+  </ng-template>
+</div>

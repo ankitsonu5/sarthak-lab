@@ -1,0 +1,77 @@
+<div class="report-container">
+  <div class="page-title">
+    <h2>Monthly OPD Report</h2>
+  </div>
+
+  <div class="search-section">
+    <div class="date-inputs">
+      <div class="date-field">
+        <input type="number" min="2000" max="2100" [value]="year" (input)="setYearFromInput($event)">
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="search-btn" (click)="load()">Search</button>
+      <button class="download-btn" (click)="downloadPdf()">Download PDF</button>
+      <button class="print-btn" (click)="printAuto()">Print</button>
+    </div>
+  </div>
+
+  <div class="report-content" *ngIf="report as r" id="monthly-opd-pdf">
+    <div class="report-header">
+      <div class="logo-container">
+        <img src="./assets/images/myupgov.png" alt="UP Government Logo" class="logo" loading="eager">
+      </div>
+      <div class="header-text">
+        <h1>राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
+        <h2>चौकाघाट, वाराणसी</h2>
+        <h3>Monthly OPD Report : {{year}}</h3>
+      </div>
+      <div class="logo-spacer"></div>
+    </div>
+
+    <div class="report-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Dept./Month</th>
+            <th *ngFor="let d of r.departments" [innerHTML]="formatDeptName(d.name)"></th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of r.months">
+            <td>{{m.monthName}}</td>
+            <ng-container *ngFor="let d of r.departments">
+              <td class="bold">{{ (m.dataByDepartment[d._id] && m.dataByDepartment[d._id].total) || 0 }}</td>
+            </ng-container>
+            <td class="bold">{{m.rowTotals.total}}</td>
+          </tr>
+          <tr class="total-row">
+            <td>Total</td>
+            <ng-container *ngFor="let d of r.departments">
+              <td class="bold">{{ (r.grandTotals.byDepartment[d._id] && r.grandTotals.byDepartment[d._id].total) || 0 }}</td>
+            </ng-container>
+            <td class="bold">{{r.grandTotals.overall.total}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+      <!-- Signature Footer -->
+      <div class="signature-footer">
+        <div class="sig-left">
+          <div class="line"></div>
+          <div class="label">Department Signature</div>
+          <div class="small">Name ____________________</div>
+          <div class="small">Designation ______________</div>
+        </div>
+        <div class="sig-right">
+          <div class="line"></div>
+          <div class="label">Senior Medical Officer</div>
+        </div>
+      </div>
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">Loading...</div>
+</div>
+

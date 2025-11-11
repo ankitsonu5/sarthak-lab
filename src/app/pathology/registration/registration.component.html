@@ -1,0 +1,331 @@
+<!-- Professional Hospital Management System - Test Registration -->
+<div class="professional-hms-container">
+  <!-- Simple Professional Header -->
+  <div class="simple-header">
+    <div class="header-content">
+      <div class="hospital-info">
+        <h1 class="hospital-name">RAJKIYA AYURVEDA COLLEGE AND HOSPITAL VARANASI</h1>
+        <p class="hospital-subtitle">Government Ayurvedic Medical College & Hospital</p>
+      </div>
+
+    </div>
+    <div class="module-bar">
+      <div class="module-info">
+        <h2 class="module-title">TEST REGISTRATION</h2>
+        <span class="module-subtitle">Pathology Department</span>
+      </div>
+      <div class="daily-info">
+        <span class="daily-label">TODAY'S {{ registrationMode | uppercase }} REGISTRATION</span>
+        <span class="daily-number">{{ dailyNumber }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Single Form Container -->
+  <div class="single-form-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); overflow: hidden; margin-bottom: 2rem;">
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="single-form">
+
+      <!-- Combined Information Section -->
+      <div class="combined-info-section">
+        <div class="section-header">
+          <h3 class="section-title">Patient & Receipt Information</h3>
+          <div class="loading-indicator" *ngIf="isReceiptLoading">
+            <span class="spinner"></span> Loading patient data...
+          </div>
+          <div class="status-badge" [class]="receiptFound ? 'status-success' : 'status-pending'">
+            {{ receiptFound ? '✅ Patient Loaded' : '⏳ Enter Receipt Number' }}
+          </div>
+        </div>
+
+        <div class="form-content">
+          <!-- First Row - 5 Fields -->
+          <div class="single-form-row">
+            <div class="field-group">
+              <label class="field-label">Date</label>
+              <input
+                type="date"
+                class="form-input readonly"
+                formControlName="currentDate"
+                [disabled]="true"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Lab Yearly No.</label>
+              <input
+                type="number"
+                class="form-input"
+                formControlName="yearlyNumber"
+                [disabled]="!labEditMode"
+                [readonly]="!labEditMode"
+                inputmode="numeric"
+                pattern="[0-9]*">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Lab Daily No.</label>
+              <input
+                type="number"
+                class="form-input"
+                formControlName="dailyNumber"
+                [disabled]="!labEditMode"
+                [readonly]="!labEditMode"
+                inputmode="numeric"
+                pattern="[0-9]*">
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Search Date</label>
+              <input
+                type="date"
+                class="form-input readonly"
+                formControlName="searchDate"
+                [disabled]="true"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Patient Name</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                [class.auto-filled]="receiptFound && registrationForm.get('patientName')?.value"
+                formControlName="patientName"
+                placeholder="Auto-filled from receipt"
+                readonly>
+            </div>
+          </div>
+
+          <!-- Second Row - 5 Fields -->
+          <div class="single-form-row">
+            <div class="field-group">
+              <label class="field-label required">Receipt No.</label>
+              <input
+                type="text"
+                class="form-input"
+                formControlName="receiptNumber"
+                placeholder="Enter receipt number and press Enter"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                autocomplete="off"
+                (input)="onReceiptNumberChange()"
+                (keyup.enter)="onReceiptEnter()"
+                [readonly]="receiptFound"
+                [class.input-error]="isFieldInvalid('receiptNumber')">
+              <span class="error-message" *ngIf="isFieldInvalid('receiptNumber')">
+                Receipt number is required
+              </span>
+
+              <!-- Receipt Status Indicator -->
+              <div class="receipt-status" *ngIf="registrationForm.get('receiptNumber')?.value">
+                <span class="receipt-loading" *ngIf="isReceiptLoading">
+                  <span class="loading-spinner"></span>
+                  Looking up receipt...
+                </span>
+                <span class="receipt-found" *ngIf="receiptFound && !isReceiptLoading">
+                  ✅ Receipt found - Patient data loaded
+                </span>
+                <span class="receipt-not-found" *ngIf="!receiptFound && !isReceiptLoading && registrationForm.get('receiptNumber')?.value">
+                  ❌ Receipt not found
+                </span>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Registration No.</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                formControlName="registrationNumber"
+                placeholder="Auto-filled"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Doctor Ref. No.</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                formControlName="doctorRefNo"
+                placeholder="Auto-filled"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Doctor Name</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                formControlName="doctorName"
+                placeholder="Auto-filled"
+                readonly>
+            </div>
+
+            <div class="field-group age-inline">
+              <label class="field-label">Age</label>
+              <div class="age-row">
+                <input
+                  type="number"
+                  class="form-input readonly age-input"
+                  formControlName="age"
+                  placeholder="Auto-filled"
+                  readonly>
+                <input
+                  type="text"
+                  class="form-input readonly agein-input"
+                  formControlName="ageIn"
+                  placeholder="Age In"
+                  readonly>
+              </div>
+            </div>
+          </div>
+
+          <!-- Third Row - 5 Fields -->
+          <div class="single-form-row">
+            <div class="field-group">
+              <label class="field-label">Type</label>
+              <select class="form-select readonly" formControlName="addressType" [disabled]="true">
+                <option value="OPD">OPD</option>
+                <option value="IPD">IPD</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Gender</label>
+              <select class="form-select readonly" formControlName="gender" [disabled]="true">
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Department</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                formControlName="department"
+                placeholder="Auto-filled"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Room No.</label>
+              <input
+                type="text"
+                class="form-input readonly"
+                formControlName="roomNumber"
+                placeholder="Auto-filled"
+                readonly>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Amount</label>
+              <input
+                type="text"
+                class="form-input readonly amount-field"
+                formControlName="totalAmount"
+                placeholder="₹0"
+                readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Test Selection Card -->
+      <div class="info-card test-selection-card">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="icon">🧪</i> Test Selection & Management
+          </h3>
+          <div class="test-stats">
+            <span class="stat-item">
+              <span class="stat-label">Tests:</span>
+              <span class="stat-value">{{ selectedTests.length }}</span>
+            </span>
+            <span class="stat-item">
+              <span class="stat-label">Total:</span>
+              <span class="stat-value amount">₹{{ totalAmount }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="card-content">
+          <!-- Clean Professional Test Table -->
+          <div class="professional-test-table-wrapper">
+            <table class="clean-test-table">
+              <thead>
+                <tr>
+                  <th class="col-sr">SR.NO.</th>
+                  <th class="col-test">TEST NAME</th>
+                  <th class="col-category">CATEGORY</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="selectedTests.length === 0" class="empty-row">
+                  <td colspan="3" class="empty-cell">
+                    <div class="empty-content">
+                      <div class="empty-icon">🔍</div>
+                      <div class="empty-text">No tests selected</div>
+                      <div class="empty-subtext">Enter receipt number to load patient tests</div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr *ngFor="let test of selectedTests; let i = index" class="data-row">
+                  <td class="col-sr">{{ i + 1 }}</td>
+                  <td class="col-test">
+                    <div class="test-details">
+                      <div class="test-name-main">{{ test.name }}</div>
+                      <div class="test-code-sub" *ngIf="test.id">{{ test.id }}</div>
+                    </div>
+                  </td>
+                  <td class="col-category">
+                    <span class="category-tag">{{ getCategoryName(test.category) }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Save Actions -->
+          <div class="action-section" *ngIf="!labEditMode">
+            <div class="action-buttons-inline">
+              <button type="button" class="save-only-btn" (click)="saveOnly()" [disabled]="selectedTests.length === 0">
+                <i class="icon">💾</i> Save Only
+              </button>
+              <button type="button" class="save-proceed-btn" (click)="saveAndProceed()" [disabled]="selectedTests.length === 0">
+                <i class="icon">💾</i> Save and Proceed to Report Generation
+              </button>
+            </div>
+          </div>
+
+          <!-- Lab numbers edit mode actions -->
+          <div class="action-section" *ngIf="labEditMode">
+            <div class="action-buttons-inline">
+              <button type="button" class="save-proceed-btn" (click)="updateLabNumbers()" [disabled]="!receiptFound">
+                <i class="icon">✏️</i> Update Lab Nos
+              </button>
+              <button type="button" class="save-only-btn" (click)="cancelLabEdit()">
+                <i class="icon">✖️</i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+   <!-- Success Alert for Save buttons -->
+              <app-success-alert
+                [show]="showSuccessAlert"
+                [title]="'🎉 Saved Successfully!'"
+                [message]="successMessage"
+                [badgeText]="alertBadge"
+                [autoHideDelay]="2000"
+                (close)="showSuccessAlert = false">
+              </app-success-alert>

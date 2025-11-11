@@ -1,0 +1,247 @@
+/* Invoice Container */
+.invoice-container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border: 2px solid #000;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Hospital Header */
+.hospital-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 15px;
+}
+
+.logo-section {
+  flex: 0 0 80px;
+  margin-right: 20px;
+}
+
+.gov-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.hospital-info {
+  flex: 1;
+  text-align: center;
+}
+
+.hospital-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 5px 0;
+  color: #000;
+}
+
+.hospital-address {
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  color: #000;
+}
+
+.receipt-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  color: #000;
+  text-decoration: underline;
+}
+
+/* Receipt Details */
+.receipt-details {
+  margin-bottom: 20px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.receipt-left,
+.receipt-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.receipt-right {
+  gap: 15px;
+}
+
+.label {
+  font-weight: bold;
+  color: #000;
+}
+
+.value {
+  color: #000;
+  border-bottom: 1px solid #000;
+  min-width: 100px;
+  padding-bottom: 2px;
+}
+
+/* Services Table */
+.services-table {
+  margin-bottom: 20px;
+}
+
+.bill-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid #000;
+}
+
+.bill-table th,
+.bill-table td {
+  border: 1px solid #000;
+  padding: 8px;
+  text-align: left;
+}
+
+.bill-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  text-align: center;
+}
+
+.description-col {
+  width: 70%;
+}
+
+.amount-col {
+  width: 30%;
+  text-align: center;
+}
+
+.description-cell {
+  padding: 10px;
+}
+
+.service-number {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.service-detail {
+  font-style: italic;
+  margin-left: 15px;
+}
+
+.amount-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.amount-value {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.empty-row td {
+  height: 30px;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+  border-bottom: none;
+}
+
+/* Total Section */
+.total-section {
+  border: 2px solid #000;
+  margin-bottom: 20px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+}
+
+.total-label {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.total-amount {
+  font-weight: bold;
+  font-size: 18px;
+  color: #000;
+}
+
+/* Print Actions */
+.print-actions {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.print-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.print-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .invoice-container {
+    margin: 0;
+    padding: 15px;
+    border: 2px solid #000;
+    box-shadow: none;
+    max-width: none;
+    width: 100%;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+}
+
+/* Category Banner */
+.category-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 10px;
+  border-bottom: 1px dashed #000;
+  padding-bottom: 5px;
+}
+
+/* Additional print rules for per-category pages */
+@media print {
+  .page-break { page-break-after: always; }
+  .invoice-container { page-break-inside: avoid; }
+}

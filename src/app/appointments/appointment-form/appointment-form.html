@@ -1,0 +1,60 @@
+<div class="apt-form" [class.loading]="isLoading">
+  <h2 *ngIf="!isEdit">New Appointment</h2>
+  <h2 *ngIf="isEdit">Edit Appointment</h2>
+
+  <form (ngSubmit)="submit()" [formGroup]="form">
+    <div class="finder">
+      <label>Patient Reg. No.</label>
+      <div class="row">
+        <input type="text" placeholder="e.g. PAT000123" formControlName="registrationNumber" />
+        <button type="button" (click)="findPatient()">Find</button>
+      </div>
+      <div class="patient-name" *ngIf="form.get('patientName')?.value">Patient: {{ form.get('patientName')?.value }}</div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Department</label>
+        <select formControlName="departmentId" (change)="onDepartmentChange($any($event.target).value)">
+          <option value="">Select</option>
+          <option *ngFor="let d of departments" [value]="d._id">{{ d.name }}</option>
+        </select>
+      </div>
+      <div>
+        <label>Room</label>
+        <select formControlName="roomId">
+          <option value="">Select</option>
+          <option *ngFor="let r of rooms" [value]="r._id">R{{ r.roomNumber }}</option>
+        </select>
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" formControlName="appointmentDate" />
+      </div>
+      <div>
+        <label>Time</label>
+        <input type="time" formControlName="appointmentTime" />
+      </div>
+      <div class="full">
+        <label>Reason</label>
+        <input type="text" formControlName="reason" />
+      </div>
+      <div>
+        <label>Fee</label>
+        <input type="number" formControlName="consultationFee" />
+      </div>
+      <div>
+        <label>Payment</label>
+        <select formControlName="paymentMethod">
+          <option>Cash</option>
+          <option>UPI</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" [disabled]="form.invalid || isLoading">Save</button>
+      <button type="button" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+</div>

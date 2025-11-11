@@ -1,0 +1,32 @@
+<div class="success-alert-overlay" *ngIf="show" (click)="closeAlert()">
+  <div class="success-alert-modal" (click)="$event.stopPropagation()">
+    <div class="success-alert-content">
+      <!-- Success Animation -->
+      <div class="success-animation">
+       
+          <dotlottie-wc
+          src="https://lottie.host/d22287ab-7950-4b72-be1f-1ef893ba7c0a/UWp93q92v8.lottie"
+          style="width: 130px; height: 130px"
+          speed="1"
+          autoplay      
+          loop>
+        </dotlottie-wc>
+       
+      </div>
+
+      <!-- Success Title -->
+      <h2 class="success-title">{{ title }}</h2>
+
+      <!-- Message Display -->
+      <div class="message-display">
+        <p class="success-message">{{ message }}</p>
+      </div>
+
+      <!-- Badge -->
+      <div class="success-badge">
+        <span class="badge-icon">✨</span>
+        <span>{{ badgeText }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,202 @@
+<div class="test-database-container">
+  <!-- Header Section -->
+  <div class="header">
+    <div class="header-content">
+      <div class="d-flex">
+        <div class="header-left">
+          <h1 class="page-title">Test Database</h1>
+          <p class="page-subtitle">Manage and browse saved tests</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-add" (click)="addNewTest()">
+          <i class="fa-solid fa-circle-plus"></i>
+          Add new
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Filter by category:</label>
+        <div class="category-filters">
+          <button
+            class="filter-btn"
+            [class.active]="selectedCategory === 'All'"
+            (click)="onCategoryChange('All')">
+            All
+          </button>
+          <button
+            *ngFor="let category of testCategories"
+            class="filter-btn"
+            [class.active]="selectedCategory === category.name"
+            (click)="onCategoryChange(category.name)">
+            {{ category.name }}
+          </button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+       <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-row">
+      <input
+        type="text"
+          placeholder="Search tests..."
+          [value]="searchTerm"
+          (input)="onSearchChange($event)"
+         placeholder="Search by Category Name or ID"
+        class="search-input"
+      />
+      <button class="clear-btn" (click)="searchTerm=''; clearSearch();">Clear</button>
+    </div>
+  </div>
+  
+
+  <!-- Test Table -->
+  <div class="table-container">
+    <table class="test-table">
+      <thead>
+        <tr>
+          <th>ORDER</th>
+          <th>NAME</th>
+          <th>SHORT NAME</th>
+          <th>CATEGORY</th>
+          <th>TYPE</th>
+          <th>PARAMETERS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let test of getPaginatedTests(); let i = index">
+          <td>
+            <div class="order-cell">
+              {{ getSerialNumber(i) }}.
+            </div>
+          </td>
+          <td class="test-name">{{ test.name }}</td>
+          <td class="short-name">{{ getShortName(test) }}</td>
+          <td class="category">{{ getCategoryName(test) }}</td>
+          <td class="test-type">{{ getTestTypeDisplay(test.testType) }}</td>
+          <td class="parameter-count">{{ getParameterCount(test) }}</td>
+          <td class="actions">
+             <button
+              class="action-btn view-btn"
+              (click)="viewTest(test)"
+              title="View">
+              <i class="fas fa-eye"></i> View
+            </button>
+            <button 
+              class="action-btn edit-btn" 
+              (click)="editTest(test)"
+              title="Edit">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+           
+            <button
+              class="action-btn delete-btn"
+              (click)="deleteTest(test)"
+              title="Delete">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Category info and quick add (only when a specific category is selected) -->
+  <div class="category-info-row" *ngIf="selectedCategory && selectedCategory !== 'All'">
+    <div class="info-left">
+      {{ filteredTests.length }} tests in {{ selectedCategory }}
+    </div>
+    <div class="info-right">
+      <button class="btn-add" (click)="addNewTestForSelected()">
+        <i class="fa-solid fa-circle-plus"></i>
+        Add in {{ selectedCategory }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1">
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)">
+        Previous
+      </button>
+      
+      <button 
+        *ngFor="let page of [].constructor(totalPages); let i = index"
+        class="page-btn"
+        [class.active]="currentPage === i + 1"
+        (click)="goToPage(i + 1)">
+        {{ i + 1 }}
+      </button>
+      
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)">
+        Next
+      </button>
+    </div>
+  </div>
+
+  <!-- Success Alert -->
+  <app-success-alert
+    [show]="showAlert && alertType === 'success'"
+    [title]="'🎉 Success!'"
+    [message]="alertMessage"
+    [badgeText]="'Operation Successful'"
+    [autoHideDelay]="3000"
+    (close)="showAlert = false">
+  </app-success-alert>
+
+  <!-- Error Alert -->
+  <div class="alert-container" *ngIf="showAlert && alertType === 'error'">
+    <div class="alert alert-error">
+      <span>{{ alertMessage }}</span>
+      <button class="alert-close" (click)="showAlert = false">&times;</button>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation-modal
+    [show]="showDeleteConfirmation"
+    [title]="'Delete Test'"
+    [message]="deleteMessage"
+    [warningText]="'This action cannot be undone'"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-delete-confirmation-modal>
+
+  <!-- Delete Success Modal -->
+  <app-delete-success-modal
+    [show]="showDeleteSuccess"
+    [title]="'Test Deleted'"
+    [message]="deleteSuccessMessage"
+    [badgeText]="'Operation completed'"
+    [autoHideDelay]="2000"
+    (closed)="onDeleteSuccessClosed()"
+    (refreshData)="refreshData()">
+  </app-delete-success-modal>
+
+  <!-- Delete Blocked Modal -->
+  <app-delete-blocked-modal
+    [show]="showDeleteBlocked"
+    [title]="'Cannot Delete Test'"
+    [message]="deleteBlockedMessage"
+    [badgeText]="'Operation Blocked'"
+    [autoHideDelay]="2000"
+    (closed)="closeDeleteBlocked()">
+  </app-delete-blocked-modal>
+</div>

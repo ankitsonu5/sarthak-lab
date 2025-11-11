@@ -1,0 +1,40 @@
+.ehc{padding:16px;background:#f8fafc;min-height:100vh}
+.ehc-header{display:flex;justify-content:space-between;align-items:flex-end;background:linear-gradient(90deg,#eef7ff,#ffffff);border:1px solid #e5e7eb;border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 6px rgba(17,24,39,.04)}
+.ehc-header h2{margin:0;font-size:18px;font-weight:800}
+.muted{color:#6b7280;font-size:12px;margin-top:2px}
+.tools{display:flex;gap:10px;align-items:center}
+.date-tools{display:flex;gap:6px;align-items:center}
+.tools input[type=date]{padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff}
+.btn{padding:6px 10px;border:1px solid #d1d5db;background:#ffffff;border-radius:8px;cursor:pointer}
+.btn.ghost{background:#ffffff}
+.tabs{display:flex;gap:8px;margin:10px 0}
+.tabs button{display:flex;gap:6px;align-items:center;padding:6px 12px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;color:#374151;box-shadow:0 1px 3px rgba(17,24,39,.04)}
+.tabs button.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.count-badge{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:2px 6px;font-size:11px}
+.filters{display:flex;gap:8px;align-items:center;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-bottom:10px;box-shadow:0 2px 6px rgba(17,24,39,.03)}
+.filters .field input,.filters .field select{padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;background:#fff}
+.filters .field.grow{flex:1}
+.table-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:auto;box-shadow:0 2px 8px rgba(17,24,39,.04)}
+.tbl{width:100%;border-collapse:separate;border-spacing:0}
+.tbl thead th{position:sticky;top:0;background:#f8fafc;text-align:left;font-size:12px;color:#4b5563;padding:9px;border-bottom:1px solid #e5e7eb}
+.tbl tbody td{padding:9px;border-bottom:1px solid #f3f4f6;font-size:13px}
+.chip{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-weight:600;font-size:11px}
+.chip.u{background:#ecfeff;color:#0369a1}
+.chip.c{background:#ecfdf5;color:#065f46}
+.chip.d{background:#fef2f2;color:#991b1b}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.changes{display:inline-block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:12px;text-align:center;color:#6b7280}
+.loading{padding:12px}
+
+/* Subtle table polish */
+.tbl tbody tr:hover{background:#f9fafb}
+
+/* Pretty diff for Cash Receipt */
+.changes-cell{max-width:100%}
+.change-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:2px 0}
+.change-row .field{font-weight:600;color:#374151}
+.badge{display:inline-block;padding:1px 6px;border-radius:999px;font-size:11px;border:1px solid transparent}
+.badge.added{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.badge.removed{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.badge.edited{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}

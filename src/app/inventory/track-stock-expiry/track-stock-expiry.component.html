@@ -1,0 +1,76 @@
+<div class="inventory-page">
+  <h2>Track Stock & Expiry</h2>
+
+  <div class="filters">
+    <label>
+      Expiring within
+      <select [(ngModel)]="days" (change)="refresh()">
+        <option [ngValue]="7">7 days</option>
+        <option [ngValue]="15">15 days</option>
+        <option [ngValue]="30">30 days</option>
+        <option [ngValue]="60">60 days</option>
+        <option [ngValue]="90">90 days</option>
+      </select>
+    </label>
+    <label>
+      Low stock threshold
+      <input type="number" [(ngModel)]="threshold" (change)="refresh()" placeholder="Default = item min" />
+    </label>
+    <button (click)="refresh()">Refresh</button>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h3>Low Stock Items</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Unit</th>
+              <th>Min</th>
+              <th>Stock</th>
+              <th>Next Expiry</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of lowStockItems">
+              <td>{{ it.name }}</td>
+              <td>{{ it.type }}</td>
+              <td>{{ it.unit || '-' }}</td>
+              <td>{{ it.minStock || 0 }}</td>
+              <td>{{ it.stock || 0 }}</td>
+              <td>{{ it.nextExpiry | date:'yyyy-MM-dd' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Expiring Soon</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Batch</th>
+              <th>Remaining</th>
+              <th>Expiry</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of expiringBatches">
+              <td>{{ $any(b.item)?.name || b.item }}</td>
+              <td>{{ b.batchNo || b.lotNo || '-' }}</td>
+              <td>{{ b.remainingQuantity }}</td>
+              <td>{{ b.expiryDate | date:'yyyy-MM-dd' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+

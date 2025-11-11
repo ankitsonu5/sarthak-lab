@@ -1,0 +1,267 @@
+<!-- Pathology Dashboard Content -->
+<div class="pathology-dashboard">
+    <!-- Header Section with Purple Gradient -->
+    <div class="dashboard-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="dashboard-title">Rajkiya Ayurvedic College And Hospital Dashboard</h1>
+          <p class="dashboard-subtitle">Real-time pathology monitoring system</p>
+        </div>
+
+        <!-- Date and User Info -->
+        <div class="header-right">
+          <div class="date-time">
+            <div class="date">{{ currentDate | date:'EEEE, MMMM d, y' }}</div>
+            <div class="time">{{ currentDate | date:'h:mm a' }}</div>
+            <div class="greeting">Good {{ getGreeting() }}</div>
+          </div>
+          <!-- <div class="user-info">
+            <span class="user-role">Pathology</span>
+            <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
+          </div> -->
+        </div>
+
+        <!-- Animated Heart Section -->
+        <div class="heart-section">
+          <div class="heart-container">
+            <div class="animated-heart">
+              <div class="heartbeat-container">
+                <!-- Left Blue Heartbeat Line -->
+                <div class="heartbeat-line left-line">
+                  <svg viewBox="0 0 300 80" class="heartbeat-svg">
+                    <path class="heartbeat-path blue-line"
+                          d="M0,40 L80,40 L90,20 L100,60 L110,10 L120,70 L130,40 L300,40"
+                          stroke="#3b82f6" stroke-width="3" fill="none" />
+                  </svg>
+                </div>
+
+                <!-- Heart Image -->
+                <div class="heart-image">
+                </div>
+
+                <!-- Right Pink Heartbeat Line -->
+                <div class="heartbeat-line right-line">
+                  <svg viewBox="0 0 300 80" class="heartbeat-svg">
+                    <path class="heartbeat-path pink-line"
+                          d="M0,40 L80,40 L90,20 L100,60 L110,10 L120,70 L130,40 L300,40"
+                          stroke="#ff6b9d" stroke-width="3" fill="none" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- User Info Section -->
+            <div class="user-info-below">
+              <!-- <div class="user-role">Laboratory Technician</div> -->
+              <div class="user-name">Pathology</div>
+              <div class="user-status">System Administration</div>
+              <div class="user-info">
+            <!-- <span class="user-role">Pathology</span> -->
+            <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
+          </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  <!-- Statistics Cards Row - Compact Style -->
+  <div class="stats-section">
+    <div class="stats-grid-compact">
+      <!-- Total Tests Card -->
+      <div class="stat-card-compact" style="border-left-color: #3b82f6">
+        <div class="stat-icon-compact">🧪</div>
+        <div class="stat-content-compact">
+          <h3 class="stat-value-compact">{{ totalTests }}</h3>
+          <p class="stat-title-compact">TOTAL TESTS</p>
+          <p class="stat-subtitle-compact">+{{ todayTests }} today <span class="trend-indicator">🔴</span></p>
+        </div>
+      </div>
+
+      <!-- Total Reports Card -->
+      <div class="stat-card-compact" style="border-left-color: #f59e0b">
+        <div class="stat-icon-compact">📊</div>
+        <div class="stat-content-compact">
+          <h3 class="stat-value-compact">{{ totalReports }}</h3>
+          <p class="stat-title-compact">TOTAL REPORTS</p>
+          <p class="stat-subtitle-compact">+{{ todayReports }} today <span class="trend-indicator">🔴</span></p>
+        </div>
+      </div>
+
+      <!-- Total Registration Card -->
+      <div class="stat-card-compact" style="border-left-color: #10b981">
+        <div class="stat-icon-compact">📋</div>
+        <div class="stat-content-compact">
+          <h3 class="stat-value-compact">{{ totalRegistrations }}</h3>
+          <p class="stat-title-compact">TOTAL REGISTRATION</p>
+          <p class="stat-subtitle-compact">+{{ todayRegistrations }} today <span class="trend-indicator">🔴</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart and Calendar Row -->
+  <div class="chart-calendar-section">
+    <!-- Daily Test Trends Chart -->
+    <div class="dashboard-card chart-card">
+      <div class="card-header">
+        <h3>📈 Daily Test Trends</h3>
+      </div>
+      <div class="card-content">
+        <div class="chart-container">
+          <canvas id="pathologyReportsChart"></canvas>
+        </div>
+        <div class="chart-footer-note">Today Reports: {{ todayReports }}</div>
+      </div>
+    </div>
+
+    <!-- Calendar Widget -->
+    <div class="dashboard-card calendar-card">
+      <div class="card-header">
+        <h3>📅 Hospital Calendar</h3>
+        <div class="calendar-date">{{ currentDate | date:'MMMM yyyy' }}</div>
+      </div>
+      <div class="card-content">
+        <div class="calendar-container">
+          <div class="calendar-grid">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+
+            <!-- Calendar days -->
+            <div class="calendar-day" *ngFor="let day of getCalendarDays()"
+                 [class.today]="day.isToday"
+                 [class.has-events]="day.hasEvents">
+              {{ day.date }}
+            </div>
+          </div>
+          <div class="calendar-events">
+            <div class="event-item">
+              <span class="event-time">09:00 AM</span>
+              <span class="event-title">Lab Reports Due</span>
+            </div>
+            <div class="event-item">
+              <span class="event-time">02:00 PM</span>
+              <span class="event-title">Equipment Check</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions Row -->
+  <div class="quick-actions-section">
+    <div class="dashboard-card actions-card">
+      <div class="card-header">
+        <h3>📊 Reporting & Analytics</h3>
+      </div>
+      <div class="card-content">
+        <div class="action-buttons">
+          <a class="action-btn primary" routerLink="/pathology-module/scheduled-tests">
+            <span class="live-pill">LIVE</span>
+            <span class="action-count">{{ todayTests }}</span>
+            <span class="action-icon">🧪</span>
+            <span class="action-text">Today Tests</span>
+          </a>
+          <a class="action-btn secondary" routerLink="/pathology-module/registered-report">
+            <span class="live-pill">LIVE</span>
+            <span class="action-count">{{ todayReports }}</span>
+            <span class="action-icon">📝</span>
+            <span class="action-text">Generate Report</span>
+          </a>
+          <a class="action-btn success" routerLink="/pathology-module/all-reports">
+            <span class="live-pill">LIVE</span>
+            <span class="action-count">{{ totalReports }}</span>
+            <span class="action-icon">📊</span>
+            <span class="action-text">View Reports</span>
+          </a>
+          <a class="action-btn warning" routerLink="/pathology-module/reports-records">
+            <span class="live-pill">LIVE</span>
+            <span class="action-count">{{ totalReports }}</span>
+            <span class="action-icon">📁</span>
+            <span class="action-text">Reports Records</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tables Row -->
+  <div class="tables-section">
+    <!-- Latest Tests Table -->
+    <div class="dashboard-card table-card">
+      <div class="card-header">
+        <h3>📋 Latest Tests ({{ todayRegistrations }})</h3>
+      </div>
+      <div class="card-content">
+        <div class="data-table" style="max-height: 400px; overflow-y: auto;">
+          <div class="table-row header-row">
+            <div class="table-cell">S/N</div>
+            <div class="table-cell">Patient</div>
+            <div class="table-cell">Receipt</div>
+            <div class="table-cell">Amount</div>
+            <div class="table-cell">Time</div>
+          </div>
+          <div class="table-row" *ngFor="let registration of recentRegistrations; let i = index">
+            <div class="table-cell">{{ i + 1 }}</div>
+            <div class="table-cell">
+              <div class="patient-info">
+                <div class="patient-name">{{ registration.patientName }}</div>
+                <div class="patient-details">{{ registration.age }}Y, {{ registration.gender }}</div>
+              </div>
+            </div>
+            <div class="table-cell">#{{ registration.receiptNumber }}</div>
+            <div class="table-cell">₹{{ registration.amount }}</div>
+            <div class="table-cell">{{ registration.time }}</div>
+          </div>
+          <div class="no-data" *ngIf="recentRegistrations.length === 0">
+            <span>No tests today</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Latest Reports Table -->
+    <div class="dashboard-card table-card">
+      <div class="card-header">
+        <h3>📊 Latest Reports ({{ recentReports.length }})</h3>
+      </div>
+      <div class="card-content">
+        <div class="data-table" style="max-height: 400px; overflow-y: auto;">
+          <div class="table-row header-row">
+            <div class="table-cell">S/N</div>
+            <div class="table-cell">Patient</div>
+            <div class="table-cell">Lab No</div>
+            <div class="table-cell">Status</div>
+            <div class="table-cell">Date</div>
+          </div>
+          <div class="table-row" *ngFor="let report of recentReports; let i = index">
+            <div class="table-cell">{{ i + 1 }}</div>
+            <div class="table-cell">
+              <div class="patient-info">
+                <div class="patient-name">{{ report.patientName }}</div>
+                <div class="patient-details">{{ report.receiptNo }}</div>
+              </div>
+            </div>
+            <div class="table-cell">{{ report.labYearlyNo }}</div>
+            <div class="table-cell">
+              <span class="status-badge" [style.background-color]="getStatusColor(report.status)">
+                {{ report.status }}
+              </span>
+            </div>
+            <div class="table-cell">{{ report.reportDate | date:'short' }}</div>
+          </div>
+          <div class="no-data" *ngIf="recentReports.length === 0">
+            <span>No reports generated yet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

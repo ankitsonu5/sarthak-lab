@@ -1,0 +1,312 @@
+<!-- Patient Registration Form -->
+<div class="form-container">
+  <div style="max-width: 1200px; margin: 0 auto;">
+
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+      <div class="form-card" style="padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+        <div style="display: flex; justify-content: flex-start; align-items: center;">
+          <h1 style="font-size: 1.5rem; font-weight: bold; color: white; margin: 0; display: flex; align-items: center; gap: 0.75rem;">
+            <i class="fas fa-user-plus" style="font-size: 1.25rem;"></i>
+            Patient Registration
+          </h1>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" (keydown)="onFormKeydown($event)">
+
+      <!-- Tab Navigation -->
+      <div class="form-card" style="margin-bottom: 1.5rem;">
+        <div style="border-bottom: 1px solid #e5e7eb;">
+          <nav style="display: flex; gap: 2rem; padding: 0 1.5rem; align-items: center;" aria-label="Tabs">
+            <button type="button" (click)="navigateToPatientRegistration()"
+                    [style.border-bottom]="currentRoute.includes('patient-registration') ? '2px solid #8b5cf6' : '2px solid transparent'"
+                    [style.color]="currentRoute.includes('patient-registration') ? '#8b5cf6' : '#6b7280'"
+                    style="padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+              Patient Registration
+            </button>
+            <button type="button" (click)="navigateToSearchPatient()"
+                    [style.border-bottom]="currentRoute.includes('search-patient') ? '2px solid #3b82f6' : '2px solid transparent'"
+                    [style.color]="currentRoute.includes('search-patient') ? '#3b82f6' : '#6b7280'"
+                    style="padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+              Search Patient
+            </button>
+
+            <!-- BEGIN QUICK_PREFILL (disabled) - Right-side quick prefill by Appointment Registration No. -->
+
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+              <input
+                #regInput
+                type="text"
+                (keyup.enter)="prefillFromAppointment(regInput.value)"
+                (input)="onQuickPrefillInputChange(regInput.value)"
+                placeholder="Registration No."
+                title="Enter appointment Reg. No. and press Enter"
+                style="height: 32px; padding: 0.25rem 0.5rem; border: 1px solid #e5e7eb; border-radius: 6px; width: 180px;">
+              <button type="button"
+                      (click)="prefillFromAppointment(regInput.value)"
+                      class="btn btn-primary"
+                      style="height: 32px; padding: 0 0.75rem;">
+                Load
+              </button>
+            </div>
+
+            <!-- END QUICK_PREFILL (disabled) -->
+          </nav>
+        </div>
+      </div>
+
+      <!-- Main Form Content - Side by Side Layout -->
+      <div style="display: flex; flex-direction: row; gap: 1.5rem; flex-wrap: wrap;"
+           class="form-layout">
+
+        <!-- Personal Information Section -->
+        <div style="flex: 1; min-width: 400px;" class="form-card">
+          <div class="form-header" style="background: linear-gradient(90deg, rgba(168, 85, 247, 1) 0%, rgba(139, 92, 246, 1) 51%, rgba(124, 58, 237, 1) 100%);">
+            <h3 style="display: flex; align-items: center; margin: 0;">
+              <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+              </svg>
+              Personal Information
+            </h3>
+          </div>
+          <div class="form-section">
+            <div class="three-col">
+
+            <!-- Date -->
+            <div class="form-grid">
+              <label class="form-label">Date:</label>
+              <input
+                type="date"
+                formControlName="date"
+                readonly
+                class="form-input"
+                style="background-color: #f3f4f6;">
+            </div>
+
+
+
+            <!-- Designation (from Prefix Master) -->
+            <div class="form-grid">
+              <label class="form-label">Designation:</label>
+              <select formControlName="designation" class="form-input form-select" tabindex="1">
+                <option value="">Select</option>
+                <option *ngFor="let p of designationOptions" [value]="p">{{ p }}</option>
+              </select>
+            </div>
+
+            <!-- First Name -->
+            <div class="form-grid">
+              <label class="form-label">First Name:</label>
+              <div>
+                <input
+                  #firstNameInput
+                  type="text"
+                  formControlName="firstName"
+                  class="form-input"
+                  (input)="onNameInput($event, 'firstName')"
+                  style="text-transform: capitalize;"
+                  tabindex="2"
+                  [class.field-error]="registrationForm.get('firstName')?.invalid && registrationForm.get('firstName')?.touched">
+                <div *ngIf="registrationForm.get('firstName')?.invalid && registrationForm.get('firstName')?.touched" class="error-text">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="form-grid">
+              <label class="form-label">Last Name:</label>
+              <div>
+                <input
+                  type="text"
+                  formControlName="lastName"
+                  class="form-input"
+                  (input)="onNameInput($event, 'lastName')"
+                  style="text-transform: capitalize;"
+                  tabindex="3"
+                  placeholder="Optional">
+              </div>
+            </div>
+
+            <!-- Age -->
+            <div class="form-grid">
+              <label class="form-label">Age: <span style="color: red;">*</span></label>
+              <div>
+                <input
+                  type="number"
+                  min="0"
+                  formControlName="age"
+                  class="form-input"
+                  tabindex="4"
+                  placeholder="Enter age"
+                  [class.field-error]="registrationForm.get('age')?.invalid && registrationForm.get('age')?.touched">
+                <div *ngIf="registrationForm.get('age')?.invalid && registrationForm.get('age')?.touched" class="error-text">
+                  Required
+                </div>
+              </div>
+            </div>
+
+            <!-- Age In -->
+            <div class="form-grid">
+              <label class="form-label">Age In:</label>
+              <select
+                formControlName="ageIn"
+                class="form-input form-select"
+                tabindex="5">
+                <option *ngFor="let opt of ageInOptions" [value]="opt">{{ opt }}</option>
+              </select>
+            </div>
+
+            <!-- Aadhar No -->
+            <div class="form-grid">
+              <label class="form-label">Aadhar No.:</label>
+              <div>
+                <input
+                  #aadharInput
+                  type="text"
+                  maxlength="12"
+                  inputmode="numeric"
+                  formControlName="aadharNo"
+                  placeholder="000000000000"
+                  class="form-input"
+                  tabindex="6"
+                  [class.field-error]="registrationForm.get('aadharNo')?.invalid && registrationForm.get('aadharNo')?.touched">
+                <div *ngIf="registrationForm.get('aadharNo')?.invalid && registrationForm.get('aadharNo')?.touched" class="error-text">
+                  <span *ngIf="registrationForm.get('aadharNo')?.errors?.['pattern']">Must be 12 digits</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-grid">
+              <label class="form-label">Gender:</label>
+              <div class="radio-group">
+                <label><input type="radio" formControlName="gender" value="Male" (click)="onGenderClick('Male', $event)" [disabled]="isGenderLocked && lockedGender !== 'Male'"> Male</label>
+                <label><input type="radio" formControlName="gender" value="Female" (click)="onGenderClick('Female', $event)" [disabled]="isGenderLocked && lockedGender !== 'Female'"> Female</label>
+                <label><input type="radio" formControlName="gender" value="Other" (click)="onGenderClick('Other', $event)" [disabled]="isGenderLocked && lockedGender !== 'Other'"> Other</label>
+              </div>
+            </div>
+
+            <!-- Blood Group -->
+            <div class="form-grid">
+              <label class="form-label">Blood Group:</label>
+              <select
+                formControlName="bloodGroup"
+                class="form-input form-select"
+                tabindex="8">
+                <option value="">NA</option>
+                <option *ngFor="let bg of bloodGroups" [value]="bg">{{ bg }}</option>
+              </select>
+            </div>
+
+            <!-- Contact Details (moved inside same card for single-form look) -->
+            <!-- Address -->
+            <div class="form-grid">
+              <label class="form-label">Address:</label>
+              <input
+                type="text"
+                formControlName="address"
+                class="form-input"
+                (input)="onNameInput($event, 'address')"
+                style="text-transform: capitalize;"
+                tabindex="8">
+            </div>
+
+            <!-- Contact (optional) -->
+            <div class="form-grid">
+              <label class="form-label">Contact:</label>
+              <div>
+                <input
+                  type="text"
+                  maxlength="10"
+                  inputmode="numeric"
+                  formControlName="contact"
+                  placeholder="10-digit mobile"
+                  class="form-input"
+                  tabindex="11"
+                  [class.field-error]="registrationForm.get('contact')?.errors?.['pattern'] && registrationForm.get('contact')?.touched">
+                <div *ngIf="registrationForm.get('contact')?.errors?.['pattern'] && registrationForm.get('contact')?.touched" class="error-text">
+                  <span>Must be 10 digits</span>
+                </div>
+              </div>
+            </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-buttons">
+        <button
+          id="savePatientBtn"
+          type="button"
+          (click)="onSubmit()"
+          (keydown.enter)="onSubmit()"
+          (keyup.enter)="onSubmit()"
+          [disabled]="isSubmitting"
+          style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); opacity: 1;"
+          tabindex="13"
+          (mousedown)="debugButtonClick('MOUSEDOWN')"
+          (mouseup)="debugButtonClick('MOUSEUP')">
+          <span *ngIf="!isSubmitting" style="display: flex; align-items: center;">
+            <i class="fas fa-save" style="margin-right: 0.5rem;"></i>
+            Save Patient
+          </span>
+          <span *ngIf="isSubmitting" style="display: flex; align-items: center;">
+            <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i>
+            Saving...
+          </span>
+        </button>
+        <button
+          type="button"
+          (click)="onReset()"
+          [disabled]="isSubmitting || registrationForm.invalid"
+          style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-left: 0.75rem; opacity: 1;"
+          [style.opacity]="registrationForm.invalid ? '0.5' : '1'"
+          [style.cursor]="registrationForm.invalid ? 'not-allowed' : 'pointer'"
+          tabindex="14">
+          <i class="fas fa-undo" style="margin-right: 0.5rem;"></i>
+          Reset Form
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Patient Registration Success Alert Modal -->
+<div class="success-alert-overlay" *ngIf="showSuccessAlert">
+  <div class="success-alert-modal">
+    <div class="success-alert-content">
+      <!-- Success Animation -->
+      <div class="success-animation">
+        <dotlottie-wc
+          src="https://lottie.host/d22287ab-7950-4b72-be1f-1ef893ba7c0a/UWp93q92v8.lottie"
+          style="width: 130px; height: 130px"
+          speed="1"
+          autoplay
+          loop>
+        </dotlottie-wc>
+      </div>
+
+      <!-- Success Title -->
+      <h2 class="success-title">🎉 Registration Successful!</h2>
+
+      <!-- Patient ID Display -->
+      <div class="patient-id-display">
+        <p class="success-message">{{ successMessage }}</p>
+      </div>
+
+      <!-- Badge -->
+      <div class="success-badge">
+        <span class="badge-icon">✨</span>
+        <span>Patient Added Successfully</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,134 @@
+<div class="inventory-page">
+  <h2>Manage Lab Equipment / Reagents</h2>
+
+  <div class="layout">
+    <div class="left">
+      <div class="card">
+        <h3>Add Item</h3>
+        <form [formGroup]="itemForm" (ngSubmit)="createItem()" class="form-grid">
+          <label>
+            Name
+            <input type="text" formControlName="name" placeholder="e.g. CBC Reagent Kit" />
+          </label>
+          <label>
+            Type
+            <select formControlName="type">
+              <option value="Reagent">Reagent</option>
+              <option value="Equipment">Equipment</option>
+            </select>
+          </label>
+          <label>
+            Unit
+            <input type="text" formControlName="unit" placeholder="ml / pcs / kit" />
+          </label>
+          <label>
+            Min. Stock
+            <input type="number" formControlName="minStock" min="0" />
+          </label>
+          <label>
+            Category
+            <input type="text" formControlName="category" placeholder="Hematology / Chemistry" />
+          </label>
+          <label class="full">
+            Description
+            <textarea formControlName="description" rows="2"></textarea>
+          </label>
+          <div class="actions full">
+            <button type="submit" [disabled]="itemForm.invalid">Save Item</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="header-row">
+          <h3>Items</h3>
+          <input type="text" [(ngModel)]="search" placeholder="Search" (ngModelChange)="loadItems()" />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Unit</th>
+                <th>Min</th>
+                <th>Stock</th>
+                <th>Next Expiry</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let it of items" [class.selected]="selectedItem?._id===it._id">
+                <td>{{ it.name }}</td>
+                <td>{{ it.type }}</td>
+                <td>{{ it.unit || '-' }}</td>
+                <td>{{ it.minStock || 0 }}</td>
+                <td>{{ it.stock || 0 }}</td>
+                <td>{{ it.nextExpiry | date:'yyyy-MM-dd' }}</td>
+                <td><button (click)="selectItem(it)">Select</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card" *ngIf="selectedItem as si">
+        <h3>Add Stock Batch — {{ si.name }}</h3>
+        <form [formGroup]="batchForm" (ngSubmit)="addBatch()" class="form-grid">
+          <label>
+            Batch No
+            <input type="text" formControlName="batchNo" />
+          </label>
+          <label>
+            Lot No
+            <input type="text" formControlName="lotNo" />
+          </label>
+          <label>
+            Quantity
+            <input type="number" formControlName="quantity" min="0" />
+          </label>
+          <label>
+            Expiry
+            <input type="date" formControlName="expiryDate" />
+          </label>
+          <label class="full">
+            Supplier
+            <input type="text" formControlName="supplierName" />
+          </label>
+          <div class="actions full">
+            <button type="submit" [disabled]="batchForm.invalid">Add Batch</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" *ngIf="selectedItem">
+        <h3>Batches</h3>
+        <div class="table-wrap small">
+          <table>
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Lot</th>
+                <th>Qty</th>
+                <th>Remaining</th>
+                <th>Expiry</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of batches">
+                <td>{{ b.batchNo || '-' }}</td>
+                <td>{{ b.lotNo || '-' }}</td>
+                <td>{{ b.quantity }}</td>
+                <td>{{ b.remainingQuantity }}</td>
+                <td>{{ b.expiryDate | date:'yyyy-MM-dd' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

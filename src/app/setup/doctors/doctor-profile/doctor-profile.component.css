@@ -1,0 +1,380 @@
+.profile-container {
+  
+  overflow: hidden;
+}
+
+.profile-card {
+  background: linear-gradient(135deg, #f3d6ff 0%, #e8b5ff 100%);
+  border-radius: 20px;
+  padding: 40px;
+  display: flex;
+  align-items: stretch;
+  gap: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  
+}
+
+.profile-content {
+  flex: 1;
+  color: #1a1a1a;
+  z-index: 2;
+}
+
+.hospital-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.hospital-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.medical-cross {
+  color: #fe4f4f;
+  width: 140px;
+  height: 140px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+}
+.medical-cross img{
+  width: 100%;
+}
+
+.hospital-name h1{
+  position: absolute;
+  font-size: 1.90rem; /* Increased font size */
+  font-weight: 900; /* Bold */
+  color: #001255;
+  text-align: center;
+  top: 65px;
+}
+.sub-title{
+  font-size: 1.60rem; /* Increased font size */
+  font-weight: 900; /* Bold */
+  color: #001255;
+  text-align: center;
+}
+.main-title {
+  display: none; /* Removed to adjust layout */
+}
+
+.description {
+  margin-bottom: 30px;
+  color: #444;
+  line-height: 1.6;
+  font-size: 15px;
+  max-width: 400px;
+}
+
+.specialties-section h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+}
+
+.specialties-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.specialty-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+.specialty-dot {
+  color: #00d4aa;
+  font-size: 10px;
+}
+
+.contact-info {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.contact-icon {
+  color: #4facfe;
+  font-size: 18px;
+}
+
+.contact-label {
+  font-size: 12px;
+  color: #777;
+  font-weight: 600;
+}
+
+.contact-value {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.doctor-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.doctor-image-container {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.doctor-image img {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 6px solid #e8b5ff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.doctor-name-title {
+  margin-top: 8px;
+}
+
+.doctor-name-title h2 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin: 0;
+  color: #1a1a1a;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-name-title .doctor-title {
+  font-size: 16px;
+  color: #666;
+  margin: 5px 0 10px;
+  font-weight: 500;
+}
+
+.doctor-details {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  text-align: left;
+}
+
+.detail-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.detail-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: #777;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.action-button {
+  margin-top: 20px;
+}
+
+.know-more-btn {
+  background: #00d4aa;
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.know-more-btn:hover {
+  background: #00b894;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 212, 170, 0.3);
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #1a1a1a;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e8b5ff;
+  border-top: 4px solid #00d4aa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.error-icon {
+  font-size: 50px;
+  color: #ff6b6b;
+  margin-bottom: 15px;
+}
+
+.error-back-btn {
+  background: #ff6b6b;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.error-back-btn:hover {
+  background: #ff5252;
+  transform: translateY(-2px);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  .profile-card {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+  .doctor-image img {
+    width: 180px;
+    height: 180px;
+  }
+  .detail-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .contact-info {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+/* Loading and Error States */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.error-container h3 {
+  color: #e53e3e;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.error-container p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.error-back-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.error-back-btn:hover {
+  background: #5a67d8;
+}
+
+/* Image error handling */
+.doctor-image img {
+  transition: opacity 0.3s ease;
+}
+
+.doctor-image img[src=""] {
+  opacity: 0;
+}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind Sidebar Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e3f2fd',
+                            100: '#bbdefb',
+                            200: '#90caf9',
+                            300: '#64b5f6',
+                            400: '#42a5f5',
+                            500: '#2196f3',
+                            600: '#1e88e5',
+                            700: '#1976d2',
+                            800: '#1565c0',
+                            900: '#0d47a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 h-full bg-white border-r border-gray-200 shadow-lg">
+            <!-- Sidebar Header -->
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <span class="text-2xl mr-2">🏥</span>
+                    HMS
+                </h2>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="mt-2 px-2 max-h-[calc(100vh-200px)] overflow-y-auto">
+                <!-- Dashboard Link -->
+                <a href="#" class="flex items-center px-4 py-3 mb-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200 bg-primary-100 text-primary-700 border-r-4 border-primary-500">
+                    <span class="text-xl mr-3">📊</span>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+
+                <!-- Setup Section -->
+                <div class="mb-2">
+                    <button onclick="toggleSection('setup')" class="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3">⚙️</span>
+                            <span class="font-medium">Setup</span>
+                        </div>
+                        <svg id="setup-arrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="setup-children" class="ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 max-h-0 opacity-0">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Department</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Unit</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Doctor</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Room Category</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Bed Creation</a>
+                    </div>
+                </div>
+
+                <!-- Reception Section -->
+                <div class="mb-2">
+                    <button onclick="toggleSection('reception')" class="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3">🧾</span>
+                            <span class="font-medium">Reception</span>
+                        </div>
+                        <svg id="reception-arrow" class="w-5 h-5 transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="reception-children" class="ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 max-h-96 opacity-100">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200 bg-primary-50 text-primary-600 border-l-4 border-primary-500">Patient Registration</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Search Patient</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">OPD</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Follow Up</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Alter OPD</a>
+                    </div>
+                </div>
+
+                <!-- IPD Section -->
+                <div class="mb-2">
+                    <button onclick="toggleSection('ipd')" class="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3">🏥</span>
+                            <span class="font-medium">IPD</span>
+                        </div>
+                        <svg id="ipd-arrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="ipd-children" class="ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 max-h-0 opacity-0">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">IPD Registration</a>
+                    </div>
+                </div>
+
+                <!-- Pathology Section -->
+                <div class="mb-2">
+                    <button onclick="toggleSection('pathology')" class="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <span class="text-xl mr-3">🧪</span>
+                            <span class="font-medium">Pathology</span>
+                        </div>
+                        <svg id="pathology-arrow" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="pathology-children" class="ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300 max-h-0 opacity-0">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Register Test OPD</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Register OPD IPD</a>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200">Generate Report</a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Sidebar Footer -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
+                <div class="text-xs text-gray-500 text-center">
+                    <p>Hospital Management System</p>
+                    <p class="mt-1">v1.0.0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Tailwind CSS Sidebar Preview</h1>
+            <p class="text-gray-600 mb-4">This is a preview of your new Tailwind CSS sidebar design.</p>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4">Features:</h2>
+                <ul class="space-y-2">
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Clean Tailwind CSS design</li>
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Collapsible sections</li>
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Smooth animations</li>
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Active link highlighting</li>
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> Responsive design</li>
+                    <li class="flex items-center"><span class="text-green-500 mr-2">✓</span> No Angular Material dependency</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionName) {
+            const children = document.getElementById(sectionName + '-children');
+            const arrow = document.getElementById(sectionName + '-arrow');
+            
+            if (children.classList.contains('max-h-0')) {
+                children.classList.remove('max-h-0', 'opacity-0');
+                children.classList.add('max-h-96', 'opacity-100');
+                arrow.classList.add('rotate-180');
+            } else {
+                children.classList.remove('max-h-96', 'opacity-100');
+                children.classList.add('max-h-0', 'opacity-0');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+    </script>
+</body>
+</html>

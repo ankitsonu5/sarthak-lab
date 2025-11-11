@@ -1,0 +1,17 @@
+{
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/back-end/dist/**": true,
+    "**/out-tsc/**": true
+  },
+  "search.exclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/back-end/dist/**": true,
+    "**/out-tsc/**": true
+  },
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
+

@@ -1,0 +1,107 @@
+<div *ngIf="show" class="modal-overlay" (click)="onOverlayClick()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Patient Report Details</h3>
+      <button class="close-btn" (click)="onClose()">×</button>
+    </div>
+
+    <div class="modal-body" *ngIf="report">
+      <!-- Patient card -->
+      <div class="patient-info-card">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ getPatientInitials(report.patientData) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ report.patientData?.fullName || report.patientData?.firstName + ' ' + report.patientData?.lastName }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ report.patientData?.age }} Years, {{ report.patientData?.gender }}</span>
+                <span class="phone">📞 {{ report.patientData?.phone }}</span>
+              </div>
+            </div>
+            <div class="type-chip" *ngIf="(report.patientType || report.type || report.addressType || report?.patientData?.patientType || report?.patientData?.type) as t" [ngClass]="(t.toString().toUpperCase()==='IPD') ? 'ipd' : 'opd'">{{ t }}</div>
+          </div>
+          <div class="patient-header-right" *ngIf="report.isEdited && (report.lastEditedAt || report.editHistory?.length)">
+            <div class="edited-info-chip">
+              Last edit: {{ (report.lastEditedAt || report.editHistory[report.editHistory.length-1]?.editedAt) | date:'dd/MM/yyyy, h:mm a' }}
+              <span *ngIf="report.lastEditedBy || report.editHistory?.length"> by {{ report.lastEditedBy || report.editHistory[report.editHistory.length-1]?.editedBy }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="patient-details-row">
+
+          <div class="detail-card"><div class="detail-label">Receipt No</div><div class="detail-value">{{ report.receiptNo }}</div></div>
+          <div class="detail-card"><div class="detail-label">Lab Yearly No</div><div class="detail-value">{{ report.labYearlyNo }}</div></div>
+          <div class="detail-card"><div class="detail-label">Lab Daily No</div><div class="detail-value">{{ report.labDailyNo }}</div></div>
+          <div class="detail-card"><div class="detail-label">Report Date</div><div class="detail-value">{{ report.reportDate | date:'dd/MM/yyyy' }}</div></div>
+        </div>
+
+      </div>
+
+      <!-- Categories and table -->
+      <div class="test-results-section" *ngFor="let category of getTestCategories(report.testResults)">
+        <div class="category-header"><h4>{{ category.name }}</h4></div>
+
+        <div class="test-results-table">
+          <table class="results-table">
+            <thead>
+              <tr class="table-header">
+                <th class="test-col">TEST</th>
+                <th class="normal-col">NORMAL VALUE</th>
+                <th class="result-col">RESULT</th>
+                <th class="unit-col">UNIT</th>
+                <th class="max-col">MAX</th>
+                <th class="min-col">MIN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let test of category.tests">
+                <tr class="test-subheader-row">
+                  <td class="test-subheader-cell" colspan="6">{{ test.testName }}</td>
+                </tr>
+
+                <ng-container *ngFor="let param of (test.parameters || [test]); let paramIndex = index">
+                  <!-- Included panel item header (outer group) -->
+                  <tr *ngIf="param.outerGroup && (paramIndex === 0 || test.parameters[paramIndex - 1]?.outerGroup !== param.outerGroup)" class="outer-group-row">
+                    <td class="outer-group-cell" colspan="6">{{ param.outerGroup }}</td>
+                  </tr>
+                  <!-- Group header inside a test (e.g., Physical / Chemical / Microscopy) -->
+                  <tr *ngIf="param.groupBy && (paramIndex === 0 || test.parameters[paramIndex - 1]?.groupBy !== param.groupBy || test.parameters[paramIndex - 1]?.outerGroup !== param.outerGroup)" class="group-row">
+                    <td class="group-cell" colspan="6">{{ param.groupBy }}</td>
+                  </tr>
+
+                  <!-- Parameter row -->
+                  <tr class="test-row" [class.has-changes]="hasAnyChange(param)">
+                    <td class="test-cell test-col"><span>{{ param.name || param.testName }}</span></td>
+                    <td class="test-cell normal-col">{{ param.normalRange || param.normalValue || '-' }}</td>
+                    <td class="test-cell result-col" [class.abnormal]="isAbnormalResult(param)">
+                      <input type="text" [value]="param.result || ''" readonly class="result-input">
+                    </td>
+                    <td class="test-cell unit-col">{{ param.unit || '-' }}</td>
+                    <td class="test-cell max-col">{{ getDisplayMax(param) }}</td>
+                    <td class="test-cell min-col">
+                      {{ getDisplayMin(param) }}
+                      <button *ngIf="hasAnyChange(param)" type="button" class="row-arrow" (click)="toggleChange(makeKey(param,'row'))">←</button>
+                    </td>
+                  </tr>
+
+                  <!-- Before-change snapshot row -->
+                  <tr *ngIf="openChanges[makeKey(param,'row')]" class="before-row">
+                    <td class="test-cell test-col"><span>{{ param.name || param.testName }}</span></td>
+                    <td class="test-cell normal-col">{{ param.normalRange || param.normalValue || '-' }}</td>
+                    <td class="test-cell result-col">
+                      <input type="text" [value]="changeForResult(param)?.before ?? (param.result || '')" readonly class="result-input before-input">
+                    </td>
+                    <td class="test-cell unit-col">{{ param.unit || '-' }}</td>
+                    <td class="test-cell max-col">{{ getDisplayMax(param) }}</td>
+                    <td class="test-cell min-col">{{ getDisplayMin(param) }}</td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

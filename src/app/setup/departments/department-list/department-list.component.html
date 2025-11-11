@@ -1,0 +1,178 @@
+<div class="department-list-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <div class="search-icon">🔍</div>
+      <h1>Search Departments</h1>
+    </div>
+    <div class="header-right">
+      <span class="total-count">Total: {{ totalDepartments }} departments</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab-button" (click)="navigateToSearchRoom()">Search Room</button>
+      <button class="tab-button active" (click)="SearchDepartment()">Search Departmens</button>
+      <button class="tab-button" (click)="DepartmentRegistration()">Department Registration</button>
+    </div>
+  </div> 
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-row">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (input)="onSearchTermChange(searchTerm)"
+        (keyup)="onSearchTermChange(searchTerm)"
+        placeholder="Search by name, code, or description..."
+        class="search-input"
+      />
+      <select [(ngModel)]="departmentFilter" (change)="onFilterChange()" class="department-dropdown">
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of uniqueDepartments" [value]="dept">
+          {{ dept }}
+        </option>
+      </select>
+
+      <button (click)="clearSearch()" class="clear-search-btn" [disabled]="isLoading">
+        <span *ngIf="!isLoading"><i class="fa-solid fa-trash"></i> Clear Search</span>
+        <span *ngIf="isLoading">⏳ Loading...</span>
+      </button>
+    </div>
+  </div>
+
+
+
+
+
+  
+  <!-- Departments Table -->
+  <div class="table-container" >
+    <table class="departments-table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Registration Date</th>
+          <th>Department ID</th>
+          <th>Department Name</th>
+          <th>Code</th>
+       
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let department of filteredDepartments; let i = index; trackBy: trackByDepartmentId" class="table-row">
+          <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td>{{ formatDate(department.createdAt!) }}</td>
+          <td class="department-id">{{ getDepartmentId(department, i) }}</td>
+          <td class="department-name">{{ department.name }}</td>
+          <td class="department-code">
+            <span class="code-badge" *ngIf="department.code">{{ department.code }}</span>
+            <span class="no-code" *ngIf="!department.code">N/A</span>
+          </td>
+
+          <td class="actions-column">
+            <div class="action-buttons">
+              <button
+                (click)="editDepartment(department)"
+                class="action-btn btn-edit"
+                title="Edit Department"
+              >
+               <i class="fa-solid fa-edit"></i> Edit
+              </button>
+
+              <button
+                (click)="showDeleteConfirmationDialog(department)"
+                class="action-btn btn-delete"
+                title="Delete Department"
+              >
+               <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="filteredDepartments.length > 0 || currentPage > 1">
+      <div class="pagination-info">
+        <span>Showing {{ (currentPage - 1) * pageSize + 1 }} to {{ Math.min(currentPage * pageSize, totalDepartments) }} of {{ totalDepartments }} departments</span>
+      </div>
+      <div class="pagination-controls">
+        <button
+          class="pagination-btn"
+          [disabled]="currentPage === 1"
+          (click)="goToPage(currentPage - 1)"
+          title="Previous Page">
+          ← Previous
+        </button>
+
+        <div class="page-numbers">
+          <button
+            *ngFor="let page of getPageNumbers()"
+            class="page-btn"
+            [class.active]="page === currentPage"
+            [disabled]="page === '...'"
+            (click)="goToPage(page)"
+            [title]="'Go to page ' + page">
+            {{ page }}
+          </button>
+        </div>
+
+        <button
+          class="pagination-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="goToPage(currentPage + 1)"
+          title="Next Page">
+          Next →
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredDepartments.length === 0">
+      <div class="empty-icon">📁</div>
+      <h3>No Departments Found</h3>
+      <p *ngIf="searchTerm">Try adjusting your search criteria or filters.</p>
+      <p *ngIf="!searchTerm">Get started by adding your first department.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  [confirming]="isConfirmingDelete"
+  (confirmed)="confirmDelete()"
+  (cancelled)="closeDeleteConfirmation()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="'Department Deleted!'"
+  [message]="deleteSuccessMessage"
+  [badgeText]="'Deletion Completed'"
+  [autoHideDelay]="2000"
+  (closed)="onDeleteSuccessClosed()"
+  (refreshData)="refreshData()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal: simple info message, auto-hide in 2s, no OK button -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="'Cannot Delete Department'"
+  [message]="deleteBlockedMessage"
+  [details]="[]"
+  [badgeText]="'Dependencies present'"
+  [rooms]="[]"
+  [doctors]="[]"
+  [autoHideDelay]="3000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>

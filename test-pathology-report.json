@@ -1,0 +1,13 @@
+{
+  "receiptNo": "TEST123",
+  "patientData": {
+    "firstName": "Test",
+    "lastName": "Patient",
+    "age": "30",
+    "gender": "Male",
+    "phone": "9999999999",
+    "address": "Test Address",
+    "aadhaar": "123456789012"
+  },
+  "testResults": []
+}

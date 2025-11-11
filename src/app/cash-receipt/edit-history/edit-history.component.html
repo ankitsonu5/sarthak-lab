@@ -1,0 +1,211 @@
+<div class="edit-history-container">
+  <div class="page-header">
+    <div class="left">
+      <h2>Edited Patients Records</h2>
+      <div class="sub">Invoices that were edited (today or earlier)</div>
+    </div>
+    
+  </div>
+
+  <div class="filters">
+    <div class="field">
+      <label>Receipt No.</label>
+      <input type="text" placeholder="Enter receipt number" [(ngModel)]="qReceipt" (input)="applyFilters()" />
+    </div>
+    <div class="field">
+      <label>Search</label>
+      <input type="text" placeholder="Search by name, reg no, phone" [(ngModel)]="qText" (input)="applyFilters()" />
+    </div>
+    <div class="field">
+      <label>Payment Mode</label>
+      <select [(ngModel)]="qPayment" (change)="applyFilters()">
+        <option>All</option>
+        <option value="CASH">CASH</option>
+        <option value="CARD">CARD</option>
+        <option value="UPI">UPI</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Visit</label>
+      <select [(ngModel)]="qVisit" (change)="applyFilters()">
+        <option>All</option>
+        <option value="OPD">OPD</option>
+        <option value="IPD">IPD</option>
+      </select>
+    </div>
+    <div class="right">
+      <button class="btn" (click)="clearFilters()">✖ Clear Filter</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>S.NO</th>
+          <th>PATIENT NAME</th>
+          <th>REGISTRATION NO.</th>
+          <th>RECEIPT NO.</th>
+          <th>NO. OF TESTS</th>
+          <th>AMOUNT</th>
+          <th>PAYMENT</th>
+          <th>VISIT</th>
+          <th>EDITED AT</th>
+          <th>ACTION</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filtered; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="p-name">{{ r.patientName }}</div>
+            <div class="p-meta">{{ r.patientAge }}<span *ngIf="r.patientGender">, {{ r.patientGender }}</span><span *ngIf="r.patientPhone"> • 📞 {{ r.patientPhone }}</span></div>
+          </td>
+          <td>{{ r.registrationNumber }}</td>
+          <td>{{ r.receiptNumber }}</td>
+          <td><span class="tests-pill">{{ r.testsCount }}</span></td>
+          <td class="amount">₹{{ formatCurrencyNumber(r.amount) }}</td>
+          <td><span class="mode-chip">{{ r.paymentMode || '-' }}</span></td>
+          <td><span class="visit-chip" [class.ipd]="(r.visitMode || getVisitMode(r.raw))==='IPD'">{{ r.visitMode || getVisitMode(r.raw) }}</span></td>
+          <td>{{ r.editedAt | date:'dd/MM/yyyy, h:mm a' }}</td>
+          <td>
+            <button class="action-btn btn-view" (click)="openEditAudit(r)">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="empty-state" *ngIf="!isLoading && (!filtered || filtered.length === 0)">
+    <div class="empty-icon">📝</div>
+    <div class="empty-title">No edited records found</div>
+    <div class="empty-sub">Try adjusting filters above</div>
+  </div>
+
+</div>
+
+<!-- Reuse Edit Audit Modal UI provided -->
+<div *ngIf="showEditAuditModal" class="modal-overlay" (click)="closeEditAudit()">
+  <div class="modal-content wide" (click)="$event.stopPropagation()">
+    <div class="modal-header gradient">
+      <h4><i class="fas fa-pen-to-square"></i> Invoice Edit Details</h4>
+      <div class="header-right">
+        <div class="credit-debit-chip" [class.debit]="getEditDelta(selectedAuditRecord) > 0" [class.credit]="getEditDelta(selectedAuditRecord) < 0">
+          {{ getEditDelta(selectedAuditRecord) > 0 ? 'Debited' : (getEditDelta(selectedAuditRecord) < 0 ? 'Credited' : 'Edited') }}
+        </div>
+        <div class="credit-debit-amount" [class.debit]="getEditDelta(selectedAuditRecord) > 0" [class.credit]="getEditDelta(selectedAuditRecord) < 0">
+          ₹{{ formatCurrencyNumber(absValue(getEditDelta(selectedAuditRecord))) }}
+        </div>
+        <button class="close-btn" (click)="closeEditAudit()">×</button>
+      </div>
+    </div>
+
+    <div class="modal-body" *ngIf="selectedAuditRecord">
+      <!-- Patient header like screenshot -->
+      <div class="patient-info-card gradient-chip">
+        <div class="patient-header">
+          <div class="patient-left">
+            <div class="patient-avatar"><span>{{ (getPatientName(selectedAuditRecord) || 'P').charAt(0) }}</span></div>
+            <div class="patient-basic-info">
+              <h3>{{ getPatientName(selectedAuditRecord) }}</h3>
+              <div class="patient-meta">
+                <span class="age-gender">{{ getPatientAge(selectedAuditRecord) }}, {{ getPatientGender(selectedAuditRecord) }}</span>
+                <span class="phone">📞 {{ getPatientPhone(selectedAuditRecord) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="patient-header-right">
+            <div class="edited-info-chip small">
+              Last edit: {{ getLastEditedAt(selectedAuditRecord) | date:'dd/MM/yyyy, h:mm a' }} by {{ getLastEditedBy(selectedAuditRecord) || 'System' }}
+            </div>
+          </div>
+        </div>
+
+        <div class="patient-details-row compact">
+          <div class="detail-card"><div class="detail-label">REGISTRATION NO</div><div class="detail-value">{{ getRegistrationNumber(selectedAuditRecord, 0) }}</div></div>
+          <div class="detail-card"><div class="detail-label">RECEIPT NO</div><div class="detail-value">{{ selectedAuditRecord.receiptNumber }}</div></div>
+          <div class="detail-card"><div class="detail-label">INVOICE DATE</div><div class="detail-value">{{ (selectedAuditRecord.invoiceDate || selectedAuditRecord.bookingDate || selectedAuditRecord.createdAt) | date:'dd/MM/yyyy' }}</div></div>
+          <div class="detail-card"><div class="detail-label">MODE</div><div class="detail-value"><span class="mode-chip">{{ getVisitMode(selectedAuditRecord) }}</span></div></div>
+        </div>
+      </div>
+
+      <!-- Diff rows: Previous vs Edited -->
+      <div class="diff-section">
+        <div class="diff-row">
+          <div class="diff-col">
+            <div class="diff-title">BEFORE EDIT</div>
+            <div class="diff-amount">₹{{ formatCurrencyNumber(getPreviousAmount(selectedAuditRecord) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getPreviousTests(selectedAuditRecord)" class="test-chip">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+          <div class="diff-col">
+            <div class="diff-title">EDITED</div>
+            <div class="diff-amount edited">₹{{ formatCurrencyNumber(getAmount(selectedAuditRecord) || 0) }}</div>
+            <div class="diff-tests">
+              <span *ngFor="let t of getAfterTests(selectedAuditRecord)" class="test-chip green">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="diff-summary" [class.credit]="getEditDelta(selectedAuditRecord) < 0" [class.debit]="getEditDelta(selectedAuditRecord) > 0">
+          <div class="summary-label">{{ getEditDelta(selectedAuditRecord) > 0 ? 'Debited (Added)' : (getEditDelta(selectedAuditRecord) < 0 ? 'Credited (Reduced)' : 'Edited') }}</div>
+          <div class="summary-value">₹{{ formatCurrencyNumber(absValue(getEditDelta(selectedAuditRecord))) }}</div>
+        </div>
+
+        <!-- Three-box view: Previous | Added | Removed -->
+        <div class="change-grid">
+          <div class="change-box">
+            <div class="box-title">Previous Tests</div>
+            <div class="box-list" *ngIf="(getPreviousTests(selectedAuditRecord) || []).length > 0; else emptyPrev">
+              <span class="test-chip" *ngFor="let t of getPreviousTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyPrev><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box" *ngIf="(getAddedTests(selectedAuditRecord) || []).length > 0">
+            <div class="box-title">Added <span class="pill plus">+ ₹{{ formatCurrencyNumber(getAddedTotal(selectedAuditRecord)) }}</span></div>
+            <div class="box-list" *ngIf="(getAddedTests(selectedAuditRecord) || []).length > 0; else emptyAdd">
+              <span class="test-chip green" *ngFor="let t of getAddedTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(+₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyAdd><div class="box-empty">—</div></ng-template>
+          </div>
+          <div class="change-box">
+            <div class="box-title">Removed <span class="pill minus">- ₹{{ formatCurrencyNumber(getRemovedTotal(selectedAuditRecord)) }}</span></div>
+            <div class="box-list" *ngIf="(getRemovedTests(selectedAuditRecord) || []).length > 0; else emptyRem">
+              <span class="test-chip" *ngFor="let t of getRemovedTests(selectedAuditRecord)">
+                {{ t?.name || t?.testName }}
+                <small class="muted">(-₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+              </span>
+            </div>
+            <ng-template #emptyRem><div class="box-empty">—</div></ng-template>
+          </div>
+        </div>
+
+        <!-- Final tests row -->
+        <div class="final-tests">
+          <div class="final-title">Final Tests</div>
+          <div class="final-list" *ngIf="(getAfterTests(selectedAuditRecord) || []).length > 0; else emptyFinal">
+            <span class="test-chip green" *ngFor="let t of getAfterTests(selectedAuditRecord)">
+              {{ t?.name || t?.testName }}
+              <small class="muted">(₹{{ formatCurrencyNumber(t?.netAmount ?? t?.amount ?? t?.cost ?? 0) }})</small>
+            </span>
+          </div>
+          <ng-template #emptyFinal><div class="box-empty">—</div></ng-template>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+

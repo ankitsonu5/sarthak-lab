@@ -1,0 +1,1953 @@
+/* Professional Medical Report Container */
+.test-report-container {
+  background: #f8f9fa;
+  min-height: 100vh;
+  padding: 10px;
+  font-family: 'Times New Roman', serif;
+}
+
+/* Professional Medical Report Print Styles */
+.professional-medical-report {
+  max-width: 850px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-family: 'Times New Roman', serif;
+  line-height: 1.4;
+}
+
+/* Professional Hospital Header */
+.professional-header {
+  border: 2px solid #000;
+  padding: 15px;
+  margin-bottom: 25px;
+  position: relative;
+  background: #fafafa;
+  text-align: center;
+}
+
+.government-logo {
+  position: absolute;
+  left: 20px;
+  top: 15px;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.hospital-info {
+  margin-left: 80px;
+}
+
+.hospital-name-hindi {
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  margin: 0;
+  font-family: 'Devanagari', 'Times New Roman', serif;
+}
+
+.hospital-address-hindi {
+  font-size: 14px;
+  color: #333;
+  margin: 5px 0;
+  font-family: 'Devanagari', 'Times New Roman', serif;
+}
+
+.hospital-english {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  margin: 5px 0;
+}
+
+.report-title-main {
+  font-size: 18px;
+  font-weight: bold;
+  color: #000;
+  letter-spacing: 1px;
+  margin: 15px 0 8px 0;
+}
+
+.title-underline {
+  border-top: 2px solid #000;
+  margin: 8px auto;
+  width: 300px;
+}
+
+/* Professional Patient Information Table */
+.professional-patient-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 25px;
+  font-size: 11px;
+  border: 2px solid #000;
+}
+
+.professional-patient-table td {
+  border: 1px solid #000;
+  padding: 10px;
+}
+
+.professional-patient-table .label-cell {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+  width: 18%;
+}
+
+.professional-patient-table .value-cell {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Professional Test Results Section */
+.professional-test-results {
+  margin-bottom: 40px;
+}
+
+.test-results-header-professional {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.test-results-header-professional h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+.professional-category-header {
+  background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+  color: white;
+  padding: 10px 15px;
+  margin: 20px 0 0 0;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 5px 5px 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.professional-test-name {
+  background: #ecf0f1;
+  padding: 8px 15px;
+  margin: 0;
+  font-weight: bold;
+  font-size: 13px;
+  color: #2c3e50;
+  border-left: 4px solid #3498db;
+}
+
+.professional-parameters-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+  font-size: 11px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.professional-parameters-table thead tr {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  color: white;
+}
+
+.professional-parameters-table th {
+  border: 1px solid #bdc3c7;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.professional-parameters-table td {
+  border: 1px solid #bdc3c7;
+  padding: 10px;
+  transition: all 0.3s ease;
+}
+
+.professional-parameters-table tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+.professional-parameters-table .result-normal {
+  font-weight: 600;
+  color: #27ae60;
+}
+
+.professional-parameters-table .result-abnormal {
+  color: #e74c3c;
+  font-weight: bold;
+  background: #fdf2f2;
+}
+
+/* Professional Signatures Section */
+.professional-signatures {
+  margin-top: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0 50px;
+}
+
+.professional-signature-box {
+  text-align: center;
+  width: 200px;
+}
+
+.professional-signature-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #2c3e50;
+  margin: 0 0 25px 0;
+}
+
+.professional-signature-line {
+  border-bottom: 2px solid #000;
+  width: 180px;
+  margin: 0 auto 8px auto;
+}
+
+.professional-signature-dots {
+  border-bottom: 1px dotted #666;
+  width: 180px;
+  margin: 0 auto;
+  font-size: 10px;
+  color: #666;
+}
+
+/* Professional Medical Disclaimer */
+.professional-disclaimer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 15px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 5px;
+}
+
+.professional-disclaimer p {
+  margin: 5px 0;
+  font-weight: bold;
+  color: #856404;
+}
+
+.disclaimer-main {
+  font-size: 13px;
+}
+
+.disclaimer-sub {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Professional Footer */
+.professional-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.professional-footer p {
+  margin: 3px 0;
+  color: #6c757d;
+}
+
+.footer-main {
+  font-size: 10px;
+}
+
+.footer-hospital {
+  font-size: 9px;
+}
+
+.footer-page {
+  font-size: 9px;
+}
+
+/* Edited badge/dropdown */
+.badge.edited-badge{background:#eef6ff;color:#0b5ed7;border:1px solid #bcd3ff;border-radius:12px;padding:0 6px;font-size:11px;margin-left:6px}
+.edited-dropdown{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:6px;margin-top:6px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+
+/* Header Section */
+.report-header {
+  background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+  color: white;
+  padding: 25px 35px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 25px rgba(30, 64, 175, 0.3);
+  position: relative;
+}
+
+.report-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.statistics-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.stat-item i {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* ===== PATIENT & RECEIPT INFORMATION SECTION ===== */
+.patient-receipt-info {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.patient-receipt-info:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.info-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.enter-receipt-btn {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.enter-receipt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.required {
+  color: #e53e3e;
+}
+
+/* Patient Information Section */
+.patient-info-section {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  padding: 20px;
+}
+
+.patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.patient-row {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  flex: 1;
+}
+
+.field-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.form-input {
+  padding: 8px 12px;
+  border: 2px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input.error-input {
+  border-color: #f44336;
+  background-color: #ffebee;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.add-test-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-test-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+/* Test Results Section - Medical Report Style */
+.test-results-section {
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.category-section {
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  page-break-inside: avoid;
+}
+
+.category-header {
+  background: white;
+  color: #000;
+  padding: 15px 20px;
+  text-align: center;
+  border-bottom: 2px solid #000;
+}
+
+.category-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.test-section {
+  background: transparent;
+  margin-bottom: 10px;
+}
+
+.test-section:last-child {
+  margin-bottom: 0;
+}
+
+.test-name-header {
+  background: white;
+  padding: 10px 20px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+}
+
+.test-name-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  letter-spacing: 1px;
+}
+
+.test-table-wrapper {
+/* Group row styling */
+.group-row .group-cell{
+  font-weight:700;
+  padding:8px 12px;
+  background:#f3f4f6;
+  border-top:1px solid #e5e7eb;
+  border-bottom:1px solid #e5e7eb;
+}
+
+/* Slightly bigger font for group names */
+.group-row .group-cell{ font-size:14px; }
+
+/* Outer group header (included test name inside a panel) */
+.outer-group-row .outer-group-cell {
+  font-weight:800;
+  padding:10px 12px;
+  background:#e9efff;
+  border-top:1px solid #d0dbff;
+  border-bottom:1px solid #d0dbff;
+  font-size:15px;
+}
+
+
+  padding: 0;
+  background: transparent;
+  margin-bottom: 0;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Medical Report Table Style - Clean Simple */
+.medical-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: white;
+  margin: 0;
+  border: none;
+  table-layout: fixed;
+  line-height: 2.4 !important;
+}
+
+/* Table headers removed - using separate header row */
+
+.test-col {
+  width: 25%;
+  text-align: left;
+  padding-left: 12px;
+}
+.normal-value-col { width: 18%; text-align: center; }
+.value-col { width: 17%; text-align: center; }
+.unit-col { width: 8%; text-align: center; }
+.max-col { width: 8%; text-align: center; }
+.min-col { width: 8%; text-align: center; }
+
+.medical-report-table td {
+  padding: 4px 6px;
+  border: 1px solid #e5e7eb;
+  vertical-align: middle;
+  background: white;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+  height: 32px;
+}
+
+.medical-report-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.medical-report-table tr:hover {
+  background-color: #f3f4f6;
+}
+
+.medical-report-table tr:nth-child(even):hover {
+  background-color: #f3f4f6;
+}
+
+/* Test name cells - left aligned */
+.medical-report-table td.test-name-cell {
+  width: 25%;
+  text-align: left;
+  font-weight: 500;
+  padding-left: 12px;
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Value input cells - Larger for typing */
+.medical-report-table td.value-cell {
+  width: 17%;
+  text-align: center;
+}
+
+.medical-report-table td.value-cell input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  background: white;
+  text-align: center;
+  font-size: 12px;
+  padding: 3px 4px;
+  border-radius: 4px;
+  height: 24px;
+}
+
+.medical-report-table td.value-cell input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.medical-report-table td.value-cell input:hover {
+  border-color: #93c5fd;
+}
+
+/* Large input class for better typing experience */
+.large-input {
+  font-size: 13px !important;
+  padding: 6px 8px !important; /* height kam */
+  min-height: 20px !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+}
+
+/* Dropdown select sizing inside table */
+.medical-report-table td.value-cell select.value-input {
+  width: 100%;
+  height: 28px; /* thoda chhota height */
+  padding: 2px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+/* Reference cells */
+.medical-report-table td.reference-cell {
+  text-align: center;
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Max and Min value cells */
+.medical-report-table td.max-cell {
+  width: 8%;
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  background-color: #ffffff;
+}
+
+.medical-report-table td.min-cell {
+  width: 8%;
+  text-align: center;
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  background-color: #ffffff;
+}
+
+/* Unit cells */
+.medical-report-table td.unit-cell {
+  width: 8%;
+  text-align: center;
+  font-size: 13px;
+}
+/* Show test title under category header */
+.test-name-header-main{display:block}
+
+/* Align table columns with expected widths regardless of content */
+.medical-report-table td.test-name-cell, .header-cell.test-col { width:25% }
+.medical-report-table td.normal-value-cell, .header-cell.normal-value-col { width:18%; text-align:center }
+.medical-report-table td.value-cell, .header-cell.value-col { width:17%; text-align:center }
+.medical-report-table td.unit-cell, .header-cell.unit-col { width:8%; text-align:center }
+.medical-report-table td.min-cell, .header-cell.min-col { width:8%; text-align:center }
+.medical-report-table td.max-cell, .header-cell.max-col { width:8%; text-align:center }
+.medical-report-table td.hide-cell, .header-cell.hide-col { width:6%; text-align:center }
+
+
+/* Status Indicator cells */
+.medical-report-table td.indicator-cell {
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.status-indicator {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  min-width: 20px;
+}
+
+.status-indicator.normal {
+  background: #10b981;
+  color: white;
+}
+
+.status-indicator.high {
+  background: #ef4444;
+  color: white;
+}
+
+.status-indicator.low {
+  background: #f59e0b;
+  color: white;
+}
+
+.status-indicator.critical {
+  background: #dc2626;
+  color: white;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.medical-report-table tr:hover td {
+  background-color: #f0f9ff;
+}
+
+
+
+/* Test Name Cell */
+.test-name-cell {
+  font-weight: 500;
+  color: #000;
+  padding-left: 15px;
+}
+
+.sub-test-name {
+  font-weight: normal;
+  color: #000;
+  padding-left: 30px;
+  font-style: italic;
+}
+
+.checkbox-icon {
+  color: #007bff;
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+/* Value Input Container */
+.value-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.value-input {
+  width: 80px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 13px;
+  text-align: center;
+  background: white;
+}
+
+.sub-value-input {
+  width: 60px;
+  background: #f8f9fa;
+}
+
+.value-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 3px rgba(0,123,255,0.3);
+}
+
+.abnormal-input {
+  background: #ffe6e6 !important;
+  border-color: #dc3545;
+}
+
+/* Indicator Flags */
+.indicator-flag {
+  font-weight: bold;
+  font-size: 12px;
+  margin: 0 3px;
+}
+
+.indicator-flag:first-child {
+  color: #ffc107; /* Low - Yellow */
+}
+
+.indicator-flag:last-child {
+  color: #dc3545; /* High - Red */
+}
+
+/* Unit and Reference Cells */
+.unit-cell {
+  text-align: center;
+  font-weight: normal;
+  color: #666;
+}
+
+.medical-report-table td.normal-value-cell {
+  width: 18%;
+  text-align: center;
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  background-color: #f8fafc;
+}
+
+/* Sub-parameter styling */
+.sub-parameter-row {
+  background: #fafafa;
+}
+
+.sub-parameter-row:hover {
+  background: #f0f0f0;
+}
+
+/* Abnormal row highlighting */
+.abnormal-row {
+  background: #fff5f5 !important;
+}
+
+.abnormal-row:hover {
+  background: #ffe6e6 !important;
+}
+
+/* Total row for DLC */
+.total-row {
+  background: #e9ecef;
+  font-weight: bold;
+}
+
+.total-label {
+  text-align: right;
+  padding-right: 15px;
+  font-weight: bold;
+}
+
+.results-header {
+  background: #f3f4f6;
+  padding: 15px 20px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.tab-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: #3b82f6;
+}
+
+.tab-btn:hover {
+  background: #4b5563;
+}
+
+.tab-btn.active:hover {
+  background: #2563eb;
+}
+
+/* Results Table */
+.results-table-container {
+  overflow-x: auto;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.results-table th {
+  background: #10b981;
+  color: white;
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid #059669;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.results-table td {
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  vertical-align: middle;
+}
+
+.test-header-row {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  font-weight: 600;
+}
+
+.test-name {
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.parameter-name {
+  font-weight: 500;
+  color: #374151;
+  padding-left: 20px;
+}
+
+.highlighted-row {
+  background: #dbeafe !important;
+}
+
+.abnormal-row {
+  background: #fef2f2 !important;
+}
+
+.result-input, .notes-input, .remarks-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.result-input:focus, .notes-input:focus, .remarks-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.abnormal-input {
+  background: #fef2f2;
+  border-color: #ef4444;
+}
+
+.unit-cell, .range-cell {
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+/* Financial Section */
+.financial-section {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  padding: 20px;
+}
+
+.financial-row {
+  display: flex;
+  gap: 15px;
+  align-items: end;
+}
+
+/* Action Buttons */
+.action-buttons {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-top: none;
+  padding: 20px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.action-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.add-btn {
+  background: #10b981;
+  color: white;
+}
+
+.add-btn:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.update-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.update-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.print-btn {
+  background: #8b5cf6;
+  color: white;
+}
+
+.print-btn:hover {
+  background: #7c3aed;
+  transform: translateY(-1px);
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* ===== TEST RESULTS TABLE SECTION ===== */
+.test-results-section {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.table-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.table-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+.test-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.test-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.test-table thead {
+  background: linear-gradient(135deg, #4299e1, #3182ce);
+  color: white;
+}
+
+.test-table th {
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.test-table th:last-child {
+  border-right: none;
+}
+
+.test-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.test-table td:last-child {
+  border-right: none;
+}
+
+.test-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.test-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.parameter-row {
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.parameter-row:last-child {
+  margin-bottom: 0;
+}
+
+.param-name {
+  font-weight: 500;
+  color: #4a5568;
+  font-size: 13px;
+}
+
+.unit-input, .result-input, .range-input, .normal-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.unit-input:focus, .result-input:focus, .range-input:focus, .normal-input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.1);
+}
+
+.no-data {
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+  padding: 30px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 40px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.action-btn {
+  padding: 16px 32px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.action-btn:disabled,
+.action-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn:disabled:hover,
+.action-btn.disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.save-only-btn {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+}
+
+.save-only-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+}
+
+.save-print-btn {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.save-print-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.whatsapp-share-btn {
+  background: linear-gradient(135deg, #25D366, #1DA851);
+  color: white;
+}
+
+.whatsapp-share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-share-btn i {
+  font-size: 18px;
+}
+
+.whatsapp-share-btn {
+  background: linear-gradient(135deg, #25D366, #1DA851);
+  color: white;
+}
+
+.whatsapp-share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+.whatsapp-share-btn i {
+  font-size: 18px;
+}
+
+.close-btn {
+  background: #6b7280;
+  color: white;
+}
+
+.close-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Footer Info */
+.footer-info {
+  background: #1f2937;
+  color: white;
+  padding: 20px;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.lab-info, .software-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lab-name, .software-name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #60a5fa;
+}
+
+/* Category-wise Test Results Styles */
+.category-section {
+  margin-bottom: 2rem;
+}
+
+.category-header {
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.category-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.test-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0 0 0.5rem 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.test-name-header {
+  background: #f3f4f6;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.test-name-header h4 {
+  margin: 0;
+  color: #374151;
+  font-weight: 600;
+  font-size: 1rem;
+
+}
+
+.parameters-table {
+  padding: 1rem;
+}
+
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+}
+
+.param-table th {
+  background: #f9fafb;
+  padding: 0.75rem;
+  text-align: left;
+  border: 1px solid #e5e7eb;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.param-table td {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+/* Indicator Styles */
+.indicator-cell {
+  text-align: center;
+}
+
+.indicator {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 24px;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.indicator-normal {
+  background: #10b981;
+  color: white;
+}
+
+.indicator-high {
+  background: #f59e0b;
+  color: white;
+}
+
+.indicator-low {
+  background: #3b82f6;
+  color: white;
+}
+
+.indicator-critical {
+  background: #ef4444;
+  color: white;
+}
+
+/* Status Badge Styles */
+.status-cell {
+  text-align: center;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-normal {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-abnormal {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* No Tests Message */
+.no-tests-message {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* ===== NEW PROFESSIONAL LAYOUT STYLES ===== */
+
+/* Category Header Top - BIOCHEMISTRY (Blue Theme) */
+.category-header-top {
+  text-align: center;
+  margin: 20px 0 0 0;
+  padding: 18px;
+background: #1e1c3b;
+background: linear-gradient(90deg, rgba(30, 28, 59, 1) 0%, rgba(58, 87, 156, 1) 50%, rgba(39, 45, 102, 1) 100%);
+  border-radius: 12px 12px 0 0 ;
+}
+
+.category-title-main {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Table Headers - Below BIOCHEMISTRY (Blue Theme) */
+.table-headers {
+  background: #5f8cad;
+background: linear-gradient(90deg, rgba(95, 140, 173, 1) 0%, rgba(63, 128, 193, 1) 49%, rgba(99, 160, 186, 1) 100%);
+  margin: 0;
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+
+}
+
+.header-row {
+  display: table-row;
+  width: 100%;
+}
+
+.header-cell {
+  display: table-cell;
+  color: white;
+  padding: 10px 6px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-right: 1px solid #60a5fa;
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+/* Header cell widths to match table columns */
+.header-cell.test-col { width: 25%; }
+.header-cell.normal-value-col { width: 18%; }
+.header-cell.value-col { width: 17%; }
+.header-cell.unit-col { width: 8%; }
+.header-cell.min-col { width: 8%; }
+.header-cell.max-col { width: 8%; }
+.header-cell.hide-col { width: 6%; }
+
+/* Test Name Header - SERUM LIPID PROFILE (Light Blue) */
+.test-name-header-main {
+  text-align: left;
+  margin: 0;
+  padding: 10px 14px;
+  background: #dbeafe;
+  border-bottom: 1px solid #93c5fd;
+
+}
+
+.test-title-main {
+  color: #1e40af;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Danger Row Styling - Simple Red Background */
+.medical-report-table tr.danger-row {
+  background: #fee2e2 !important;
+}
+
+.medical-report-table tr.danger-row td {
+  background: #fee2e2 !important;
+  color: #7f1d1d !important;
+  font-weight: 600 !important;
+}
+
+/* Normal Row Styling */
+.medical-report-table tr.normal-row {
+  background: white;
+}
+
+.medical-report-table tr.normal-row:hover {
+  background: #f8fafc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .patient-row, .financial-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .footer-info {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .results-table-container {
+    font-size: 12px;
+  }
+}
+
+/* ===== WHATSAPP SHARE MODAL ===== */
+.whatsapp-share-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #25D366, #1DA851);
+  color: white;
+  padding: 20px 25px;
+  border-radius: 16px 16px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-header i {
+  font-size: 20px;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.patient-info-display {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #25D366;
+}
+
+.patient-info-display h4 {
+  margin: 0 0 5px 0;
+  color: #2d3748;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.patient-info-display p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.contact-section {
+  margin-bottom: 25px;
+}
+
+.contact-section label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.help-text {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block;
+}
+
+.share-options h4 {
+  color: #2d3748;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.option-card {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.option-card:hover {
+  border-color: #25D366;
+  background: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.1);
+}
+
+.option-icon {
+  font-size: 24px;
+  margin-right: 15px;
+  width: 40px;
+  text-align: center;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-content h5 {
+  margin: 0 0 4px 0;
+  color: #2d3748;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.option-content p {
+  margin: 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.option-arrow {
+  font-size: 18px;
+  color: #25D366;
+  font-weight: bold;
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn:hover {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+/* Loading Section */
+.loading-section {
+  text-align: center;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  border: 1px solid #25D366;
+}
+
+.loading-spinner {
+  font-size: 24px;
+  color: #25D366;
+  margin-bottom: 10px;
+}
+
+.loading-section p {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+/* Disabled States */
+.share-options.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.option-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.option-card.disabled:hover {
+  transform: none;
+  border-color: #e5e7eb;
+  background: white;
+  box-shadow: none;
+}
+
+/* Smart Share Styles */
+.option-card.smart-share {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #0ea5e9;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-card.smart-share::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.option-card.smart-share:hover {
+  border-color: #0284c7;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+}
+
+.option-card.enhanced {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #22c55e;
+}
+
+.option-card.enhanced:hover {
+  border-color: #16a34a;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2);
+}
+
+/* Badge Styles */
+.new-badge {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 8px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.enhanced-badge {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 6px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.preview-badge {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 6px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.option-card.preview {
+  border-left: 4px solid #007bff;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+}
+
+.option-card.preview:hover {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+
+/* Print-only hiding utility: apply class="print-hide" on elements you want hidden only in print */
+.print-hide { /* visible on screen */ }
+@media print {
+  .print-hide { display: none !important; }
+}
+
+
+/* Age + Age In inline layout (top info rows) */
+.age-inline .age-row{ display:flex; gap:8px; align-items:center; }
+.age-inline .age-input{ max-width: 100px; }
+.age-inline .agein-input{ max-width: 80px; text-transform: uppercase; }
+
+
+/* === Hide in Print column (UI only) === */
+.header-cell.hide-col { text-align: center; }
+.hide-cell { text-align: center; background: #fff !important; }
+.hide-cell input[type="checkbox"] { transform: scale(1.4); cursor: pointer; background-color: #fff; }
+/* Keep Hide-in-Print cell white even when the whole row is red/abnormal */
+.medical-report-table tr.danger-row td.hide-cell,
+.medical-report-table tr.abnormal-row td.hide-cell,
+.medical-report-table tr.highlighted-row td.hide-cell {
+  background: #fff !important;
+}
+
+
+/* Make unit/min/max cells compact */
+.unit-cell, .min-cell, .max-cell { padding-right: 6px; padding-left: 6px; }
+
+/* Enlarge the TEST-level (header) hide toggle checkbox */
+.test-name-header-main input[type="checkbox"] {
+  transform: scale(1.4);
+  cursor: pointer;
+}
+
+/* Do not show UI-only elements in print */
+@media print {
+  .no-print { display: none !important; }
+}
+
+
+/* Remark row styling */
+.remark-row .remark-cell {
+  font-style: normal;
+  color: #222;
+  padding: 4px 6px;
+}

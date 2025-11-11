@@ -1,0 +1,39 @@
+/* Global Print Styles */
+@media print {
+  /* Hide all navigation and sidebar elements */
+  app-sidebar,
+  .sidebar,
+  .navbar,
+  .nav,
+  .navigation,
+  .menu,
+  .header,
+  .footer {
+    display: none !important;
+  }
+
+  /* Make main content full width */
+  .main-content,
+  .content,
+  .page-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure body takes full width */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* Hide any floating elements */
+  .floating,
+  .overlay,
+  .modal,
+  .popup {
+    display: none !important;
+  }
+}

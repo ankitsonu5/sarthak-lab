@@ -1,0 +1,128 @@
+<div class="sidebar-container">
+  <!-- Sidebar Header -->
+  <div class="sidebar-header">
+    <h2 class="sidebar-title">
+      <span class="sidebar-icon iconw"><img src="../../assets/images/logofinal2.png"></span>
+
+    </h2>
+  </div>
+
+  <!-- Navigation Menu -->
+  <nav class="sidebar-nav">
+    <!-- Dashboard Link (role-aware) -->
+    <a
+      [routerLink]="currentUser?.role === 'Pathology' ? '/dashboard/pathology' : '/dashboard/admin'"
+      routerLinkActive="sidebar-link-active"
+      class="sidebar-link">
+      <span class="sidebar-link-icon iconwl"><img src="../../assets/images/dashboardiconicon.png"></span>
+      <span class="sidebar-link-text">Dashboard</span>
+    </a>
+    <!-- Standalone Lab Setup link (outside Setup) -->
+    <a [routerLink]="'/lab-setup'"
+       routerLinkActive="sidebar-link-active"
+       class="sidebar-link">
+      <span class="sidebar-link-icon">🧪</span>
+      <span class="sidebar-link-text">Lab Setup</span>
+    </a>
+
+
+    <!-- Collapsible Sections -->
+    <div *ngFor="let section of getSidebarSections(); trackBy: trackSection" class="sidebar-section" [attr.data-section]="section.title">
+      <!-- Section Header -->
+      <button
+        (click)="toggleSection(section.title)"
+        class="sidebar-section-header"
+        [class.expanded]="isSectionExpanded(section.title)">
+        <div class="sidebar-section-title">
+          <span class="sidebar-section-icon">{{ section.icon }}</span>
+          <span class="sidebar-section-text">{{ section.title }}</span>
+        </div>
+        <svg
+          class="sidebar-arrow"
+          [class.rotated]="isSectionExpanded(section.title)"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+
+      <!-- Section Children -->
+      <div
+        class="sidebar-children"
+        [class.expanded]="isSectionExpanded(section.title)">
+        <a
+          *ngFor="let child of section.children; trackBy: trackChild"
+          [routerLink]="child.route"
+          routerLinkActive="sidebar-child-active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="sidebar-child-link">
+          {{ child.label }}
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- User Info Section -->
+  <div class="sidebar-user-section" *ngIf="currentUser">
+    <div class="user-info">
+      <div class="user-avatar">
+        <img *ngIf="avatarUrl(); else initials" [src]="avatarUrl()" alt="avatar" />
+        <ng-template #initials>
+          <span class="user-initial">{{ getUserInitial() }}</span>
+        </ng-template>
+      </div>
+      <div class="user-details">
+        <p class="user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</p>
+        <p class="user-role">{{ currentUser.role }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-content">
+      <div class="sidebar-status">
+        <span class="status-indicator"></span>
+        <span class="status-text">Online</span>
+      </div>
+      <button class="logout-btn" (click)="openLogoutConfirm()" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+    <!-- Footer Credit -->
+    <div class="sidebar-credit">
+      <span>Design and Developed by Sarthak Tech</span>
+    </div>
+  </div>
+</div>
+
+  <!-- Logout Confirmation Modal -->
+  <app-delete-confirmation-modal
+    [show]="showLogoutConfirm"
+    [title]="'Logout'"
+    [message]="'Are you sure you want to logout?'"
+    [warningText]="'You can login again anytime.'"
+    [confirmLabel]="'Logout'"
+    [cancelLabel]="'Cancel'"
+    [confirmIcon]="'fa-right-from-bracket'"
+    [titleIcon]="'fa-right-from-bracket'"
+    [confirmClass]="'btn-logout'"
+    lottieSrc="https://lottie.host/7f03a7ae-ae62-4986-960a-8c244c3d0c53/IfcxvSEnt3.lottie"
+    (confirmed)="confirmLogout()"
+    (cancelled)="cancelLogout()">
+  </app-delete-confirmation-modal>
+  <!-- Logout Success Modal -->
+  <app-delete-success-modal
+    [show]="showLogoutSuccess"
+    [title]="'Logged out successfully'"
+    [message]="'You can login again anytime.'"
+    [badgeText]="'Logout Completed'"
+    [autoHideDelay]="2000"
+    [showCloseButton]="false"
+    lottieSrc="https://lottie.host/951ae8fc-5b11-4aa6-8f1d-95c980751999/DdHAV9VDU3.lottie"
+    (closed)="onLogoutSuccessClosed()">
+  </app-delete-success-modal>
+
+

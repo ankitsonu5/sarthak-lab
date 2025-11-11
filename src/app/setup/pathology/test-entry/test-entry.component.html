@@ -1,0 +1,818 @@
+<div class="test-entry-container">
+  <!-- Breadcrumb -->
+   <div *ngIf="selectedTestType" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background-color: #deeeff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);padding: 10px;">
+  <div class="breadcrumb"  style="display: flex; gap: 2rem; padding: 0 1.5rem;">
+    <span>Test database</span>
+    <span>/</span>
+    <span>{{ isEditMode ? 'Edit' : isViewMode ? 'View' : 'New test' }} ({{ getTestTypeDisplay(selectedTestType) }})</span>
+  </div>
+</div>
+
+  <!-- Test Type Selection (only for new tests) -->
+  <div class="test-type-selection" *ngIf="!isEditMode && !isViewMode && !selectedTestType">
+    <h3>Add test manually</h3>
+    <p>Select the type of test result</p>
+
+    <div class="test-type-options">
+      <div class="test-type-option" (click)="onTestTypeChange('single')">
+        <div class="option-number">1</div>
+        <div class="option-content">
+          <h4>Single parameter</h4>
+          <p>Eg. HB, TLC</p>
+        </div>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+
+      <div class="test-type-option" (click)="onTestTypeChange('multiple')">
+        <div class="option-number">2</div>
+        <div class="option-content">
+          <h4>Multiple parameters</h4>
+          <p>Eg. DLC, Blood group</p>
+        </div>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+
+      <div class="test-type-option" (click)="onTestTypeChange('nested')">
+        <div class="option-number">3</div>
+        <div class="option-content">
+          <h4>Multiple nested parameters</h4>
+          <p>Eg. Urine routine, Semen Examination</p>
+        </div>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+
+      <div class="test-type-option" (click)="onTestTypeChange('document')">
+        <div class="option-number">4</div>
+        <div class="option-content">
+          <h4>Document</h4>
+          <p>Eg. FNAC, histo-pathology reports, culture and sensitivity reports.</p>
+        </div>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Test Entry Form -->
+  <div class="test-form-container" *ngIf="selectedTestType">
+     <div style="margin-bottom: 1.5rem;  background-color: #deeeff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);padding: 10px;">
+    <div class="test-header">
+      <h3>{{ isEditMode ? 'Edit' : isViewMode ? 'View' : 'New' }} test ({{ getTestTypeDisplay(selectedTestType) }})</h3>
+      <a href="javascript:void(0)" class="change-test-type-link" (click)="showTestTypeSelection()" *ngIf="!isEditMode && !isViewMode">
+        Select the type of test result
+      </a>
+    </div>
+    </div>
+
+    <form [formGroup]="testEntryForm" (ngSubmit)="onSubmit()">
+      <!-- Test Details Section -->
+      <div class="form-section">
+        <h4 class=".tab-btn">Test details</h4>
+
+
+        <div class="form-row">
+
+
+          <div class="form-group">
+            <label for="shortName">Short name <span class="required">*</span></label>
+            <div class="dropdown-container">
+              <input
+                type="text"
+                id="shortName"
+                formControlName="shortName"
+                class="form-control dropdown-input"
+                placeholder="Search and select test name"
+                (input)="onShortNameSearch($event)"
+                (focus)="showShortNameDropdown = true"
+                (blur)="onShortNameBlur()"
+                [readonly]="isViewMode"
+                autocomplete="off">
+              <div class="dropdown-list" *ngIf="showShortNameDropdown && filteredServiceHeads.length > 0">
+                <div
+                  class="dropdown-item"
+                  *ngFor="let serviceHead of filteredServiceHeads"
+                  (mousedown)="selectShortName(serviceHead.testName)">
+                  <span [innerHTML]="highlightMatch(serviceHead.testName, shortNameSearchTerm)"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="testName">Full Name <span class="required">*</span></label>
+            <input
+              type="text"
+              id="testName"
+              formControlName="name"
+              class="form-control"
+              placeholder="Enter test name"
+              [readonly]="isViewMode">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Category <span class="required">*</span></label>
+            <div class="dropdown-container">
+              <input
+                type="text"
+                id="category"
+                formControlName="category"
+                class="form-control dropdown-input"
+                placeholder="Search and select category"
+                (input)="onCategorySearch($event)"
+                (focus)="onCategoryFocus()"
+                (blur)="onCategoryBlur()"
+                [readonly]="isViewMode || categoryLocked"
+                [disabled]="categoryLocked"
+                autocomplete="off">
+              <div class="dropdown-list" *ngIf="showCategoryDropdown && filteredCategories.length > 0">
+                <div
+                  class="dropdown-item"
+                  *ngFor="let category of filteredCategories"
+                  (mousedown)="selectCategory(category.name)">
+                  <span [innerHTML]="highlightMatch(category.name, categorySearchTerm)"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="sampleType">Sample Type</label>
+            <div class="dropdown-container" #sampleTypeContainer>
+              <input
+                type="text"
+                id="sampleType"
+                formControlName="sampleType"
+                class="form-control dropdown-input"
+                placeholder="Select one or more sample types"
+                (focus)="showSampleTypeDropdown = true"
+                (click)="showSampleTypeDropdown = true"
+                (blur)="onSampleTypeBlur()"
+                readonly
+                autocomplete="off">
+              <div class="dropdown-list"
+                   *ngIf="showSampleTypeDropdown"
+                   (mouseenter)="mouseInSampleDropdown = true"
+                   (mouseleave)="mouseInSampleDropdown = false">
+                <div
+                  class="dropdown-item"
+                  *ngFor="let st of filteredSampleTypeOptions"
+                  (mousedown)="interactingWithSampleType = true"
+                  (mouseup)="interactingWithSampleType = false"
+                  (click)="$event.stopPropagation()">
+                  <label class="checkbox-item" (click)="$event.stopPropagation()">
+                    <input type="checkbox"
+                           [checked]="isSampleTypeSelected(st._id)"
+                           (change)="onSampleTypeCheckboxChange(st, $event)"
+                           [disabled]="isViewMode" />
+                    <span [innerHTML]="highlightMatch(st.name, sampleTypeSearchTerm)"></span>
+                  </label>
+                  <button
+                    type="button"
+                    class="remove-chip"
+                    *ngIf="!isViewMode"
+                    (mousedown)="$event.stopPropagation(); interactingWithSampleType = true;"
+                    (mouseup)="interactingWithSampleType = false"
+                    (click)="promptDeleteSampleType(st)"
+                    title="Delete sample type">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="add-unit-btn" *ngIf="!isViewMode" (click)="openSampleTypeModal()">
+              <i class="fas fa-plus"></i> Add new
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Single Parameter Fields -->
+        <div class="form-row" *ngIf="selectedTestType === 'single'">
+          <div class="form-group">
+            <label for="unit">Unit</label>
+            <div class="dropdown-container">
+              <input
+                type="text"
+                id="unit"
+                formControlName="unit"
+                class="form-control dropdown-input"
+                placeholder="Search units..."
+                (input)="onSingleUnitSearch($event)"
+                (focus)="showSingleUnitDropdown = true"
+                (blur)="onSingleUnitBlur()"
+                [readonly]="isViewMode"
+                autocomplete="off">
+              <div class="dropdown-list" *ngIf="showSingleUnitDropdown && filteredSingleUnits.length > 0" (click)="$event.stopPropagation()">
+                <div
+                  class="dropdown-item"
+                  *ngFor="let unit of filteredSingleUnits"
+                  (mousedown)="selectSingleUnit(unit)"
+                  (click)="$event.stopPropagation()">
+                  <span [innerHTML]="highlightMatch(unit.name, singleUnitSearchTerm)"></span>
+                  <button
+                    type="button"
+                    class="remove-chip"
+                    *ngIf="!isViewMode"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="promptDeleteUnit(unit, 'single-unit-dropdown')"
+                    title="Delete unit">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="add-unit-btn" *ngIf="!isViewMode" (click)="openUnitModal()">
+              <i class="fas fa-plus"></i> Add new
+            </button>
+          </div>
+
+          <!-- Input Type Field (only for single test type) -->
+          <div class="form-group" *ngIf="selectedTestType === 'single'">
+            <label for="inputType">Input type <span class="required">*</span></label>
+            <div class="dropdown-container">
+              <select
+                id="inputType"
+                formControlName="inputType"
+                class="form-control"
+                [disabled]="isViewMode">
+                <option value="">Select input type</option>
+                <option value="Numeric">Numeric</option>
+                <option value="Single Line">Single Line</option>
+                <option value="Paragraph">Paragraph</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Single parameter: Result Type and Default Result -->
+        <div class="form-row" *ngIf="selectedTestType === 'single'">
+          <!-- Result Type Field -->
+          <div class="form-group">
+            <label>Result Type </label>
+            <select
+              formControlName="resultType"
+              class="form-control"
+              (change)="onSingleResultTypeChange($event)"
+              [disabled]="isViewMode">
+              <option value="manual">Manual Entry (Technician will enter)</option>
+              <option value="dropdown">Dropdown Selection</option>
+              <option value="fixed">Fixed Value (Editable)</option>
+              <option value="formula">Formula based result</option>
+            </select>
+
+            <!-- Add Options Button (only for dropdown type) - Below select box -->
+            <button
+              type="button"
+              class="add-unit-btn"
+              *ngIf="testEntryForm.get('resultType')?.value === 'dropdown'"
+              (mousedown)="$event.stopPropagation()"
+              (click)="onSingleAddOptionsClick($event)"
+              [disabled]="isViewMode"
+              title="Add dropdown options">
+              <i class="fas fa-plus"></i> Add Options
+            </button>
+
+            <!-- Edit Formula Button (only for formula type) - Below select box -->
+            <button
+              type="button"
+              class="add-unit-btn"
+              *ngIf="testEntryForm.get('resultType')?.value === 'formula'"
+              (mousedown)="$event.stopPropagation()"
+              (click)="openSingleFormulaModal()"
+              [disabled]="isViewMode"
+              title="Edit formula">
+              <i class="fas fa-pen"></i> Edit Formula
+            </button>
+          </div>
+
+          <!-- Default Result Field -->
+          <div class="form-group">
+            <label>Default result</label>
+            <div *ngIf="testEntryForm.get('resultType')?.value === 'dropdown'; else singleTextInput">
+              <div class="dropdown-container">
+                <input
+                  type="text"
+                  class="form-control dropdown-input"
+                  [readonly]="true"
+                  [value]="testEntryForm.get('defaultResult')?.value || ''"
+                  placeholder="Select default option"
+                  (focus)="openSingleDefaultResultDropdown()"
+                  (click)="openSingleDefaultResultDropdown()"
+                  (blur)="onSingleDefaultResultBlur()"
+                  [disabled]="isViewMode">
+                <div class="dropdown-list" *ngIf="showSingleDefaultResultDropdown">
+                  <div class="dropdown-item" (mousedown)="selectSingleDefaultOption('')">
+                    Select default option
+                  </div>
+                  <div class="dropdown-item" *ngFor="let option of getRootDropdownOptions()" (mousedown)="selectSingleDefaultOption(option)">
+                    <span>{{ option }}</span>
+                    <button
+                      type="button"
+                      class="remove-chip"
+                      *ngIf="!isViewMode"
+                      (mousedown)="$event.stopPropagation()"
+                      (click)="deleteSingleDefaultOption(option)"
+                      title="Delete option">✕</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ng-template #singleTextInput>
+              <textarea
+                formControlName="defaultResult"
+                class="form-control"
+                rows="2"
+                [placeholder]="testEntryForm.get('resultType')?.value === 'manual' ? 'Leave empty - technician will enter' : 'Enter fixed default value'"
+                [readonly]="isViewMode || testEntryForm.get('resultType')?.value === 'manual'"></textarea>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="form-group optional-checkbox" *ngIf="selectedTestType === 'single'">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="isOptional" [disabled]="isViewMode">
+            <span class="label-text">Optional</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Parameters Section (for multiple/nested tests) -->
+      <div class="form-section" *ngIf="selectedTestType === 'multiple' || selectedTestType === 'nested'">
+        <h4>Parameters</h4>
+
+        <div class="parameters-container">
+          <div class="parameters-list">
+            <!-- Parameter Item - Proper Layout with Drag & Drop -->
+            <div class="parameter-item"
+                 *ngFor="let parameter of parametersFormArray.controls; let i = index"
+                 [formGroup]="$any(parameter)"
+                 draggable="true"
+                 (dragstart)="onDragStart($event, i)"
+                 (dragover)="onDragOver($event)"
+                 (drop)="onDrop($event, i)">
+
+              <!-- Drag Handle and Remove Button -->
+              <div class="remove-section">
+                <div class="parameter-controls">
+
+                  <button
+                    type="button"
+                    class="remove-link"
+                    (click)="removeParameter(i)"
+                    *ngIf="!isViewMode">
+                    <i class="fas fa-minus f-w"></i> Remove
+                  </button>
+                </div>
+              </div>
+
+              <!-- Parameter Row -->
+              <div class="parameter-row">
+                <!-- Order Field -->
+                <div class="field-group order-field">
+                  <label>Order <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    formControlName="order"
+                    [readonly]="isViewMode">
+                </div>
+
+                <!-- Name Field -->
+                <div class="field-group name-field">
+                  <label>Name <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    [id]="'parameterName_' + i"
+                    formControlName="name"
+                    class="form-control"
+                    placeholder=""
+                    [readonly]="isViewMode">
+                </div>
+
+
+
+                <!-- Unit Field -->
+                <div class="field-group unit-field">
+                  <label>Unit</label>
+                  <div class="dropdown-container">
+                    <input
+                      type="text"
+                      formControlName="unit"
+                      class="form-control dropdown-input"
+                      placeholder="Search units..."
+                      (input)="onUnitSearch($event, i)"
+                      (focus)="showUnitDropdown[i] = true"
+                      (blur)="onUnitBlur(i)"
+                      [readonly]="isViewMode"
+                      autocomplete="off">
+                    <div class="dropdown-list" *ngIf="showUnitDropdown[i] && filteredUnits.length > 0">
+                      <div
+                        class="dropdown-item"
+                        *ngFor="let unit of filteredUnits"
+                        (click)="$event.stopPropagation()"
+                        (mousedown)="selectUnit(unit, i)">
+                        <span [innerHTML]="highlightMatch(unit.name, unitSearchTerm)"></span>
+                        <button
+                          type="button"
+                          class="remove-chip"
+                          *ngIf="!isViewMode"
+                          (mousedown)="$event.stopPropagation()"
+                          (click)="promptDeleteUnit(unit, 'param-unit-dropdown')"
+                          title="Delete unit">
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="add-new-btn" *ngIf="!isViewMode" (click)="openUnitModal()">
+                    <span class="plus-icon-add-unit"><i class="fas fa-plus"></i></span> Add new
+                  </button>
+                </div>
+
+
+                  <!-- Input Type Field -->
+                <div class="field-group input-type-field">
+                  <label>Input Type <span class="required">*</span></label>
+                  <select
+                    formControlName="inputType"
+                    class="form-control"
+                    [disabled]="isViewMode">
+                    <option value="Numeric">Numeric</option>
+                    <option value="Single Line">Single Line</option>
+                    <option value="Paragraph">Paragraph</option>
+                  </select>
+                </div>
+
+
+
+                <!-- Group By Field (only for nested) -->
+                <div class="field-group group-by-field" *ngIf="selectedTestType === 'nested'">
+                  <label>Group By <span class="required">*</span></label>
+                  <input
+                    type="text"
+                    formControlName="groupBy"
+                    class="form-control"
+                    placeholder="Enter group name"
+                    [readonly]="isViewMode">
+                </div>
+
+                <!-- Result Type Field -->
+                <div class="field-group result-type-field">
+                  <label>Result Type </label>
+                  <select
+                    formControlName="resultType"
+                    class="form-control"
+                    (change)="onResultTypeChange(i, $event)"
+                    [disabled]="isViewMode">
+                    <option value="manual">Manual Entry (Technician will enter)</option>
+                    <option value="dropdown">Dropdown Selection</option>
+                    <option value="fixed">Fixed Value (Editable)</option>
+                    <option value="formula">Formula based result</option>
+                  </select>
+
+                  <!-- Add Options Button (only for dropdown type) - Below select box -->
+                  <button
+                    type="button"
+                    class="add-unit-btn"
+                    *ngIf="parameter.get('resultType')?.value === 'dropdown'"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="onAddOptionsClick(i, $event)"
+                    [disabled]="isViewMode"
+                    title="Add dropdown options">
+                    <i class="fas fa-plus"></i> Add Options
+                  </button>
+
+                  <!-- Edit Formula Button (only for formula type) - Below select box -->
+                  <button
+                    type="button"
+                    class="add-unit-btn"
+                    *ngIf="parameter.get('resultType')?.value === 'formula'"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="openFormulaModal(i)"
+                    [disabled]="isViewMode"
+                    title="Edit formula">
+                    <i class="fas fa-pen"></i> Edit Formula
+                  </button>
+                </div>
+
+                <!-- Default Result Field -->
+                <div class="field-group result-field">
+                  <label>Default Result</label>
+                  <div *ngIf="parameter.get('resultType')?.value === 'dropdown'; else textInput">
+                    <div class="dropdown-container">
+                      <input
+                        type="text"
+                        class="form-control dropdown-input"
+                        [readonly]="true"
+                        [value]="parameter.get('defaultResult')?.value || ''"
+                        placeholder="Select default option"
+                        (focus)="openDefaultResultDropdown(i)"
+                        (click)="openDefaultResultDropdown(i)"
+                        (blur)="onDefaultResultBlur(i)"
+                        [disabled]="isViewMode">
+                      <div class="dropdown-list" *ngIf="showDefaultResultDropdown[i]">
+                        <div class="dropdown-item" (mousedown)="selectDefaultOption(i, '')">
+                          Select default option
+                        </div>
+                        <div class="dropdown-item" *ngFor="let option of getDropdownOptions(parameter)" (mousedown)="selectDefaultOption(i, option)">
+                          <span>{{ option }}</span>
+                          <button
+                            type="button"
+                            class="remove-chip"
+                            *ngIf="!isViewMode"
+                            (mousedown)="$event.stopPropagation()"
+                            (click)="deleteDefaultOption(i, option)"
+                            title="Delete option">
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #textInput>
+                    <!-- Show formula text (readonly) when resultType is formula -->
+                    <ng-container *ngIf="parameter.get('resultType')?.value === 'formula'; else defaultTextInput">
+                      <textarea
+                        class="form-control"
+                        rows="2"
+                        [value]="parameter.get('formula')?.value || ''"
+                        placeholder="Define formula using Formula Editor"
+                        [readonly]="true"></textarea>
+                    </ng-container>
+                    <ng-template #defaultTextInput>
+                      <textarea
+                        formControlName="defaultResult"
+                        class="form-control"
+                        rows="2"
+                        [placeholder]="parameter.get('resultType')?.value === 'manual' ? 'Leave empty - technician will enter' : 'Enter fixed default value'"
+                        [readonly]="isViewMode || parameter.get('resultType')?.value === 'manual'"></textarea>
+                    </ng-template>
+                  </ng-template>
+                </div>
+
+                <!-- Checkboxes -->
+                <div class="field-group checkbox-field">
+                  <label class="checkbox-label">
+                    <input type="checkbox" formControlName="isOptional" [disabled]="isViewMode">
+                    <span class="label-text">Optional</span>
+                  </label>
+                  <label class="checkbox-label">
+                    <input type="checkbox" formControlName="removed" [disabled]="isViewMode">
+                    <span class="label-text">Removed</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add More Parameters Button -->
+          <div class="add-parameter-section" *ngIf="!isViewMode">
+            <button
+              type="button"
+              class="add-more-parameters-btn"
+              (click)="addParameter()">
+              <i class="fas fa-plus"></i> Add more parameters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Details Section -->
+      <div class="form-section">
+
+         <h4 class="tab-btn">More details</h4>
+
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="method">Method</label>
+            <input
+              type="text"
+              id="method"
+              formControlName="method"
+              class="form-control"
+              placeholder="Enter method"
+              [readonly]="isViewMode">
+          </div>
+
+          <div class="form-group">
+            <label for="instrument">Instrument</label>
+            <input
+              type="text"
+              id="instrument"
+              formControlName="instrument"
+              class="form-control"
+              placeholder="Enter instrument"
+              [readonly]="isViewMode">
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions" *ngIf="!isViewMode">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" >
+          {{ isEditMode ? 'Update' : 'Save' }}
+        </button>
+      </div>
+
+      <div class="form-actions" *ngIf="isViewMode">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Back to List
+        </button>
+      </div>
+    </form>
+
+<!-- Success Alert -->
+  <app-success-alert
+    [show]="showAlert && alertType === 'success'"
+    [title]="'🎉 Test ' + (isEditMode ? 'Updated' : 'Created') + ' Successfully!'"
+    [message]="alertMessage"
+    [badgeText]="'Operation Successful'"
+    [autoHideDelay]="2000"
+    (close)="showAlert = false">
+  </app-success-alert>
+
+  <!-- Record Exists Modal -->
+  <app-record-exists-modal
+    [show]="showRecordExistsModal"
+    [title]="'Record Already Exists'"
+    [message]="duplicateRecordMessage"
+    [badgeText]="'Duplicate Record Found'"
+    [autoHideDelay]="2000"
+    (closed)="onRecordExistsModalClosed()">
+  </app-record-exists-modal>
+
+
+
+
+
+  <!-- Unit Modal -->
+  <div class="modal-overlay" *ngIf="showUnitModal" (click)="closeUnitModal()">
+    <div class="modal-content unit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Unit</h3>
+        <button type="button" class="modal-close" (click)="closeUnitModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newUnit">Unit <span class="required">*</span></label>
+          <input
+            type="text"
+            id="newUnit"
+            [(ngModel)]="newUnitName"
+            class="form-control"
+            placeholder="Enter unit name (e.g., mg/dL, IU/L)"
+            (keyup.enter)="saveNewUnit()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeUnitModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveNewUnit()" [disabled]="!newUnitName.trim()">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sample Type Modal -->
+  <div class="modal-overlay" *ngIf="showSampleTypeModal" (click)="closeSampleTypeModal()">
+    <div class="modal-content unit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Sample Type</h3>
+        <button type="button" class="modal-close" (click)="closeSampleTypeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newSampleType">Sample Type <span class="required">*</span></label>
+          <input
+            type="text"
+            id="newSampleType"
+            [(ngModel)]="newSampleTypeName"
+            class="form-control"
+            placeholder="Enter sample type (e.g., Blood, Urine)"
+            (keyup.enter)="saveNewSampleType()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSampleTypeModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveNewSampleType()" [disabled]="!(newSampleTypeName || '').trim()">
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Dropdown Option Modal -->
+  <div class="modal-overlay" *ngIf="showOptionModal" (click)="closeOptionModal()">
+    <div class="modal-content unit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Option</h3>
+        <button type="button" class="modal-close" (click)="closeOptionModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="newOption">Option <span class="required">*</span></label>
+          <input
+            type="text"
+            id="newOption"
+            [(ngModel)]="newOptionName"
+            class="form-control"
+            placeholder="Enter option (e.g., Normal, High, Low)"
+            (keyup.enter)="saveNewOption()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeOptionModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveNewOption()" [disabled]="!(newOptionName || '').trim()">
+          Save
+        </button>
+
+
+
+      </div>
+
+
+
+    </div>
+  </div>
+
+
+  <!-- Formula Editor Modal -->
+  <div class="modal-overlay" *ngIf="showFormulaModal" (click)="closeFormulaModal()">
+    <div class="modal-content unit-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Edit Formula</h3>
+        <button type="button" class="modal-close" (click)="closeFormulaModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="formulaText">Formula <span class="required">*</span></label>
+          <textarea
+            id="formulaText"
+            [(ngModel)]="editingFormula"
+            class="form-control"
+            rows="4"
+            placeholder="Example: = {TOTAL SERUM BILIRUBIN} - {DIRECT (CONJUGATED) BILIRUBIN}"></textarea>
+          <small class="help-text">Use = at start (optional), curly braces for parameters, and + - * / with parentheses.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeFormulaModal()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveFormula()" [disabled]="!(editingFormula || '').trim()">Save</button>
+      </div>
+    </div>
+  </div>
+
+
+
+<!-- Delete Confirmation Modal (global at root) -->
+<app-delete-confirmation-modal
+  [show]="showDeleteConfirmation"
+  [title]="deleteTitle"
+  [message]="deleteMessage"
+  [warningText]="'This action cannot be undone'"
+  (confirmed)="confirmDeleteUnit()"
+  (cancelled)="cancelDeleteUnit()">
+</app-delete-confirmation-modal>
+
+<!-- Delete Success Modal (global) -->
+<app-delete-success-modal
+  [show]="showDeleteSuccess"
+  [title]="deleteSuccessTitle"
+  [message]="'Deleted successfully.'"
+  [badgeText]="'Operation completed'"
+  [autoHideDelay]="1000"
+  (closed)="onDeleteUnitSuccessClosed()">
+</app-delete-success-modal>
+
+<!-- Delete Blocked Modal (global) -->
+<app-delete-blocked-modal
+  [show]="showDeleteBlocked"
+  [title]="deleteBlockedTitle"
+  [message]="deleteBlockedMessage"
+  [details]="[]"
+  [badgeText]="'Dependencies present'"
+  [autoHideDelay]="2000"
+  (closed)="closeDeleteBlocked()">
+</app-delete-blocked-modal>

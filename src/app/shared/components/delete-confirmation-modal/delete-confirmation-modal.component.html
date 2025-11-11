@@ -1,0 +1,72 @@
+<!-- Delete Confirmation Modal -->
+<div class="delete-confirmation-overlay" *ngIf="show">
+  <div class="delete-confirmation-modal" [ngClass]="theme">
+    <div class="delete-confirmation-content">
+      <!-- Lottie Animation (customizable) -->
+      <div class="warning-icon">
+        <!-- Prefer dotlottie-player if available -->
+        <dotlottie-player
+          *ngIf="hasDotLottiePlayer"
+          [attr.src]="lottieSrc"
+          style="width: 130px; height: 130px"
+          speed="1"
+          loop
+          autoplay>
+        </dotlottie-player>
+        <!-- Fallback to dotlottie-wc if player not available -->
+        <dotlottie-wc
+          *ngIf="!hasDotLottiePlayer && hasDotLottieWC"
+          [attr.src]="lottieSrc"
+          speed="1"
+          style="width: 130px; height: 130px"
+          loop
+          autoplay>
+        </dotlottie-wc>
+        <!-- Final fallback icon if neither custom element is registered -->
+        <i *ngIf="!hasDotLottiePlayer && !hasDotLottieWC" class="fa-solid fa-right-from-bracket" style="font-size: 48px; color: #f59e0b;"></i>
+      </div>
+
+      <!-- Title -->
+      <h2 class="delete-title">
+        <i class="fa-solid" [ngClass]="titleIcon"></i> {{ title }}
+      </h2>
+
+      <!-- Message -->
+      <div class="delete-message-display">
+        <p class="delete-message">{{ message }}</p>
+      </div>
+
+      <!-- Warning Badge -->
+      <div class="warning-badge">
+        <span class="warning-badge-icon">
+          <i class="fa-solid fa-exclamation"></i>
+        </span>
+        <span>{{ warningText }}</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="delete-actions">
+        <button
+          type="button"
+          class="btn btn-cancel"
+          (click)="onCancel()">
+          <span class="btn-icon">
+            <i class="fa-solid fa-xmark"></i>
+          </span>
+          {{ cancelLabel }}
+        </button>
+
+        <button
+          type="button"
+          class="btn {{ confirmClass }}"
+          [disabled]="confirming"
+          (click)="onConfirm()">
+          <span class="btn-icon">
+            <i class="fa-solid" [ngClass]="confirmIcon"></i>
+          </span>
+          {{ confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

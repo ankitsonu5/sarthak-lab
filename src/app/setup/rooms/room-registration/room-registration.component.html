@@ -1,0 +1,219 @@
+<div class="room-registration-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <div class="d-flex">
+       <div class="header-image pulse-animation"></div>
+      <div class="header-left">
+        <div class="title-with-image">
+         
+          <h1 class="page-title"> {{ isEditMode ? 'Edit Room' : 'Room Registration' }}</h1>
+         
+        </div>
+        <p class="page-subtitle">{{ isEditMode ? 'Update room information' : 'Add new rooms to the system' }}</p>
+      </div>
+      </div>
+      <div class="header-right">
+        <button
+          type="button"
+          class="exit-btn"
+          (click)="exitToSearchRoom()"
+        >
+          🚪 Exit to Room List
+        </button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Tab Navigation -->
+  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
+      <button type="button" (click)="navigateToDepartmentList()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+        Search Departments
+      </button>
+      <button type="button" (click)="navigateToRoomRegistration()"
+              style="border-bottom: 2px solid #0a7a89; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #207a86; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+         Room Registration
+      </button>
+      <button type="button" (click)="navigateToDocRoomSearch()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+       Search Room
+      </button>
+      <button type="button" (click)="navigateToDocRoomDirectory()"
+              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
+       Doctor Room Directory
+      </button>
+    </nav>
+  </div>
+
+
+
+
+  <!-- Registration Form -->
+  <div class="form-container">
+    <div class="form-header">
+      <h2>Add New Room</h2>
+    </div>
+
+
+    <form [formGroup]="roomForm" (ngSubmit)="onSubmit()" class="room-form">
+      <div class="form-row">
+        <!-- Room Number -->
+        <div class="form-field">
+          <label class="field-label">Room Number *</label>
+          <div class="room-number-input">
+            <span class="room-prefix">RN-</span>
+            <input
+              type="text"
+              formControlName="roomNumber"
+              class="form-input"
+              [class.error]="isFieldInvalid('roomNumber')"
+              placeholder="Enter room number (e.g., 25)"
+              #roomNumberInput
+            >
+          </div>
+          <div *ngIf="isFieldInvalid('roomNumber')" class="error-text">
+            {{ getFieldError('roomNumber') }}
+          </div>
+        </div>
+
+        <!-- Department -->
+        <div class="form-field">
+          <label class="field-label">Department *</label>
+          <select
+            formControlName="department"
+            class="form-select"
+            [class.error]="isFieldInvalid('department')"
+          >
+            <option value="">Select Department</option>
+            <option *ngFor="let dept of departments" [value]="dept.name">
+              {{ dept.name }}
+            </option>
+          </select>
+          <div *ngIf="isFieldInvalid('department')" class="error-text">
+            {{ getFieldError('department') }}
+          </div>
+        </div>
+
+        <!-- Buttons (Update and Cancel side by side) -->
+        <div class="form-field button-group">
+          <button
+            type="submit"
+            class="add-btn update-btn"
+            [disabled]="roomForm.invalid"
+          >
+            {{ isEditMode ? '✏️ Update Room' : '➕ Add Room' }}
+          </button>
+
+          <!-- Cancel Button (only show in edit mode) -->
+          <button
+            *ngIf="isEditMode"
+            type="button"
+            class="cancel-btn"
+            (click)="cancelEdit()"
+          >
+            ❌ Cancel
+          </button>
+
+          
+
+
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Room List -->
+  <div class="room-list-container" *ngIf="rooms.length > 0">
+    <div class="list-header">
+      <h3>Added Rooms ({{ rooms.length }})</h3>
+    </div>
+
+    <div class="table-container">
+      <table class="room-table">
+        <thead>
+          <tr>
+            <th>Sr No</th>
+            <th>Room Number</th>
+            <th>Department</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let room of rooms; let i = index" class="table-row">
+            <td>{{ i + 1 }}</td>
+            <td class="room-number">{{ room.roomNumber }}</td>
+            <td>{{ getDepartmentName(room.department) }}</td>
+            <td>{{ formatDate(room.createdAt!) }}</td>
+            <td class="actions">
+              <button 
+                (click)="editRoom(room)"
+                class="action-btn edit-btn"
+                title="Edit Room"
+              >
+                <i class="fa-solid fa-pen-fancy"></i> Edit
+              </button>
+              <button 
+                (click)="deleteRoom(room)"
+                class="action-btn delete-btn"
+                title="Delete Room"
+              >
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="rooms.length === 0">
+    <div class="empty-icon">🏠</div>
+    <h3>No Rooms Added Yet</h3>
+    <p>Add your first room using the form above</p>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation-modal
+    [show]="showDeleteConfirmation"
+    [title]="'Delete Room'"
+    [message]="deleteMessage"
+    [warningText]="'This action cannot be undone'"
+    (confirmed)="confirmDelete()"
+    (cancelled)="cancelDelete()">
+  </app-delete-confirmation-modal>
+
+  <!-- Delete Success Modal -->
+  <app-delete-success-modal
+    [show]="showDeleteSuccess"
+    [title]="'Room Deleted'"
+    [message]="'The room has been successfully removed from the system.'"
+    [badgeText]="'Operation completed'"
+    [autoHideDelay]="3000"
+    (closed)="onDeleteSuccessClosed()">
+  </app-delete-success-modal>
+
+  <!-- Record Already Exists Modal -->
+  <app-record-exists-modal
+    [show]="showRecordExistsModal"
+    [title]="'Room Already Exists!'"
+    [message]="recordExistsMessage"
+    [subMessage]="'Please try with a different room number.'"
+    [badgeText]="'Duplicate Room Found'"
+    [autoHideDelay]="2000"
+    (closed)="onRecordExistsModalClosed()">
+  </app-record-exists-modal>
+
+  <!-- Success Alert Modal -->
+  <app-success-alert
+    [show]="showSuccessAlert"
+    [title]="isEditMode ? '🎉 Updated Successfully!' : '🎉 Registration Successful!'"
+    [message]="successMessage"
+    [badgeText]="isEditMode ? 'Room Updated Successfully' : 'Room Added Successfully'"
+    (close)="closeSuccessAlert()">
+  </app-success-alert>
+</div>
