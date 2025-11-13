@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 
 const patientSchema = new mongoose.Schema({
+  // 🏢 Multi-Tenant: Lab ID for data isolation
+  labId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Lab',
+    required: true,
+    index: true
+  },
+
   patientId: {
     type: String,
     unique: true
@@ -146,10 +154,10 @@ patientSchema.pre('save', async function(next) {
 patientSchema.index({ aadharNo: 1 }, { unique: false, sparse: true });
 
 // Performance-critical indexes for search/listing
+// Note: patientId already has unique index from field definition
 patientSchema.index({ registrationDate: -1, patientId: -1 });
 patientSchema.index({ createdAt: -1 });
 patientSchema.index({ phone: 1 });
-patientSchema.index({ patientId: 1 });
 
 
 module.exports = mongoose.model('Patient', patientSchema);

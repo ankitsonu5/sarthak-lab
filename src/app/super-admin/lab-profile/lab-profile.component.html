@@ -1,0 +1,315 @@
+<div class="lab-profile-container">
+  <!-- Header -->
+  <div class="profile-header">
+    <button (click)="goBack()" class="btn-back">
+      ← Back to Dashboard
+    </button>
+    <h1>Lab Profile</h1>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <p>🔄 Loading lab profile...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-alert">
+    <p>⚠️ {{ error }}</p>
+  </div>
+
+  <!-- Lab Profile -->
+  <div *ngIf="!loading && !error && lab" class="profile-content">
+    
+    <!-- Lab Header Card -->
+    <div class="lab-header-card">
+      <div class="lab-avatar">
+        <div class="avatar-circle" [style.background]="lab.primaryColor || '#007bff'">
+          {{ lab.labName.charAt(0).toUpperCase() }}
+        </div>
+      </div>
+      
+      <div class="lab-header-info">
+        <h2>{{ lab.labName }}</h2>
+        <p class="lab-code">{{ lab.labCode }}</p>
+        <div class="lab-badges">
+          <span class="badge" [ngClass]="getStatusBadgeClass(lab.approvalStatus)">
+            {{ lab.approvalStatus | uppercase }}
+          </span>
+          <span class="badge" [ngClass]="getPlanBadgeClass(lab.subscriptionPlan)">
+            {{ lab.subscriptionPlan | uppercase }}
+          </span>
+        </div>
+      </div>
+
+      <div class="lab-header-actions">
+        <button 
+          *ngIf="lab.approvalStatus === 'pending'"
+          (click)="approveLab()" 
+          class="btn-approve"
+        >
+          ✅ Approve Lab
+        </button>
+        <button 
+          *ngIf="lab.approvalStatus === 'pending'"
+          (click)="rejectLab()" 
+          class="btn-reject"
+        >
+          ❌ Reject Lab
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-container">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'overview'"
+        (click)="setActiveTab('overview')"
+      >
+        📋 Overview
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'users'"
+        (click)="setActiveTab('users')"
+      >
+        👥 Users ({{ users.length }})
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'stats'"
+        (click)="setActiveTab('stats')"
+      >
+        📊 Statistics
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'settings'"
+        (click)="setActiveTab('settings')"
+      >
+        ⚙️ Settings
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Overview Tab -->
+      <div *ngIf="activeTab === 'overview'" class="overview-tab">
+        <div class="info-grid">
+          
+          <!-- Contact Information -->
+          <div class="info-card">
+            <h3>📞 Contact Information</h3>
+            <div class="info-row">
+              <span class="label">Email:</span>
+              <span class="value">{{ lab.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Phone:</span>
+              <span class="value">{{ lab.phone }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Address:</span>
+              <span class="value">{{ lab.address }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">City:</span>
+              <span class="value">{{ lab.city }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">State:</span>
+              <span class="value">{{ lab.state }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Country:</span>
+              <span class="value">{{ lab.country }}</span>
+            </div>
+            <div class="info-row" *ngIf="lab.pincode">
+              <span class="label">Pincode:</span>
+              <span class="value">{{ lab.pincode }}</span>
+            </div>
+          </div>
+
+          <!-- Subscription Information -->
+          <div class="info-card">
+            <h3>💳 Subscription Information</h3>
+            <div class="info-row">
+              <span class="label">Plan:</span>
+              <span class="value">
+                <span class="badge" [ngClass]="getPlanBadgeClass(lab.subscriptionPlan)">
+                  {{ lab.subscriptionPlan | uppercase }}
+                </span>
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">Status:</span>
+              <span class="value">{{ lab.subscriptionStatus | uppercase }}</span>
+            </div>
+            <div class="info-row" *ngIf="lab.subscriptionPlan === 'trial'">
+              <span class="label">Trial Ends:</span>
+              <span class="value">
+                {{ formatDate(lab.trialEndsAt || '') }}
+                <span class="days-left" *ngIf="getDaysLeft(lab.trialEndsAt || '') >= 0">
+                  ({{ getDaysLeft(lab.trialEndsAt || '') }} days left)
+                </span>
+              </span>
+            </div>
+            <div class="info-row" *ngIf="lab.subscriptionEndsAt">
+              <span class="label">Subscription Ends:</span>
+              <span class="value">{{ formatDate(lab.subscriptionEndsAt) }}</span>
+            </div>
+          </div>
+
+          <!-- Approval Information -->
+          <div class="info-card">
+            <h3>✅ Approval Information</h3>
+            <div class="info-row">
+              <span class="label">Status:</span>
+              <span class="value">
+                <span class="badge" [ngClass]="getStatusBadgeClass(lab.approvalStatus)">
+                  {{ lab.approvalStatus | uppercase }}
+                </span>
+              </span>
+            </div>
+            <div class="info-row" *ngIf="lab.approvedAt">
+              <span class="label">Approved At:</span>
+              <span class="value">{{ formatDate(lab.approvedAt) }}</span>
+            </div>
+            <div class="info-row" *ngIf="lab.rejectionReason">
+              <span class="label">Rejection Reason:</span>
+              <span class="value rejection-reason">{{ lab.rejectionReason }}</span>
+            </div>
+          </div>
+
+          <!-- Registration Information -->
+          <div class="info-card">
+            <h3>📅 Registration Information</h3>
+            <div class="info-row">
+              <span class="label">Registered On:</span>
+              <span class="value">{{ formatDate(lab.createdAt) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Last Updated:</span>
+              <span class="value">{{ formatDate(lab.updatedAt) }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Users Tab -->
+      <div *ngIf="activeTab === 'users'" class="users-tab">
+        <div class="users-list">
+          <div *ngFor="let user of users" class="user-card">
+            <div class="user-avatar">
+              {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+            </div>
+            <div class="user-info">
+              <h4>{{ user.firstName }} {{ user.lastName }}</h4>
+              <p class="user-email">{{ user.email }}</p>
+              <p class="user-role">
+                <span class="badge badge-primary">{{ user.role }}</span>
+                <span class="badge" [class.badge-success]="user.isActive" [class.badge-danger]="!user.isActive">
+                  {{ user.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </p>
+            </div>
+            <div class="user-meta">
+              <p>📞 {{ user.phone }}</p>
+              <p class="user-joined">Joined: {{ formatDate(user.createdAt) }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="users.length === 0" class="empty-state">
+            <p>No users found for this lab.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Tab -->
+      <div *ngIf="activeTab === 'stats'" class="stats-tab">
+        <div class="stats-grid">
+          
+          <!-- Usage Stats -->
+          <div class="stat-card-large">
+            <h3>📊 Usage Statistics</h3>
+            
+            <div class="usage-item">
+              <div class="usage-header">
+                <span>👥 Users</span>
+                <span class="usage-count">{{ lab.totalUsers }} / {{ getPlanLimits().maxUsers === -1 ? '∞' : getPlanLimits().maxUsers }}</span>
+              </div>
+              <div class="progress-bar" *ngIf="getPlanLimits().maxUsers !== -1">
+                <div class="progress-fill" [style.width.%]="getUsagePercentage(lab.totalUsers, getPlanLimits().maxUsers)"></div>
+              </div>
+            </div>
+
+            <div class="usage-item">
+              <div class="usage-header">
+                <span>🧑‍⚕️ Patients</span>
+                <span class="usage-count">{{ lab.totalPatients }} / {{ getPlanLimits().maxPatients === -1 ? '∞' : getPlanLimits().maxPatients }}</span>
+              </div>
+              <div class="progress-bar" *ngIf="getPlanLimits().maxPatients !== -1">
+                <div class="progress-fill" [style.width.%]="getUsagePercentage(lab.totalPatients, getPlanLimits().maxPatients)"></div>
+              </div>
+            </div>
+
+            <div class="usage-item">
+              <div class="usage-header">
+                <span>📄 Reports (This Month)</span>
+                <span class="usage-count">{{ lab.monthlyReports }} / {{ getPlanLimits().maxReportsPerMonth === -1 ? '∞' : getPlanLimits().maxReportsPerMonth }}</span>
+              </div>
+              <div class="progress-bar" *ngIf="getPlanLimits().maxReportsPerMonth !== -1">
+                <div class="progress-fill" [style.width.%]="getUsagePercentage(lab.monthlyReports, getPlanLimits().maxReportsPerMonth)"></div>
+              </div>
+            </div>
+
+            <div class="usage-item">
+              <div class="usage-header">
+                <span>📋 Total Reports</span>
+                <span class="usage-count">{{ lab.totalReports }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Settings Tab -->
+      <div *ngIf="activeTab === 'settings'" class="settings-tab">
+        <div class="info-card">
+          <h3>🎨 Branding</h3>
+          <div class="info-row" *ngIf="lab.primaryColor">
+            <span class="label">Primary Color:</span>
+            <span class="value">
+              <span class="color-preview" [style.background]="lab.primaryColor"></span>
+              {{ lab.primaryColor }}
+            </span>
+          </div>
+          <div class="info-row" *ngIf="lab.secondaryColor">
+            <span class="label">Secondary Color:</span>
+            <span class="value">
+              <span class="color-preview" [style.background]="lab.secondaryColor"></span>
+              {{ lab.secondaryColor }}
+            </span>
+          </div>
+          <div class="info-row" *ngIf="lab.headerNote">
+            <span class="label">Header Note:</span>
+            <span class="value">{{ lab.headerNote }}</span>
+          </div>
+          <div class="info-row" *ngIf="lab.footerNote">
+            <span class="label">Footer Note:</span>
+            <span class="value">{{ lab.footerNote }}</span>
+          </div>
+          <div *ngIf="!lab.primaryColor && !lab.secondaryColor && !lab.headerNote && !lab.footerNote" class="empty-state">
+            <p>No branding settings configured yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+

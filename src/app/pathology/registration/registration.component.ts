@@ -134,9 +134,9 @@ export class PathologyRegistrationComponent implements OnInit {
   selectedTests: SelectedTest[] = [];
   totalAmount = 0;
 
-  // Registration Mode (OPD/IPD)
-  registrationMode: 'OPD' | 'IPD' = 'OPD';
-  pageTitle = 'Pathology Test Registration - OPD';
+  // Registration Mode
+  registrationMode: string = 'General';
+  pageTitle = 'Pathology Test Registration';
 
   private subscription = new Subscription();
 
@@ -215,7 +215,7 @@ export class PathologyRegistrationComponent implements OnInit {
     this.getDailyAndYearlyNumbers(this.registrationMode);
   }
 
-  getDailyAndYearlyNumbers(mode: 'OPD' | 'IPD' = this.registrationMode): void {
+  getDailyAndYearlyNumbers(mode: string = this.registrationMode): void {
     const today = new Date();
     const currentYear = today.getFullYear();
 
@@ -280,30 +280,10 @@ export class PathologyRegistrationComponent implements OnInit {
   }
 
   detectRegistrationMode(): void {
-    // Check URL to determine OPD/IPD mode
-    const currentUrl = this.router.url;
-
-    if (currentUrl.includes('register-test-ipd') || currentUrl.includes('ipd')) {
-      this.registrationMode = 'IPD';
-      this.pageTitle = 'Pathology Test Registration - IPD';
-    } else if (currentUrl.includes('register-test-opd') || currentUrl.includes('opd')) {
-      this.registrationMode = 'OPD';
-      this.pageTitle = 'Pathology Test Registration - OPD';
-    } else {
-      // Default to OPD
-      this.registrationMode = 'OPD';
-      this.pageTitle = 'Pathology Test Registration - OPD';
-    }
-
-    // Also check query parameters for override
-    this.route.queryParams.subscribe(params => {
-      if (params['mode']) {
-        this.registrationMode = params['mode'].toUpperCase() === 'IPD' ? 'IPD' : 'OPD';
-        this.pageTitle = `Pathology Test Registration - ${this.registrationMode}`;
-      }
-    });
-
-    console.log('🎯 Registration mode detected:', this.registrationMode, 'from URL:', currentUrl);
+    // Simplified - no OPD/IPD distinction
+    this.registrationMode = 'General';
+    this.pageTitle = 'Pathology Test Registration';
+    console.log('🎯 Registration mode set to General');
   }
 
   initializeForm(): void {
@@ -734,16 +714,11 @@ export class PathologyRegistrationComponent implements OnInit {
       console.log('🏠 No room number found, department:', department);
     }
 
-    // Extract mode/type from receipt → normalize to OPD/IPD (default OPD)
-    const incomingMode = (receiptData.mode || receiptData.addressType || receiptData.type || '').toString().trim().toUpperCase();
-    const addressType = incomingMode === 'IPD' ? 'IPD' : 'OPD';
+    // Set registration mode to General
+    this.registrationMode = 'General';
+    this.pageTitle = 'Pathology Test Registration';
 
-    // Keep page mode/title in sync with receipt
-    this.registrationMode = addressType as any;
-    this.pageTitle = `Pathology Test Registration - ${this.registrationMode}`;
-
-
-    // Refresh mode-specific counters
+    // Refresh counters
     this.getDailyAndYearlyNumbers(this.registrationMode);
 
     // Populate all form fields
@@ -765,7 +740,7 @@ export class PathologyRegistrationComponent implements OnInit {
 
       // Department and Type
       department: department,
-      addressType: addressType,
+      addressType: this.registrationMode,
 
       // Reference Information - EMPTY AS REQUESTED
       referenceNumber: '',
@@ -791,7 +766,7 @@ export class PathologyRegistrationComponent implements OnInit {
     console.log('📋 Doctor Ref No:', doctorRefNo);
     console.log('🏠 Room Number:', roomNumber);
     console.log('🏢 Department:', department);
-    console.log('📋 Address Type:', addressType);
+    console.log('📋 Registration Mode:', this.registrationMode);
     console.log('📊 Daily Number:', this.dailyNumber);
     console.log('📅 Yearly Number:', this.yearlyNumber);
     console.log('🧪 Tests Count:', this.selectedTests.length);

@@ -23,11 +23,6 @@ export class RoleGuard implements CanActivate {
       return false;
     }
 
-    // SuperAdmin bypass: can access everything
-    if (user.role === 'SuperAdmin') {
-      return true;
-    }
-
     // Check for required roles
     const requiredRoles = route.data['roles'] as string[];
     if (requiredRoles && requiredRoles.length > 0) {

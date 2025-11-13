@@ -16,7 +16,7 @@ export interface PathologyTest {
   collectionDate: Date;
   reportDate?: Date;
   status: 'Pending' | 'Sample Collected' | 'In Progress' | 'Completed' | 'Reported';
-  mode: 'OPD' | 'IPD' | 'Emergency';
+  mode: 'Emergency' | 'Home Collection' | 'General';
   clinicalHistory?: string;
   testParameters: TestParameter[];
   results?: TestResult[];

@@ -150,8 +150,8 @@ const pathologyBookingSchema = new mongoose.Schema({
   },
   mode: {
     type: String,
-    enum: ['OPD', 'IPD', 'Emergency', 'Home Collection'],
-    default: 'OPD'
+    enum: ['Emergency', 'Home Collection', 'General'],
+    default: 'General'
   },
   clinicalHistory: {
     type: String,

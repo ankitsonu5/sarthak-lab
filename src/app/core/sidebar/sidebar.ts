@@ -62,7 +62,6 @@ export class Sidebar implements OnInit, OnDestroy {
 
 
   expandedSections: { [key: string]: boolean } = {
-    'Dashboard (Home)': false,
     'Patients': false,
     'Tests / Lab Reports': false,
     'Appointments / Sample Collection': false,
@@ -141,6 +140,31 @@ export class Sidebar implements OnInit, OnDestroy {
 
   // Build and cache sidebar sections once per user change
   private buildSidebarSections() {
+    // SuperAdmin gets different sidebar - only lab management
+    if (this.currentUser?.role === 'SuperAdmin') {
+      this.sidebarSections = [
+        {
+          icon: '🏢',
+          title: 'Lab Management',
+          children: [
+            { label: 'All Labs', route: '/super-admin/dashboard' },
+            { label: 'Pending Approvals', route: '/super-admin/dashboard' },
+            { label: 'Active Labs', route: '/super-admin/dashboard' }
+          ]
+        },
+        {
+          icon: '👥',
+          title: 'User Management',
+          children: [
+            { label: 'Create User', route: '/auth/register' },
+            { label: 'Manage Users', route: '/roles/list' }
+          ]
+        }
+      ];
+      return;
+    }
+
+    // Lab users (LabAdmin, Technician, etc.) get full pathology sidebar
     const allSections = [
       {
         icon: '🛠️',
@@ -156,13 +180,6 @@ export class Sidebar implements OnInit, OnDestroy {
           { label: 'Test Database', route: '/setup/pathology/test-database' },
           { label: 'Test Panels', route: '/setup/pathology/test-panels' },
           { label: 'Reference Ranges', route: '/setup/pathology/reference-ranges' }
-        ]
-      },
-      {
-        icon: '🏠',
-        title: 'Dashboard (Home)',
-        children: [
-          { label: 'Lab Dashboard', route: '/dashboard/pathology' }
         ]
       },
       {
@@ -237,6 +254,44 @@ export class Sidebar implements OnInit, OnDestroy {
 
   // Backward-compat shim for template usage
   getSidebarSections() { return this.sidebarSections; }
+
+  // Get dashboard route based on role
+  getDashboardRoute(): string {
+    if (!this.currentUser) return '/auth/login';
+
+    switch (this.currentUser.role) {
+      case 'SuperAdmin':
+        return '/super-admin/dashboard';
+      case 'LabAdmin':
+      case 'Technician':
+      case 'Receptionist':
+      case 'Pathology':
+        return '/dashboard/pathology';
+      case 'Admin':
+        return '/dashboard/admin';
+      default:
+        return '/dashboard/pathology';
+    }
+  }
+
+  // Get dashboard label based on role
+  getDashboardLabel(): string {
+    if (!this.currentUser) return 'Dashboard';
+
+    switch (this.currentUser.role) {
+      case 'SuperAdmin':
+        return 'Super Admin Dashboard';
+      case 'LabAdmin':
+      case 'Technician':
+      case 'Receptionist':
+      case 'Pathology':
+        return 'Lab Dashboard';
+      case 'Admin':
+        return 'Admin Dashboard';
+      default:
+        return 'Dashboard';
+    }
+  }
 
   toggleSection(sectionTitle: string) {
     // Prevent multiple clicks during animation

@@ -598,6 +598,8 @@ router.post('/create', async (req, res) => {
 
     // Create registration data with enhanced information
     const registrationData = {
+      // 🏢 Multi-Tenant: Lab ID from middleware
+      labId: req.labId,
       receiptNumber: receiptNumberNum,
       registrationMode: registrationMode || 'OPD', // Save the registration mode (OPD/IPD)
       // 🚨 FIX: Don't set yearNumber and todayNumber here - let pre-save hook generate them
@@ -718,8 +720,15 @@ router.get('/list', async (req, res) => {
 
     console.log('📋 Fetching registrations - Page:', page, 'Limit:', limit, '\nFilters:', { receipt, registration, yearly, test, search, range, startDate, endDate });
 
-    // Build Mongo query
+    // 🏢 Multi-Tenant: Build Mongo query with labId filter
     const query = {};
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
+    } else if (req.isSuperAdmin) {
+      console.log(`🏢 SuperAdmin: Fetching ALL labs data`);
+    }
+
     const andConds = [];
 
     // Exact receipt number (supports number or string storage)

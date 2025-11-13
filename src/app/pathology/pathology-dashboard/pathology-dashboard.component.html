@@ -4,7 +4,7 @@
     <div class="dashboard-header">
       <div class="header-content">
         <div class="header-left">
-          <h1 class="dashboard-title">Rajkiya Ayurvedic College And Hospital Dashboard</h1>
+          <h1 class="dashboard-title">{{ labName }} Dashboard</h1>
           <p class="dashboard-subtitle">Real-time pathology monitoring system</p>
         </div>
 
@@ -52,11 +52,9 @@
 
             <!-- User Info Section -->
             <div class="user-info-below">
-              <!-- <div class="user-role">Laboratory Technician</div> -->
-              <div class="user-name">Pathology</div>
-              <div class="user-status">System Administration</div>
+              <div class="user-name">{{ userRole }}</div>
+              <div class="user-status">{{ userName || 'System Administration' }}</div>
               <div class="user-info">
-            <!-- <span class="user-role">Pathology</span> -->
             <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
           </div>
             </div>

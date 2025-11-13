@@ -26,8 +26,8 @@ export class Login implements OnInit {
     this.clearInvalidAuth();
 
     this.loginForm = this.formBuilder.group({
-      email: ['admin@hospital.com', [Validators.required, Validators.email]],
-      password: ['admin123', [Validators.required, Validators.minLength(6)]]
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
 
     // Clear any existing errors
@@ -36,16 +36,32 @@ export class Login implements OnInit {
     // Check if user is already logged in with valid token
     if (this.authService.isLoggedIn()) {
       console.log('User already logged in, redirecting based on role');
-      const user = this.authService.getCurrentUser();
-      if (user?.role === 'Pathology') {
-        this.router.navigate(['/dashboard/pathology']);
-      } else if (user?.role === 'SuperAdmin') {
-        this.router.navigate(['/roles/super-admin']);
-      } else if (user?.role === 'Admin') {
-        this.router.navigate(['/dashboard/admin']);
-      } else if (user?.role === 'Pharmacy') {
-        this.router.navigate(['/pharmacy']);
-      }
+      this.redirectBasedOnRole();
+    }
+  }
+
+  redirectBasedOnRole(): void {
+    const user = this.authService.getCurrentUser();
+    console.log('🔄 Redirecting user based on role:', user?.role);
+
+    if (user?.role === 'SuperAdmin') {
+      this.router.navigate(['/super-admin/dashboard']);
+    } else if (user?.role === 'LabAdmin') {
+      this.router.navigate(['/dashboard/pathology']);
+    } else if (user?.role === 'Technician') {
+      this.router.navigate(['/dashboard/pathology']);
+    } else if (user?.role === 'Receptionist') {
+      this.router.navigate(['/dashboard/pathology']);
+    } else if (user?.role === 'Doctor') {
+      this.router.navigate(['/dashboard/pathology']);
+    } else if (user?.role === 'Pathology') {
+      this.router.navigate(['/dashboard/pathology']);
+    } else if (user?.role === 'Admin') {
+      this.router.navigate(['/dashboard/admin']);
+    } else if (user?.role === 'Pharmacy') {
+      this.router.navigate(['/pharmacy']);
+    } else {
+      console.log('❌ Unknown role, staying on login');
     }
   }
 
@@ -83,23 +99,13 @@ export class Login implements OnInit {
           console.log('✅ Login successful:', response);
           this.loading = false;
 
-          // FAST ROUTING: Use Angular router instead of window.location
-          if (response.user.role === 'Pathology') {
-            console.log('🔄 Fast navigation to pathology dashboard...');
-            this.router.navigate(['/dashboard/pathology'], { replaceUrl: true });
-          } else if (response.user.role === 'SuperAdmin') {
-            console.log('🔄 Fast navigation to super admin dashboard...');
-            this.router.navigate(['/roles/super-admin'], { replaceUrl: true });
-          } else if (response.user.role === 'Admin') {
-            console.log('🔄 Fast navigation to admin dashboard...');
-            this.router.navigate(['/dashboard/admin'], { replaceUrl: true });
-          } else if (response.user.role === 'Pharmacy') {
-            console.log('🔄 Fast navigation to pharmacy dashboard...');
-            this.router.navigate(['/pharmacy'], { replaceUrl: true });
-          } else {
-            console.log('❌ Unknown role, redirecting to login');
-            this.router.navigate(['/auth/login'], { replaceUrl: true });
+          // Show success message for multi-tenant login
+          if (response.user.lab) {
+            console.log('🏢 Lab:', response.user.lab.labName, '(Code: ' + response.user.lab.labCode + ')');
           }
+
+          // Redirect based on role
+          this.redirectBasedOnRole();
         },
         error: (error) => {
           console.error('❌ Login error:', error);

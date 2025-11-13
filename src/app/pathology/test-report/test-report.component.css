@@ -377,9 +377,23 @@
 
 .info-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 15px;
   margin-bottom: 15px;
+}
+
+/* Force horizontal layout on larger screens */
+@media (min-width: 1024px) {
+  .info-row {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Medium screens - 3 columns */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .info-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .required {
@@ -1549,6 +1563,10 @@ background: linear-gradient(90deg, rgba(95, 140, 173, 1) 0%, rgba(63, 128, 193, 
   .patient-row, .financial-row {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .info-row {
+    grid-template-columns: 1fr;
   }
 
   .action-buttons {

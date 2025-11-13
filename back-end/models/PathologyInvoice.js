@@ -4,6 +4,14 @@ const mongoose = require('mongoose');
 const Counter = require('./Counter');
 
 const pathologyInvoiceSchema = new mongoose.Schema({
+  // 🏢 Multi-Tenant: Lab ID for data isolation
+  labId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Lab',
+    required: true,
+    index: true
+  },
+
   receiptNumber: {
     type: Number
   },
@@ -248,15 +256,11 @@ pathologyInvoiceSchema.pre('save', async function(next) {
 });
 
 // Index for faster queries
+// Note: dbCrn, patientRef, doctorRef, departmentRef, appointmentRef already have indexes from field definitions
 pathologyInvoiceSchema.index({ receiptNumber: 1 });
-pathologyInvoiceSchema.index({ dbCrn: 1 });
 
 pathologyInvoiceSchema.index({ 'patient.registrationNumber': 1 });
 pathologyInvoiceSchema.index({ bookingDate: 1 });
 pathologyInvoiceSchema.index({ status: 1 });
-pathologyInvoiceSchema.index({ patientRef: 1 });
-pathologyInvoiceSchema.index({ doctorRef: 1 });
-pathologyInvoiceSchema.index({ departmentRef: 1 });
-pathologyInvoiceSchema.index({ appointmentRef: 1 }); // ✅ index for queries by appointment
 
 module.exports = mongoose.model('PathologyInvoice', pathologyInvoiceSchema);

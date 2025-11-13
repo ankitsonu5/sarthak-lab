@@ -4,17 +4,19 @@ const PathologyBooking = require('../models/PathologyBooking');
 const Patient = require('../models/Patient');
 const Doctor = require('../models/Doctor');
 const ServiceHead = require('../models/ServiceHead');
+const { authenticateToken } = require('../middlewares/auth');
+const { multiTenantMiddleware } = require('../middleware/multiTenantMongo');
 
 // ==================== PATIENT MANAGEMENT ROUTES ====================
 
 // Search/Get patients for pathology
-router.get('/patients/search', async (req, res) => {
+router.get('/patients/search', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     console.log('🔍 Searching patients for pathology...');
     const { query, patientId, phone } = req.query;
-    
+
     let filter = {};
-    
+
     if (patientId) {
       filter.patientId = { $regex: patientId, $options: 'i' };
     } else if (phone) {
@@ -27,7 +29,13 @@ router.get('/patients/search', async (req, res) => {
         { patientId: { $regex: query, $options: 'i' } }
       ];
     }
-    
+
+    // 🏢 Multi-Tenant: Add labId filter
+    if (!req.isSuperAdmin && req.labId) {
+      filter.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
+    }
+
     const patients = await Patient.find(filter)
       .select('patientId firstName lastName phone gender age address')
       .limit(20)

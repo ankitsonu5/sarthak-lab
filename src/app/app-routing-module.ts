@@ -67,32 +67,34 @@ const routes: Routes = [
       {
         path: 'setup',
         loadChildren: () => import('./setup/setup.module').then(m => m.SetupModule),
-        canActivate: [AuthGuard]
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: ['Admin', 'LabAdmin'] }
       },
 
 	      {
 	        path: 'lab-setup',
 	        loadChildren: () => import('./setup/lab-setup/lab-setup.module').then(m => m.LabSetupModule),
-	        canActivate: [AuthGuard]
+	        canActivate: [AuthGuard, RoleGuard],
+	        data: { roles: ['Admin', 'LabAdmin'] }
 	      },
 
       {
         path: 'cash-receipt',
         loadChildren: () => import('./cash-receipt/cash-receipt.module').then(m => m.CashReceiptModule),
         canActivate: [AuthGuard, RoleGuard],
-        data: { roles: ['Admin', 'SuperAdmin', 'Pathology'] }
+        data: { roles: ['Admin', 'SuperAdmin', 'Pathology', 'LabAdmin', 'Receptionist'] }
       },
       {
         path: 'pathology-module',
         loadChildren: () => import('./pathology/pathology.module').then(m => m.PathologyModule),
         canActivate: [AuthGuard, RoleGuard],
-        data: { roles: ['Pathology', 'Admin'] }
+        data: { roles: ['Pathology', 'Admin', 'LabAdmin', 'Technician', 'Receptionist'] }
       },
       {
         path: 'pathology',
         loadChildren: () => import('./pathology/pathology.module').then(m => m.PathologyModule),
         canActivate: [AuthGuard, RoleGuard],
-        data: { roles: ['Pathology', 'Admin'] }
+        data: { roles: ['Pathology', 'Admin', 'LabAdmin', 'Technician', 'Receptionist'] }
       },
       {
         path: 'reporting',
@@ -109,6 +111,12 @@ const routes: Routes = [
         path: 'profile',
         component: UserProfileComponent,
         canActivate: [AuthGuard]
+      },
+      {
+        path: 'super-admin',
+        loadChildren: () => import('./super-admin/super-admin.module').then(m => m.SuperAdminModule),
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: ['SuperAdmin'] }
       }
     ]
   },

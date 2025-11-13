@@ -189,9 +189,9 @@ export class PathologyInvoiceService {
   }
 
   /**
-   * Get daily lab registration count for pathology registrations (mode-specific)
+   * Get daily lab registration count for pathology registrations
    */
-  getDailyLabRegistrationCount(mode?: 'OPD' | 'IPD'): Observable<any> {
+  getDailyLabRegistrationCount(mode?: string): Observable<any> {
     const today = (() => { const d=new Date(); const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const da=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${da}`; })();
     const modeParam = mode ? `&mode=${encodeURIComponent(mode)}` : '';
     console.log('📊 PathologyInvoiceService: Getting daily lab registration count for:', today, 'mode:', mode || 'ALL');
@@ -199,9 +199,9 @@ export class PathologyInvoiceService {
   }
 
   /**
-   * Get yearly lab registration count for pathology registrations (mode-specific)
+   * Get yearly lab registration count for pathology registrations
    */
-  getYearlyLabRegistrationCount(year: number, mode?: 'OPD' | 'IPD'): Observable<any> {
+  getYearlyLabRegistrationCount(year: number, mode?: string): Observable<any> {
     const modeParam = mode ? `&mode=${encodeURIComponent(mode)}` : '';
     console.log('📅 PathologyInvoiceService: Getting yearly lab registration count for:', year, 'mode:', mode || 'ALL');
     return this.http.get<any>(`${environment.apiUrl}/pathology-registration/yearly-count?year=${year}${modeParam}&_=${Date.now()}`);

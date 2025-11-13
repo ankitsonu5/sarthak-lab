@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Patient = require('../models/Patient');
 const Counter = require('../models/Counter');
+const { authenticateToken } = require('../middlewares/auth');
+const { multiTenantMiddleware } = require('../middleware/multiTenantMongo');
 
 // Helper function to calculate date of birth from age
 function calculateDateOfBirth(age, ageIn) {
@@ -119,10 +121,11 @@ router.get('/yearly-count', async (req, res) => {
 });
 
 // Patient registration route - ALL PATIENTS PERMANENT IN MONGODB
-router.post('/register', async (req, res) => {
+router.post('/register', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     console.log('📝 Patient registration request received');
     console.log('📝 Request body:', req.body);
+    console.log('🏢 Lab ID from middleware:', req.labId);
 
     const {
       firstName,
@@ -167,6 +170,8 @@ router.post('/register', async (req, res) => {
 
     // Create patient data object
     const patientData = {
+      // 🏢 Multi-Tenant: Lab ID from middleware
+      labId: req.labId,
       firstName: capitalizeFirstLetter(firstName),
       lastName: lastName ? capitalizeFirstLetter(lastName) : '',
       age: parseInt(age),
@@ -252,7 +257,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Get all patients - optimized server-side pagination and sorting
-router.get('/list', async (req, res) => {
+router.get('/list', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     const {
       page = 1,
@@ -271,7 +276,14 @@ router.get('/list', async (req, res) => {
     const pageSize = Math.min(Math.max(1, parseInt(limit)), 200); // cap to 200
     const skip = (pageNum - 1) * pageSize;
 
+    // 🏢 Multi-Tenant: Build query with labId filter
     const query = {};
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`🏢 Filtering patients by Lab: ${req.labId}`);
+    } else if (req.isSuperAdmin) {
+      console.log(`🏢 SuperAdmin: Fetching ALL labs patients`);
+    }
 
     // Fast search paths (anchored)
     if (search && String(search).trim()) {
@@ -381,12 +393,19 @@ router.get('/list', async (req, res) => {
 });
 
 // 🎯 NEW: Get latest registered patient from database (MUST BE BEFORE /:id route)
-router.get('/latest', async (req, res) => {
+router.get('/latest', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     console.log('🎯 API: Getting latest registered patient from database...');
 
+    // 🏢 Multi-Tenant: Build query with labId filter
+    const query = {};
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
+    }
+
     // Get the latest patient by registration date and UHID (highest number)
-    const latestPatient = await Patient.findOne()
+    const latestPatient = await Patient.findOne(query)
       .sort({
         registrationDate: -1,  // Latest registration date first
         patientId: -1          // Highest UHID first
@@ -582,11 +601,18 @@ router.put('/:id', async (req, res) => {
 
 
 // Get patient by ID for prefilling forms
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     console.log('GET /api/patients/:id - Request received for ID:', req.params.id);
 
-    const patient = await Patient.findById(req.params.id);
+    // 🏢 Multi-Tenant: Build query with labId filter
+    const query = { _id: req.params.id };
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
+    }
+
+    const patient = await Patient.findOne(query);
 
     if (!patient) {
       console.log('❌ Patient not found with ID:', req.params.id);
@@ -622,15 +648,22 @@ router.get('/:id', async (req, res) => {
 });
 
 // Get patient registration number suggestions
-router.get('/suggestions/:query', async (req, res) => {
+router.get('/suggestions/:query', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     const { query } = req.params;
     console.log(`🔍 Getting suggestions for: ${query}`);
 
-    // Find patients whose patientId starts with the query
-    const patients = await Patient.find({
+    // 🏢 Multi-Tenant: Build query with labId filter
+    const searchQuery = {
       patientId: { $regex: `^${query}`, $options: 'i' }
-    })
+    };
+    if (!req.isSuperAdmin && req.labId) {
+      searchQuery.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
+    }
+
+    // Find patients whose patientId starts with the query
+    const patients = await Patient.find(searchQuery)
     .select('patientId firstName lastName')
     .limit(10)
     .sort({ patientId: 1 });
@@ -652,7 +685,7 @@ router.get('/suggestions/:query', async (req, res) => {
 });
 
 // Get patient by registration identifier (numeric registrationNumber or UHID)
-router.get('/registration/:registrationNumber', async (req, res) => {
+router.get('/registration/:registrationNumber', authenticateToken, multiTenantMiddleware, async (req, res) => {
   try {
     const raw = (req.params.registrationNumber || '').toString().trim().toUpperCase();
     console.log(`🔍 Searching for patient by registration identifier: ${raw}`);
@@ -664,6 +697,12 @@ router.get('/registration/:registrationNumber', async (req, res) => {
     } else {
       // Fallback to UHID (e.g., PAT000123)
       query = { patientId: raw };
+    }
+
+    // 🏢 Multi-Tenant: Add labId filter
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`🏢 Filtering by Lab: ${req.labId}`);
     }
 
     const patient = await Patient.findOne(query);

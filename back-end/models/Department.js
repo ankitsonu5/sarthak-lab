@@ -57,7 +57,7 @@ departmentSchema.pre('save', async function(next) {
 });
 
 // Create indexes for better performance
-departmentSchema.index({ departmentId: 1 });
+// Note: departmentId already has unique index from field definition
 departmentSchema.index({ name: 1 });
 departmentSchema.index({ code: 1 });
 departmentSchema.index({ isActive: 1 });

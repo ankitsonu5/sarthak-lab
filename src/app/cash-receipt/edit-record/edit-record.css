@@ -989,9 +989,16 @@ background: linear-gradient(90deg, rgba(46, 47, 48, 1) 0%, rgba(41, 102, 133, 1)
   text-transform: uppercase;
 }
 
+/* Offline Payment - Green */
 .mode-cash {
   background: #c6f6d5;
   color: #22543d;
+}
+
+/* Online Payments - Different Colors */
+.mode-upi {
+  background: #e9d8fd;
+  color: #553c9a;
 }
 
 .mode-card {
@@ -999,9 +1006,9 @@ background: linear-gradient(90deg, rgba(46, 47, 48, 1) 0%, rgba(41, 102, 133, 1)
   color: #2a69ac;
 }
 
-.mode-upi {
-  background: #e9d8fd;
-  color: #553c9a;
+.mode-net_banking {
+  background: #fef3c7;
+  color: #92400e;
 }
 
 /* Visit mode badges for OPD/IPD in list */

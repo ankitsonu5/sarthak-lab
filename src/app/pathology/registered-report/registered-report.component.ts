@@ -18,7 +18,7 @@ interface RegistrationRecord {
   registrationDate?: string;
   createdAt?: string;
   status?: string; // REGISTERED, etc.
-  registrationMode?: 'OPD' | 'IPD' | string; // Now properly saved in DB
+  registrationMode?: string; // Registration mode
   patient?: {
     name?: string;
     age?: number;

@@ -10,6 +10,7 @@ import { PathologyInvoiceService } from '../../services/pathology-invoice.servic
 import { DataRefreshService } from '../../core/services/data-refresh.service';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { interval, Subscription } from 'rxjs';
+import { LabNameService } from '../../core/services/lab-name.service';
 
 interface DashboardStats {
   totalPatients: number;
@@ -40,6 +41,9 @@ interface DashboardStats {
   styleUrl: './dashboard.css'
 })
 export class Dashboard implements OnInit, OnDestroy {
+  // Lab Name - Dynamic
+  labName = 'Sarthak Diagnostic Network';
+
   stats: ServiceDashboardStats = {
     totalPatients: 0,
     todayPatients: 0,
@@ -93,7 +97,8 @@ export class Dashboard implements OnInit, OnDestroy {
     private pathologyInvoiceService: PathologyInvoiceService,
     private dataRefresh: DataRefreshService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private labNameService: LabNameService
   ) {
     // Register Chart.js components
     Chart.register(...registerables);
@@ -102,6 +107,12 @@ export class Dashboard implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     console.log('🚀 DASHBOARD: Initializing for user:', this.currentUser?.role);
+
+    // Subscribe to lab name changes
+    this.labNameService.labName$.subscribe(name => {
+      this.labName = name;
+      this.cdr.detectChanges();
+    });
 
     // Initialize stats immediately with default values - like reception components
     this.stats = {

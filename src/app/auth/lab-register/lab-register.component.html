@@ -1,0 +1,276 @@
+<div class="login-container">
+  <div class="login-card" style="max-width: 700px;">
+    <!-- Header -->
+    <div class="login-header">
+      <h1>Register Your Lab</h1>
+      <p>Join Pathology SaaS Platform</p>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="success" class="success-alert" style="margin-bottom: 1.5rem;">
+      <h3 style="margin: 0 0 0.5rem 0;">🎉 Registration Successful!</h3>
+      <p style="margin: 0;">
+        Your lab has been registered with code: <strong>{{ registeredLabCode }}</strong>
+      </p>
+      <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: #0f5132;">
+        ✅ Your 30-day FREE trial has started!
+      </p>
+      <p style="margin: 0.5rem 0 0 0;">
+        You can login now and start using the platform immediately.
+      </p>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #666;">
+        Redirecting to login page in 5 seconds...
+      </p>
+    </div>
+
+    <!-- Registration Form -->
+    <form *ngIf="!success" [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="login-form">
+      
+      <!-- Lab Information Section -->
+      <div class="form-section">
+        <h3>🏥 Lab Information</h3>
+
+        <div class="form-group">
+          <label for="labName">Lab Name *</label>
+          <input
+            id="labName"
+            type="text"
+            formControlName="labName"
+            placeholder="Enter lab name"
+            class="form-input"
+          >
+          <div *ngIf="labName?.touched && labName?.hasError('required')" class="error-message">
+            Lab name is required
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Lab Email *</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="contact@lab.com"
+              class="form-input"
+            >
+            <div *ngIf="email?.touched && email?.hasError('required')" class="error-message">
+              Email is required
+            </div>
+            <div *ngIf="email?.touched && email?.hasError('email')" class="error-message">
+              Invalid email format
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Lab Phone *</label>
+            <input
+              id="phone"
+              type="tel"
+              formControlName="phone"
+              placeholder="9876543210"
+              class="form-input"
+            >
+            <div *ngIf="phone?.touched && phone?.hasError('required')" class="error-message">
+              Phone is required
+            </div>
+            <div *ngIf="phone?.touched && phone?.hasError('pattern')" class="error-message">
+              Invalid phone number (10 digits)
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Address *</label>
+          <input
+            id="address"
+            type="text"
+            formControlName="address"
+            placeholder="Street address"
+            class="form-input"
+          >
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input
+              id="city"
+              type="text"
+              formControlName="city"
+              placeholder="Mumbai"
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="state">State *</label>
+            <input
+              id="state"
+              type="text"
+              formControlName="state"
+              placeholder="Maharashtra"
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="pincode">Pincode</label>
+            <input
+              id="pincode"
+              type="text"
+              formControlName="pincode"
+              placeholder="400001"
+              class="form-input"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin User Section -->
+      <div class="form-section">
+        <h3>👤 Admin User Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="adminFirstName">First Name *</label>
+            <input
+              id="adminFirstName"
+              type="text"
+              formControlName="adminFirstName"
+              placeholder="Rajesh"
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="adminLastName">Last Name</label>
+            <input
+              id="adminLastName"
+              type="text"
+              formControlName="adminLastName"
+              placeholder="Kumar"
+              class="form-input"
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="adminEmail">Admin Email *</label>
+            <input
+              id="adminEmail"
+              type="email"
+              formControlName="adminEmail"
+              placeholder="admin@lab.com"
+              class="form-input"
+            >
+            <div *ngIf="adminEmail?.touched && adminEmail?.hasError('email')" class="error-message">
+              Invalid email format
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="adminPhone">Admin Phone</label>
+            <input
+              id="adminPhone"
+              type="tel"
+              formControlName="adminPhone"
+              placeholder="9876543210"
+              class="form-input"
+            >
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="password">Password *</label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="Min 6 characters"
+              class="form-input"
+            >
+            <div *ngIf="password?.touched && password?.hasError('minlength')" class="error-message">
+              Password must be at least 6 characters
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password *</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="Re-enter password"
+              class="form-input"
+            >
+            <div *ngIf="confirmPassword?.touched && confirmPassword?.hasError('passwordMismatch')" class="error-message">
+              Passwords do not match
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Alert -->
+      <div class="info-alert">
+        <span>ℹ️ After registration:</span>
+        <br>
+        • Your lab will be assigned a unique Lab Code
+        <br>
+        • You'll get 14-day free trial
+        <br>
+        • Admin approval required before login
+        <br>
+        • You'll be notified via email once approved
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-alert">
+        <span>⚠️ {{ error }}</span>
+      </div>
+      <div *ngIf="conflict === 'adminEmail'" class="info-alert" style="margin-top: .5rem;">
+        Admin email already registered.
+        <a routerLink="/auth/login" class="link" style="font-weight:600;">Login</a>
+        or
+        <a routerLink="/auth/forgot-password" class="link" style="font-weight:600;">Forgot Password</a>.
+      </div>
+      <div *ngIf="conflict === 'labEmail'" class="info-alert" style="margin-top: .5rem;">
+        Lab email already registered. Please use a different lab email or
+        <a routerLink="/auth/login" class="link" style="font-weight:600;">Login</a> if you own this lab.
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary btn-full"
+        [disabled]="registerForm.invalid || loading"
+        style="margin-top: 1rem;"
+      >
+        <span *ngIf="loading">🔄 Registering...</span>
+        <span *ngIf="!loading">🚀 Register Lab</span>
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>
+        Already have an account?
+        <a routerLink="/auth/login" class="link" style="font-weight: 600;">Login Here</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+.success-alert {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 0.375rem;
+  text-align: center;
+}
+</style>
+

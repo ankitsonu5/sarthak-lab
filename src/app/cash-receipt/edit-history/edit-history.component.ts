@@ -33,7 +33,7 @@ export class EditHistoryComponent implements OnInit {
   qReceipt = '';
   qText = '';
   qPayment: 'All' | 'CASH' | 'CARD' | 'UPI' = 'All';
-  qVisit: 'All' | 'OPD' | 'IPD' = 'All';
+  qVisit: string = 'All';
 
   // modal state (reuse edit-audit design)
   showEditAuditModal = false;

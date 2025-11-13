@@ -10,6 +10,7 @@ import { RolesService, AppUser } from '../services/roles.service';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { environment } from '../../../environments/environment';
 import { forkJoin } from 'rxjs';
+import { LabNameService } from '../../core/services/lab-name.service';
 
 
 @Component({
@@ -21,6 +22,10 @@ import { forkJoin } from 'rxjs';
 })
 export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   loading = true;
+
+  // Lab Name - Dynamic
+  labName = 'Sarthak Diagnostic Network';
+
   stats: ServiceDashboardStats = {
     totalPatients: 0,
     todayPatients: 0,
@@ -104,7 +109,8 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
     private pathologyInvoiceService: PathologyInvoiceService,
     private rolesService: RolesService,
     private cdr: ChangeDetectorRef,
-    private http: HttpClient
+    private http: HttpClient,
+    private labNameService: LabNameService
   ) {
     try { Chart.register(...registerables); } catch {}
   }
@@ -112,6 +118,12 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
   ngOnInit(): void {
     // Live user info
     this.auth.currentUser$.subscribe(u => { this.currentUser = u; this.cdr.detectChanges(); });
+
+    // Subscribe to lab name changes
+    this.labNameService.labName$.subscribe(name => {
+      this.labName = name;
+      this.cdr.detectChanges();
+    });
 
     // Header date/time and live weather (auto-refresh)
     this.currentDateTime = this.dashboardService.getCurrentDateTime();
@@ -130,7 +142,6 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
 
     // Load tiles with their own APIs first (avoid overwrite/flicker), then main stats
     this.loadPathologyTiles();
-    this.loadCashReceiptModeCounts();
     this.fetchStats();
     this.loadTodayPatients();
     this.loadRevenueTrends();
@@ -479,27 +490,7 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-  private loadCashReceiptModeCounts(): void {
-    // totals
-    this.http.get<any>(`${environment.apiUrl}/pathology-invoice/count-by-mode`).subscribe({
-      next: (res) => {
-        (this.stats as any)['opdCashReceipts'] = Number(res?.opd || 0);
-        (this.stats as any)['ipdCashReceipts'] = Number(res?.ipd || 0);
-        this.cdr.detectChanges();
-      },
-      error: () => {}
-    });
 
-    // today's counts
-    this.http.get<any>(`${environment.apiUrl}/pathology-invoice/count-by-mode/daily`).subscribe({
-      next: (res) => {
-        (this.stats as any)['todayOpdCashReceipts'] = Number(res?.opd || 0);
-        (this.stats as any)['todayIpdCashReceipts'] = Number(res?.ipd || 0);
-        this.cdr.detectChanges();
-      },
-      error: () => {}
-    });
-  }
 
 
 

@@ -1270,8 +1270,8 @@ export class PatientModalNewComponent implements OnInit {
               ${this.logoBase64 ? `<img src="${this.logoBase64}" alt="UP Government Logo" class="logo-image">` : `<img src="${this.getAssetUrl('assets/images/myupgov.png')}" alt="UP Government Logo" class="logo-image">`}
             </div>
             <div class="hospital-info">
-              <div class="hospital-name">राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</div>
-              <div class="hospital-address">चौकाघाट, वाराणसी</div>
+              <div class="hospital-name">सार्थक डायग्नोस्टिक नेटवर्क</div>
+              <div class="hospital-address">Advanced Diagnostic & Pathology Services</div>
             </div>
             <div class="logo-circle">
               ${this.secondaryLogoBase64 ? `<img src="${this.secondaryLogoBase64}" alt="One Rupee Logo" class="logo-image">` : `<img src="${this.getAssetUrl('assets/images/onerupeermbg.png')}" alt="One Rupee Logo" class="logo-image">`}

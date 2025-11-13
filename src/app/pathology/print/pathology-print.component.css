@@ -80,6 +80,37 @@
 .footer-row.tri { display: flex; justify-content: space-between; gap: 10px; }
 .footer-row.tri .sign-col { width: 33.33%; text-align: center; }
 .footer-row.tri .signature-line { width: 90%; margin: 6px auto 0; height: 12px; border-bottom: 1px solid #000; }
+
+/* QR Code and Barcode Container */
+.qr-barcode-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  gap: 10px;
+}
+
+.qr-code-box {
+  flex: 0 0 auto;
+}
+
+.qr-code-box canvas,
+.qr-code-box img {
+  width: 80px !important;
+  height: 80px !important;
+  display: block;
+}
+
+.patient-barcode {
+  flex: 1;
+  text-align: right;
+}
+
+.patient-barcode svg {
+  width: 100%;
+  max-width: 160px;
+  height: 44px;
+}
 .report-header-block {
   border: 1px solid #000;
   margin-top: 2mm;

@@ -115,13 +115,15 @@ const serviceHeadRoutes = require('./back-end/routes/serviceHeads');
 const categoryHeadRoutes = require('./back-end/routes/categoryHeads');
 const dashboardRoutes = require('./back-end/routes/dashboard');
 const prefixRoutes = require('./back-end/routes/prefixes');
-  const inventoryRoutes = require('./back-end/routes/inventory');
-
-
-
-
-
+const inventoryRoutes = require('./back-end/routes/inventory');
 const auditLogRoutes = require('./back-end/routes/auditLogs');
+
+// Multi-Tenant SaaS Routes
+const labManagementRoutes = require('./back-end/routes/labManagement');
+
+// 🏢 Multi-Tenant Middleware
+const { authenticateToken } = require('./back-end/middlewares/auth');
+const { multiTenantMiddleware } = require('./back-end/middleware/multiTenantMongo');
 
 
 // Routes
@@ -158,8 +160,9 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/pathology', pathologyRoutes);
 app.use('/api/pathology-booking', pathologyBookingRoutes);
-app.use('/api/pathology-invoice', pathologyInvoiceRoutes);
-app.use('/api/pathology-registration', pathologyRegistrationRoutes);
+// 🏢 Multi-Tenant Protected Routes
+app.use('/api/pathology-invoice', authenticateToken, multiTenantMiddleware, pathologyInvoiceRoutes);
+app.use('/api/pathology-registration', authenticateToken, multiTenantMiddleware, pathologyRegistrationRoutes);
 app.use('/api/pathology-master', pathologyMasterRoutes);
 app.use('/api/pathology-reports', pathologyReportsRoutes);
 app.use('/api/service-heads', serviceHeadRoutes);
@@ -172,6 +175,9 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', require('./back-end/routes/smtp-settings'));
 app.use('/api/settings', require('./back-end/routes/lab-settings'));
 app.use('/api/counter-management', require('./back-end/routes/counter-management'));
+
+// Multi-Tenant SaaS Routes
+app.use('/api/lab-management', labManagementRoutes);
 
 // All patient routes are handled by /api/patients routes
 

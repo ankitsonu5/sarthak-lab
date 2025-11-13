@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -45,18 +45,48 @@ export interface LabSettings {
 @Injectable({ providedIn: 'root' })
 export class LabSettingsService {
   private base = `${environment.apiUrl}/settings/me/lab`;
+  private labNameService: any;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private injector: Injector
+  ) {}
+
+  private getLabNameService(): any {
+    if (!this.labNameService) {
+      try {
+        // Lazy load to avoid circular dependency
+        this.labNameService = this.injector.get('LabNameService' as any);
+      } catch (e) {
+        // Service not available yet
+      }
+    }
+    return this.labNameService;
+  }
 
   getMyLab(): Observable<{ lab: LabSettings | null }> {
     return this.http.get<{ lab: LabSettings | null }>(this.base).pipe(
-      tap(res => localStorage.setItem('labSettings', JSON.stringify(res.lab || {})))
+      tap(res => {
+        localStorage.setItem('labSettings', JSON.stringify(res.lab || {}));
+        // Update lab name service if available
+        const labNameSvc = this.getLabNameService();
+        if (labNameSvc && res.lab?.labName) {
+          labNameSvc.setLabName(res.lab.labName);
+        }
+      })
     );
   }
 
   saveMyLab(lab: LabSettings): Observable<{ message: string; lab: LabSettings }> {
     return this.http.post<{ message: string; lab: LabSettings }>(this.base, { lab }).pipe(
-      tap((res) => localStorage.setItem('labSettings', JSON.stringify(res.lab || {})))
+      tap((res) => {
+        localStorage.setItem('labSettings', JSON.stringify(res.lab || {}));
+        // Update lab name service if available
+        const labNameSvc = this.getLabNameService();
+        if (labNameSvc && res.lab?.labName) {
+          labNameSvc.setLabName(res.lab.labName);
+        }
+      })
     );
   }
 }

@@ -8,7 +8,7 @@ export interface User {
   _id: string;
   username: string;
   email: string;
-  role: 'SuperAdmin' | 'Admin' | 'Doctor' | 'Patient' | 'Pathology' | 'Pharmacy';
+  role: 'SuperAdmin' | 'LabAdmin' | 'Technician' | 'Receptionist' | 'Admin' | 'Doctor' | 'Patient' | 'Pathology' | 'Pharmacy';
   permissions: string[];
   allowedRoutes?: string[];
   firstName: string;
@@ -16,6 +16,30 @@ export interface User {
   phone: string;
   isActive: boolean;
   profilePicture?: string;
+  labId?: string;
+  lab?: {
+    _id: string;
+    labCode: string;
+    labName: string;
+  };
+  labSettings?: {
+    labName?: string;
+    shortName?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+    phone?: string;
+    altPhone?: string;
+    email?: string;
+    website?: string;
+    logoDataUrl?: string;
+    signatureDataUrl?: string;
+    headerNote?: string;
+    footerNote?: string;
+    reportDisclaimer?: string;
+  };
 }
 
 export interface LoginRequest {

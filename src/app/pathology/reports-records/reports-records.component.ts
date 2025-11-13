@@ -187,7 +187,7 @@ export class ReportsRecordsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async fetchRegistrationMode(labYearlyNo?: any, labDailyNo?: any): Promise<'OPD' | 'IPD' | ''> {
+  private async fetchRegistrationMode(labYearlyNo?: any, labDailyNo?: any): Promise<string> {
     try {
       if (labYearlyNo) {
 

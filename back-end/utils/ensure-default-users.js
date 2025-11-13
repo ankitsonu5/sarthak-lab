@@ -7,21 +7,12 @@ async function ensureDefaultUsers() {
     const defaults = [
       {
         role: 'SuperAdmin',
-        email: process.env.SUPERADMIN_EMAIL || 'superadmin@hospital.com',
+        email: process.env.SUPERADMIN_EMAIL || 'superadmin@pathologysaas.com',
         username: process.env.SUPERADMIN_USERNAME || 'superadmin',
         password: process.env.SUPERADMIN_PASSWORD || 'superadmin123',
         firstName: 'Super',
         lastName: 'Admin',
         phone: '9999999990'
-      },
-      {
-        role: 'Pharmacy',
-        email: process.env.PHARMACY_EMAIL || 'pharmacy@hospital.com',
-        username: process.env.PHARMACY_USERNAME || 'pharmacy',
-        password: process.env.PHARMACY_PASSWORD || 'pharmacy123',
-        firstName: 'Pharmacy',
-        lastName: 'User',
-        phone: '9999999991'
       },
       {
         role: 'Pathology',

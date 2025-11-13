@@ -31,11 +31,11 @@
         <input type="date" [(ngModel)]="reportDate" class="form-input" [disabled]="isEditMode">
       </div>
 
-
       <div class="field-group">
         <label>Search Date</label>
         <input type="date" [(ngModel)]="searchDate" class="form-input" [disabled]="isEditMode">
       </div>
+
       <div class="field-group">
         <label>Patient Name
           <ng-container *ngIf="isEditMode">
@@ -54,10 +54,7 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Second Row -->
-    <div class="info-row">
       <div class="field-group">
         <label>Receipt No. <span class="required">*</span></label>
         <div class="input-row" style="display:flex; gap:8px; align-items:center;">
@@ -79,6 +76,10 @@
           {{ receiptNoError }}
         </div>
       </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="info-row">
       <div class="field-group">
         <label>Registration No.</label>
         <input

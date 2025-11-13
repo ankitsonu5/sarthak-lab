@@ -235,77 +235,7 @@ export class AllReportsComponent implements OnInit {
     }
   }
 
-  // Bulk enrich modes (OPD/IPD) for currently loaded reports
-  private async bulkEnrichTypesFromInvoices(): Promise<void> {
-    try {
-      const receipts = Array.from(new Set(this.allReports
-        .map(r => parseInt(String((r as any).receiptNo ?? (r as any).receiptNumber)))
-        .filter(n => !Number.isNaN(n))));
-      if (receipts.length === 0) return;
 
-      // 1) Fast path: try bulk endpoint
-      const url = `${environment.apiUrl}/pathology-invoice/receipt-modes?receipts=${receipts.join(',')}`;
-      let modes: Record<number, string> = {};
-      try {
-        const resp: any = await firstValueFrom(this.http.get<any>(url));
-        modes = resp?.modes || {};
-      } catch {}
-
-      let changed = false;
-      this.allReports = this.allReports.map(r => {
-        const rec = parseInt(String((r as any).receiptNo ?? (r as any).receiptNumber));
-        const m = ((modes as any)[rec] ?? '')
-          .toString()
-          .trim()
-          .toUpperCase();
-        if (m === 'IPD' || m === 'OPD') {
-          changed = true;
-          return { ...r, patientType: m };
-        }
-        return r;
-      });
-
-      // 2) Fallback: for any unresolved receipts, hit per-receipt endpoint
-      const unresolved = Array.from(new Set(this.allReports
-        .filter(r => !(r.patientType === 'IPD' || r.patientType === 'OPD'))
-        .map(r => parseInt(String((r as any).receiptNo ?? (r as any).receiptNumber)))
-        .filter(n => !Number.isNaN(n))));
-
-      if (unresolved.length > 0) {
-        const fetches = unresolved.map(rec => firstValueFrom(
-          this.http.get<any>(`${environment.apiUrl}/pathology-invoice/receipt/${rec}`)
-        ).then(resp => {
-          const inv = resp?.invoice || resp?.__enrichedInvoice || resp;
-          const modeRaw = (inv?.mode || inv?.addressType || inv?.patientType || inv?.patient?.mode || inv?.patient?.type || '')
-            .toString().trim().toUpperCase();
-          return { rec, mode: (modeRaw === 'IPD' || modeRaw === 'OPD') ? modeRaw : '' };
-        }).catch(() => ({ rec, mode: '' })));
-
-        const results = await Promise.all(fetches);
-        const perModes: Record<number, string> = {};
-        results.forEach(r => { if (r.mode) perModes[r.rec] = r.mode; });
-
-        if (Object.keys(perModes).length > 0) {
-          this.allReports = this.allReports.map(r => {
-            const rec = parseInt(String((r as any).receiptNo ?? (r as any).receiptNumber));
-            const m = ((perModes as any)[rec] ?? '')
-              .toString()
-              .trim()
-              .toUpperCase();
-            if (m === 'IPD' || m === 'OPD') {
-              changed = true;
-              return { ...r, patientType: m };
-            }
-            return r;
-          });
-        }
-      }
-
-      if (changed) { this.cdr.detectChanges(); this.applyFiltersThrottled(); }
-    } catch (e) {
-      console.warn('bulkEnrichTypesFromInvoices failed', e);
-    }
-  }
 
   ngOnInit(): void {
     // Keep Date (Registration) empty by default (no auto-fill)
@@ -454,8 +384,7 @@ export class AllReportsComponent implements OnInit {
         console.log(`⏱️ Page filled to ${Math.min(this.itemsPerPage, this.totalReports)} in ${totalMs} ms`);
       }
 
-      // Enrich TYPE from invoice in background
-      setTimeout(() => this.bulkEnrichTypesFromInvoices(), 0);
+      // OPD/IPD enrichment removed
       if (this.focusedReceiptNo) setTimeout(() => this.scrollToFocusedRow(), 150);
 
       console.log(`✅ Progressive load complete: ${this.allReports.length}/${Math.min(this.itemsPerPage, this.totalReports)} on UI page ${this.currentPage}`);

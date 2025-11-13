@@ -32,9 +32,9 @@ router.post('/me/lab', requireAuth, async (req, res) => {
     const me = await User.findById(req.user.userId);
     if (!me) return res.status(404).json({ message: 'User not found' });
 
-    // Only Admin/SuperAdmin can persist setup for their account
-    if (!['Admin', 'SuperAdmin', 'Pathology'].includes(me.role)) {
-      return res.status(403).json({ message: 'Only Admin/SuperAdmin/Pathology can update Lab Settings' });
+    // Only LabAdmin can update lab settings
+    if (!['LabAdmin', 'Admin', 'Pathology'].includes(me.role)) {
+      return res.status(403).json({ message: 'Only Lab Admin can update Lab Settings' });
     }
 
     const incoming = req.body?.lab || req.body || {};

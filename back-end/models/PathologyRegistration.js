@@ -4,6 +4,14 @@ const mongoose = require('mongoose');
 const Counter = require('./Counter');
 
 const pathologyRegistrationSchema = new mongoose.Schema({
+  // 🏢 Multi-Tenant: Lab ID for data isolation
+  labId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Lab',
+    required: true,
+    index: true
+  },
+
   receiptNumber: {
     type: Number,
     unique: true, // Enforce one registration per receipt number
@@ -55,11 +63,10 @@ const pathologyRegistrationSchema = new mongoose.Schema({
     default: null
   },
 
-  // Registration Mode (OPD/IPD)
+  // Registration Mode
   registrationMode: {
     type: String,
-    enum: ['OPD', 'IPD'],
-    default: 'OPD'
+    default: 'General'
   },
 
   // Test Information (store linkage IDs so future updates reflect correctly)
@@ -197,7 +204,7 @@ pathologyRegistrationSchema.pre('save', async function(next) {
 });
 
 // Index for faster queries
-pathologyRegistrationSchema.index({ receiptNumber: 1 }, { unique: true, sparse: true });
+// Note: receiptNumber already has unique sparse index from field definition
 pathologyRegistrationSchema.index({ yearNumber: 1 });
 pathologyRegistrationSchema.index({ todayNumber: 1 });
 pathologyRegistrationSchema.index({ 'patient.registrationNumber': 1 });

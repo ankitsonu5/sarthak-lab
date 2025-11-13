@@ -74,8 +74,8 @@ router.post('/register', authenticateToken, async (req, res) => {
 
     // Try to send credentials to the user's email (best-effort)
     const plainPassword = password; // We received plain password in req body
-    const hospitalNameHi = 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय';
-    const hospitalNameEn = 'Rajkiya Ayurveda College and Hospital, Varanasi';
+    const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
+    const hospitalNameEn = 'Sarthak Diagnostic Network';
     const emailSubject = `${hospitalNameEn} - Account Created & Role Assigned`;
     const emailHtml = `
       <div style=\"font-family:Arial,sans-serif;font-size:14px;color:#111\">
@@ -138,7 +138,7 @@ router.post('/login', async (req, res) => {
     console.log('🔄 Authenticating user with MongoDB');
 
     // Normal database authentication
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('labId');
     console.log('👤 User found:', user ? 'YES' : 'NO');
 
     if (!user) {
@@ -160,6 +160,47 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Check lab approval status (for non-SuperAdmin users)
+    if (user.role !== 'SuperAdmin' && user.labId) {
+      const lab = user.labId;
+
+      if (lab.approvalStatus === 'pending') {
+        console.log('❌ Lab registration is pending approval');
+        return res.status(403).json({
+          message: 'Your lab registration is pending approval. Please wait for admin approval.',
+          approvalStatus: 'pending'
+        });
+      }
+
+      if (lab.approvalStatus === 'rejected') {
+        console.log('❌ Lab registration has been rejected');
+        return res.status(403).json({
+          message: 'Your lab registration has been rejected. Please contact support.',
+          approvalStatus: 'rejected',
+          rejectionReason: lab.rejectionReason || 'No reason provided'
+        });
+      }
+
+      // Check subscription status
+      if (lab.subscriptionStatus !== 'active') {
+        console.log('⚠️ Lab subscription is not active:', lab.subscriptionStatus);
+        // Allow login but warn about subscription
+      }
+
+      // Check trial expiry
+      if (lab.subscriptionPlan === 'trial' && lab.trialEndsAt) {
+        const trialEndsAt = new Date(lab.trialEndsAt);
+        if (trialEndsAt < new Date()) {
+          console.log('⚠️ Trial period has expired');
+          return res.status(403).json({
+            message: 'Your trial period has expired. Please subscribe to continue.',
+            subscriptionStatus: 'expired',
+            trialEndsAt: lab.trialEndsAt
+          });
+        }
+      }
+    }
+
     // Update last login
     user.lastLogin = new Date();
     await user.save();
@@ -170,10 +211,27 @@ router.post('/login', async (req, res) => {
 
     console.log('🔑 Generating JWT token...');
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id, role: user.role, labId: user.labId?._id },
       jwtSecret,
       { expiresIn: jwtExpires }
     );
+
+    // Prepare lab info for response
+    let labInfo = null;
+    if (user.labId) {
+      const lab = user.labId;
+      labInfo = {
+        _id: lab._id,
+        labCode: lab.labCode,
+        labName: lab.labName,
+        email: lab.email,
+        phone: lab.phone,
+        subscriptionPlan: lab.subscriptionPlan,
+        subscriptionStatus: lab.subscriptionStatus,
+        approvalStatus: lab.approvalStatus,
+        trialEndsAt: lab.trialEndsAt
+      };
+    }
 
     console.log('✅ Login successful for:', email);
     res.json({
@@ -190,7 +248,9 @@ router.post('/login', async (req, res) => {
         profilePicture: user.profilePicture,
         isActive: user.isActive,
         permissions: user.permissions,
-        allowedRoutes: user.allowedRoutes || []
+        allowedRoutes: user.allowedRoutes || [],
+        lab: labInfo,
+        labSettings: user.labSettings || null
       }
     });
   } catch (error) {
@@ -548,8 +608,8 @@ router.put('/users/:id', authenticateToken, async (req, res) => {
     // If role changed or password set, send notification email automatically
     let emailSent;
     if (roleChanged || !!plainPassword) {
-      const hospitalNameHi = 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय';
-      const hospitalNameEn = 'Rajkiya Ayurveda College and Hospital, Varanasi';
+      const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
+      const hospitalNameEn = 'Sarthak Diagnostic Network';
       const emailSubject = roleChanged && plainPassword
         ? `${hospitalNameEn} - Role Updated & New Credentials`
         : roleChanged

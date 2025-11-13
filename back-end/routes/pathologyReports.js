@@ -943,6 +943,88 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ✅ GET ALL REPORTS BY REGISTRATION NUMBER (FOR QR CODE SCANNING)
+router.get('/by-registration/:registrationNo', async (req, res) => {
+  try {
+    const { registrationNo } = req.params;
+    console.log(`🔍 [QR SCAN] Fetching report for Registration No: ${registrationNo}`);
+
+    if (!db) {
+      return res.status(500).json({ success: false, message: 'Database connection error' });
+    }
+
+    // First, find the pathology registration to get receipt number
+    const PathologyRegistration = require('../models/PathologyRegistration');
+    const registration = await PathologyRegistration.findOne({
+      'patient.registrationNumber': registrationNo
+    });
+
+    if (!registration) {
+      console.log('❌ [QR SCAN] Registration not found for registration no:', registrationNo);
+      return res.status(404).json({
+        success: false,
+        message: 'Pathology registration not found with this Registration Number'
+      });
+    }
+
+    const receiptNo = registration.receiptNumber;
+    console.log(`✅ [QR SCAN] Found registration, receipt number: ${receiptNo}`);
+
+    // Now fetch all reports for this receipt number
+    const reports = await db.collection('reports')
+      .find({ receiptNo: receiptNo.toString(), reportType: 'pathology' })
+      .sort({ createdAt: 1 })
+      .toArray();
+
+    if (!reports || reports.length === 0) {
+      console.log('❌ [QR SCAN] No reports found for receipt:', receiptNo);
+      return res.status(404).json({
+        success: false,
+        message: 'No reports found for this registration'
+      });
+    }
+
+    // Merge all tests into a single unified report
+    const unifiedReport = { ...reports[0] };
+    unifiedReport.testResults = [];
+
+    for (const report of reports) {
+      if (Array.isArray(report.testResults)) {
+        unifiedReport.testResults.push(...report.testResults);
+      }
+    }
+
+    // Add registration data
+    unifiedReport.registrationNo = registrationNo;
+    unifiedReport.receiptNo = receiptNo;
+    unifiedReport.labYearlyNo = registration.yearNumber;
+    unifiedReport.labDailyNo = registration.todayNumber;
+    unifiedReport.registrationDate = registration.registrationDate;
+
+    // Ensure TYPE is authoritative from the Cash Receipt
+    try {
+      const t = await typeFromInvoice(receiptNo);
+      if (t) unifiedReport.patientType = t;
+    } catch {}
+
+    console.log(`✅ [QR SCAN] Found ${reports.length} reports, unified into 1 with ${unifiedReport.testResults.length} tests`);
+
+    res.json({
+      success: true,
+      data: unifiedReport,
+      originalReportCount: reports.length
+    });
+
+  } catch (error) {
+    console.error('❌ [QR SCAN] Error fetching report by registration:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching report',
+      error: error.message
+    });
+  }
+});
+
 // ✅ GET ALL REPORTS BY RECEIPT NO (UNIFIED)
 router.get('/by-receipt/:receiptNo', async (req, res) => {
   try {

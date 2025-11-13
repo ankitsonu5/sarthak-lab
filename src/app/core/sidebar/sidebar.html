@@ -11,14 +11,15 @@
   <nav class="sidebar-nav">
     <!-- Dashboard Link (role-aware) -->
     <a
-      [routerLink]="currentUser?.role === 'Pathology' ? '/dashboard/pathology' : '/dashboard/admin'"
+      [routerLink]="getDashboardRoute()"
       routerLinkActive="sidebar-link-active"
       class="sidebar-link">
       <span class="sidebar-link-icon iconwl"><img src="../../assets/images/dashboardiconicon.png"></span>
-      <span class="sidebar-link-text">Dashboard</span>
+      <span class="sidebar-link-text">{{ getDashboardLabel() }}</span>
     </a>
-    <!-- Standalone Lab Setup link (outside Setup) -->
-    <a [routerLink]="'/lab-setup'"
+    <!-- Standalone Lab Setup link (only for lab users, not SuperAdmin) -->
+    <a *ngIf="currentUser?.role !== 'SuperAdmin'"
+       [routerLink]="'/lab-setup'"
        routerLinkActive="sidebar-link-active"
        class="sidebar-link">
       <span class="sidebar-link-icon">🧪</span>

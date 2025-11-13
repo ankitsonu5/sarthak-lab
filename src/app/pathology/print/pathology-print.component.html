@@ -54,7 +54,9 @@
             </div>
           </td>
           <td class="right-logo-cell" style="width:140px; vertical-align:middle; text-align:right">
-            <img *ngIf="labSettings?.sideLogoDataUrl" [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
+            <!-- Show QR Code if enabled in lab settings, otherwise show side logo -->
+            <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: inline-block;"></div>
+            <img *ngIf="labSettings?.printLayout?.showQr !== true && labSettings?.sideLogoDataUrl" [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
           </td>
         </tr>
       </table>
@@ -105,18 +107,10 @@
                   <span class="field-label">Lab Sr.No. :</span>
                   <span class="field-value">{{ (labYearlyNo || '') }}/{{ (labDailyNo || '') }}</span>
                 </div>
-                <div class="patient-field-small no-wrap">
-                  <span class="field-label">IPD/OPD :</span>
-                  <span class="field-value"
-                    [ngClass]="{ 'ipd-highlight': (patientType || '').toUpperCase() === 'IPD' }">{{ patientType || ''
-                    }}</span>
-                </div>
+                <div class="patient-field-small"></div>
                 <div class="patient-field-small"></div>
               </div>
             </div>
-              <div class="patient-barcode" style="text-align:right; margin-top:6px;">
-                <svg id="reportBarcode"></svg>
-              </div>
           </th>
         </tr>
         <!-- Column headers (repeat on every page) -->
@@ -130,7 +124,7 @@
         <!-- Group tests by category and print once per category -->
         <ng-container *ngFor="let group of categoryGroups">
           <tr class="category-row">
-            <td colspan="3" class="center-text"><strong>{{ group.category }}</strong></td>
+            <td colspan="3" style="text-align: left; padding-left: 10px;"><strong>{{ group.category }}</strong></td>
           </tr>
           <ng-container *ngFor="let testResult of group.tests">
             <tr class="testname-row">

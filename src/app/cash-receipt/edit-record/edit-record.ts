@@ -75,7 +75,7 @@ export class EditRecord implements OnInit, OnDestroy {
   // Removed from UI: departmentFilter; kept for backward compatibility (not used in filters)
   departmentFilter = '';
   paymentModeFilter: '' | 'CASH' | 'CARD' | 'UPI' = '';
-  visitModeFilter: '' | 'OPD' | 'IPD' = '';
+  visitModeFilter: string = '';
 
   // Pagination (disabled visually; keep values for compatibility)
   currentPage = 1;

@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
+  // Multi-tenant field - NULL for SuperAdmin, required for all other users
+  labId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Lab',
+    default: null,
+    index: true
+  },
   username: {
     type: String,
     required: true,
@@ -20,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['SuperAdmin', 'Admin', 'Doctor', 'Patient', 'Pathology'],
+    enum: ['SuperAdmin', 'LabAdmin', 'Technician', 'Doctor', 'Receptionist', 'Admin', 'Patient', 'Pathology'],
     required: true
   },
   permissions: [{
@@ -39,7 +46,7 @@ const userSchema = new mongoose.Schema({
       'update_own_profile',
       // Pathology permissions
       'manage_pathology', 'view_lab_tests', 'create_lab_reports', 'manage_lab_results',
-      'manage_test_categories', 'generate_lab_invoices',
+      'manage_test_categories', 'generate_lab_invoices', 'manage_lab_settings',
     ]
   }],
   // Optional fine-grained UI access control by route
@@ -133,13 +140,27 @@ const assignRolePermissions = (role) => {
     'SuperAdmin': [
       'all'
     ],
+    'LabAdmin': [
+      'manage_users', 'manage_doctors', 'manage_patients', 'manage_appointments',
+      'manage_reports', 'manage_prescriptions', 'view_all_data', 'manage_system',
+      'manage_pathology', 'view_lab_tests', 'create_lab_reports', 'manage_lab_results',
+      'manage_test_categories', 'generate_lab_invoices', 'manage_lab_settings'
+    ],
     'Admin': [
       'manage_users', 'manage_doctors', 'manage_patients', 'manage_appointments',
       'manage_reports', 'manage_prescriptions', 'view_all_data', 'manage_system'
     ],
+    'Technician': [
+      'view_patients', 'manage_pathology', 'view_lab_tests', 'create_lab_reports',
+      'manage_lab_results', 'generate_lab_invoices'
+    ],
     'Doctor': [
       'view_patients', 'view_appointments', 'create_prescriptions', 'create_reports',
       'view_medical_history', 'update_appointments'
+    ],
+    'Receptionist': [
+      'view_patients', 'manage_patients', 'manage_appointments', 'view_lab_tests',
+      'generate_lab_invoices'
     ],
     'Patient': [
       'view_own_appointments', 'view_own_prescriptions', 'view_own_reports',

@@ -261,60 +261,7 @@ router.get('/yearly-count', async (req, res) => {
   }
 });
 
-// Get total cash receipts split by mode (OPD/IPD)
-router.get('/count-by-mode', async (req, res) => {
-  try {
-    const toRegex = (v) => new RegExp(`^${v}$`, 'i');
-    const base = [
-      { mode: toRegex('OPD') }, { addressType: toRegex('OPD') }, { patientType: toRegex('OPD') },
-      { 'patient.mode': toRegex('OPD') }, { 'patient.type': toRegex('OPD') }
-    ];
-    const baseIPD = [
-      { mode: toRegex('IPD') }, { addressType: toRegex('IPD') }, { patientType: toRegex('IPD') },
-      { 'patient.mode': toRegex('IPD') }, { 'patient.type': toRegex('IPD') }
-    ];
 
-    const [opd, ipd] = await Promise.all([
-      PathologyInvoice.countDocuments({ $and: [ { $or: base }, { deleted: { $ne: true } } ] }),
-      PathologyInvoice.countDocuments({ $and: [ { $or: baseIPD }, { deleted: { $ne: true } } ] })
-    ]);
-
-    res.json({ success: true, opd, ipd, total: opd + ipd });
-  } catch (error) {
-    console.error('❌ Error getting count-by-mode:', error);
-    res.status(500).json({ success: false, message: 'Error getting count by mode', error: error.message });
-  }
-});
-
-// Get today's cash receipts split by mode (OPD/IPD)
-router.get('/count-by-mode/daily', async (req, res) => {
-  try {
-    const { date } = req.query;
-    const target = date ? new Date(date) : new Date();
-    const start = new Date(target.getFullYear(), target.getMonth(), target.getDate());
-    const end = new Date(target.getFullYear(), target.getMonth(), target.getDate() + 1);
-
-    const toRegex = (v) => new RegExp(`^${v}$`, 'i');
-    const opdQuery = { $and: [ { createdAt: { $gte: start, $lt: end } }, { deleted: { $ne: true } }, { $or: [
-      { mode: toRegex('OPD') }, { addressType: toRegex('OPD') }, { patientType: toRegex('OPD') },
-      { 'patient.mode': toRegex('OPD') }, { 'patient.type': toRegex('OPD') }
-    ] } ] };
-    const ipdQuery = { $and: [ { createdAt: { $gte: start, $lt: end } }, { deleted: { $ne: true } }, { $or: [
-      { mode: toRegex('IPD') }, { addressType: toRegex('IPD') }, { patientType: toRegex('IPD') },
-      { 'patient.mode': toRegex('IPD') }, { 'patient.type': toRegex('IPD') }
-    ] } ] };
-
-    const [opd, ipd] = await Promise.all([
-      PathologyInvoice.countDocuments(opdQuery),
-      PathologyInvoice.countDocuments(ipdQuery)
-    ]);
-
-    res.json({ success: true, opd, ipd, total: opd + ipd, date: start.toISOString().slice(0,10) });
-  } catch (error) {
-    console.error('❌ Error getting daily count-by-mode:', error);
-    res.status(500).json({ success: false, message: 'Error getting daily count by mode', error: error.message });
-  }
-});
 
 
 
@@ -620,6 +567,8 @@ router.post('/create', async (req, res) => {
     // Create invoice data
     // Simple data structure - NO VALIDATION
     const invoiceData = {
+      // 🏢 Multi-Tenant: Lab ID from middleware
+      labId: req.labId,
       receiptNumber,
       invoiceNumber,
       bookingId,
@@ -948,57 +897,7 @@ router.get('/registration/:registrationNo', async (req, res) => {
 */
 
 
-// ✅ Bulk fetch modes (OPD/IPD) for multiple receipt numbers
-router.get('/receipt-modes', async (req, res) => {
-  try {
-    const receiptsParam = req.query.receipts;
-    if (!receiptsParam) {
-      return res.json({ success: true, modes: {} });
-    }
-    const recs = String(receiptsParam)
-      .split(',')
-      .map(s => parseInt(s.trim()))
-      .filter(n => !Number.isNaN(n));
 
-    if (recs.length === 0) {
-      return res.json({ success: true, modes: {} });
-    }
-
-    // Fetch from pathology invoices first
-    const invoices = await PathologyInvoice.find({ receiptNumber: { $in: recs } })
-      .select('receiptNumber mode addressType patientType patient.mode patient.type')
-      .lean();
-
-    const normalize = v => (typeof v === 'string' ? v.trim().toUpperCase() : '');
-    const modes = {};
-    for (const inv of invoices) {
-      const raw = normalize(inv?.mode || inv?.addressType || inv?.patientType || inv?.patient?.mode || inv?.patient?.type);
-      if (raw === 'IPD' || raw === 'OPD') modes[inv.receiptNumber] = raw;
-    }
-
-    // Fallback to pathologyregistration for any missing receipts
-    const missing = recs.filter(r => modes[r] === undefined);
-    if (missing.length > 0) {
-      try {
-        const PathologyRegistration = require('../models/PathologyRegistration');
-        const regs = await PathologyRegistration.find({ receiptNumber: { $in: missing } })
-          .select('receiptNumber mode addressType patientType patient.mode patient.type')
-          .lean();
-        for (const reg of regs) {
-          const raw = normalize(reg?.mode || reg?.addressType || reg?.patientType || reg?.patient?.mode || reg?.patient?.type);
-          if (raw === 'IPD' || raw === 'OPD') modes[reg.receiptNumber] = raw;
-        }
-      } catch (e) {
-        console.warn('⚠️ receipt-modes fallback error:', e.message);
-      }
-    }
-
-    return res.json({ success: true, modes });
-  } catch (error) {
-    console.error('❌ Error fetching receipt modes:', error);
-    return res.status(500).json({ success: false, message: 'Failed to fetch receipt modes', error: error.message });
-  }
-});
 
 
 // Get all invoices with pagination, enriching names via live join when IDs present
@@ -1008,15 +907,22 @@ router.get('/list', async (req, res) => {
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
 
-    console.log(`📋 Fetching invoices - Page: ${page}, Limit: ${limit}`);
+    // 🏢 Multi-Tenant: Build query with labId filter
+    const query = {};
+    if (!req.isSuperAdmin && req.labId) {
+      query.labId = req.labId;
+      console.log(`📋 Fetching invoices for Lab: ${req.labId} - Page: ${page}, Limit: ${limit}`);
+    } else {
+      console.log(`📋 Fetching ALL invoices (SuperAdmin) - Page: ${page}, Limit: ${limit}`);
+    }
 
     const [invoices, total] = await Promise.all([
-      PathologyInvoice.find()
+      PathologyInvoice.find(query)
         // Sort by latest receipt number first to guarantee newest invoices appear on page 1
         .sort({ receiptNumber: -1, createdAt: -1 })
         .skip(skip)
         .limit(limit),
-      PathologyInvoice.countDocuments()
+      PathologyInvoice.countDocuments(query)
     ]);
 
     console.log(`✅ Found ${invoices.length} invoices out of ${total} total (after filters)`);

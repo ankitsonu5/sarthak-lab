@@ -8,6 +8,7 @@ import { Auth } from '../../core/services/auth';
 import { PathologyInvoiceService } from '../../services/pathology-invoice.service';
 import { environment } from '../../../environments/environment';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
+import { LabNameService } from '../../core/services/lab-name.service';
 
 interface LabStatistic {
   title: string;
@@ -63,6 +64,13 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
   private subscription = new Subscription();
   currentDate = new Date();
 
+  // Lab Name - Dynamic
+  labName = 'Sarthak Diagnostic Network';
+
+  // User Info - Dynamic
+  userRole = 'Pathology';
+  userName = '';
+
   // Dashboard Stats
   // Tests
   totalTests = 0;
@@ -105,7 +113,8 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private pathologyInvoiceService: PathologyInvoiceService,
     private dataRefresh: DataRefreshService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private labNameService: LabNameService
   ) {
     try { Chart.register(...registerables); } catch {}
   }
@@ -183,10 +192,12 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (currentUser.role !== 'Pathology') {
+    // Allow Pathology, LabAdmin, Technician, Receptionist roles
+    const allowedRoles = ['Pathology', 'LabAdmin', 'Technician', 'Receptionist', 'Admin'];
+    if (!allowedRoles.includes(currentUser.role)) {
       console.log('❌ Access denied. User role:', currentUser.role);
-      if (currentUser.role === 'Admin') {
-        this.router.navigate(['/dashboard/admin'], { replaceUrl: true });
+      if (currentUser.role === 'SuperAdmin') {
+        this.router.navigate(['/super-admin/dashboard'], { replaceUrl: true });
       } else {
         this.router.navigate(['/auth/login'], { replaceUrl: true });
       }
@@ -194,6 +205,19 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
     }
 
     console.log('✅ Pathology Dashboard initialized for:', currentUser?.email);
+
+    // Set user info
+    this.userRole = currentUser.role;
+    this.userName = `${currentUser.firstName} ${currentUser.lastName}`.trim();
+
+    // Subscribe to lab name changes
+    this.subscription.add(
+      this.labNameService.labName$.subscribe(name => {
+        this.labName = name;
+        this.cdr.detectChanges();
+      })
+    );
+
     this.generateCalendarDays();
     this.loadDashboardData();
 

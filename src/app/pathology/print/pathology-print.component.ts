@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -100,11 +100,88 @@ export class PathologyPrintComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private labService: LabSettingsService
   ) { }
 
+
+  // Fetch complete report data from server using registration number
+  private async fetchReportDataFromServer(regNo: string): Promise<void> {
+    try {
+      const base = environment.apiUrl;
+      console.log('🔍 [QR SCAN] Fetching report data for registration number:', regNo);
+
+      // Use the new endpoint that fetches report by registration number
+      const resp = await firstValueFrom(
+        this.http.get<any>(`${base}/pathology-reports/by-registration/${regNo}`)
+      );
+
+      const reportData: any = resp?.data;
+
+      if (!reportData) {
+        console.error('❌ [QR SCAN] No report data found for registration number:', regNo);
+        alert('No report found for this registration number!');
+        return;
+      }
+
+      console.log('✅ [QR SCAN] Report data fetched successfully:', reportData);
+
+      // Map the response to component properties
+      this.registrationNo = regNo;
+      this.receiptNo = reportData.receiptNo || '';
+      this.labYearlyNo = reportData.labYearlyNo || '';
+      this.labDailyNo = reportData.labDailyNo || '';
+      this.reportDate = reportData.reportDate || new Date().toLocaleDateString('en-GB');
+      this.pathologyRegDate = reportData.registrationDate || reportData.createdAt || '';
+      this.doctorName = reportData.referredBy || reportData.doctorName || '';
+      this.department = reportData.department || '';
+
+      // Patient data
+      const patient = reportData.patientData || {};
+      this.patientData = {
+        firstName: patient.firstName || '',
+        lastName: patient.lastName || '',
+        fullName: patient.fullName || `${patient.firstName || ''} ${patient.lastName || ''}`.trim(),
+        age: patient.age || reportData.age || '',
+        gender: patient.gender || reportData.gender || '',
+        phone: patient.phone || '',
+        address: patient.address || '',
+        aadhaar: patient.aadhaar || ''
+      };
+
+      this.patientName = this.patientData.fullName;
+      this.age = this.patientData.age;
+      this.gender = this.patientData.gender;
+      this.patientType = reportData.patientType || 'OPD';
+
+      // Test results - map from report structure
+      this.testResults = (reportData.testResults || []).map((t: any) => {
+        return {
+          testName: t.testName,
+          category: t.category,
+          parameters: Array.isArray(t.parameters) ? t.parameters : [],
+          displayRows: t.displayRows || []
+        };
+      });
+
+      // Build category groups
+      this.buildCategoryGroups();
+
+      // Trigger change detection
+      this.cdr.detectChanges();
+
+      // Generate QR code after data is loaded
+      setTimeout(() => {
+        this.generateBarcodeAndQR();
+      }, 500);
+
+    } catch (err: any) {
+      console.error('❌ [QR SCAN] Error fetching report data:', err);
+      alert(`Error loading report: ${err?.error?.message || err?.message || 'Unknown error'}`);
+    }
+  }
 
   // Fetch registrationDate from server if we didn't receive it via router state
   private async ensureRegistrationDateFromServer(): Promise<void> {
@@ -150,6 +227,16 @@ export class PathologyPrintComponent implements OnInit {
         error: () => {}
       });
     } catch {}
+
+    // Check for query parameter (regNo) - used when QR code is scanned
+    this.route.queryParams.subscribe(params => {
+      const regNo = params['regNo'];
+      if (regNo) {
+        console.log('📱 QR Code scanned! Loading report for registration number:', regNo);
+        this.fetchReportDataFromServer(regNo);
+        return; // Skip router state processing
+      }
+    });
 
     // Check if data is passed from router state
     const navigation = this.router.getCurrentNavigation();
@@ -432,6 +519,10 @@ export class PathologyPrintComponent implements OnInit {
 	    // Build groups after inputs are normalized
 	    this.buildCategoryGroups();
 
+    // Generate barcode and QR code automatically on component load
+    setTimeout(() => {
+      this.generateBarcodeAndQR();
+    }, 500);
 
     // Auto print and navigate back if requested via router state
     if (triggerAutoPrint) {
@@ -499,6 +590,83 @@ export class PathologyPrintComponent implements OnInit {
         window.print();
       })();
     }
+  }
+
+  // Generate QR code automatically when component loads (in header)
+  private generateBarcodeAndQR(): void {
+    const anyWin: any = window as any;
+
+    // Check if QR code should be shown (default: false, only show if explicitly enabled)
+    if (this.labSettings?.printLayout?.showQr !== true) {
+      console.log('ℹ️ QR code disabled in lab settings');
+      return;
+    }
+
+    // Build URL for QR code that opens the report directly
+    const regNo = this.registrationNo || this.receiptNo || this.labYearlyNo || this.labDailyNo || '';
+
+    if (!regNo) {
+      console.warn('⚠️ No registration number available for QR code generation');
+      return;
+    }
+
+    // Create URL that will open the report in print view
+    // Use current host and port to generate the URL
+    const currentUrl = window.location.origin; // e.g., http://localhost:4201
+    const reportUrl = `${currentUrl}/pathology-module/print?regNo=${encodeURIComponent(regNo)}`;
+
+    const qrValue = reportUrl;
+
+    console.log('🔢 Generating QR code with report URL:', qrValue);
+
+    // Generate QR Code in header
+    const generateQR = () => {
+      try {
+        const qrContainer = document.getElementById('headerQRCode');
+        if (qrContainer && anyWin.QRCode) {
+          qrContainer.innerHTML = ''; // Clear existing
+          new anyWin.QRCode(qrContainer, {
+            text: qrValue,
+            width: 80,
+            height: 80,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: anyWin.QRCode?.CorrectLevel?.H || 2
+          });
+          console.log('✅ QR Code generated successfully in header');
+        }
+      } catch (err) {
+        console.warn('⚠️ QR code generation failed:', err);
+      }
+    };
+
+    // Load QR Code library if not loaded
+    const loadQRCode = () => {
+      return new Promise<void>((resolve) => {
+        if (anyWin.QRCode) {
+          resolve();
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
+        script.onload = () => {
+          console.log('✅ QRCode library loaded');
+          resolve();
+        };
+        script.onerror = () => {
+          console.warn('⚠️ Failed to load QRCode library');
+          resolve();
+        };
+        document.head.appendChild(script);
+      });
+    };
+
+    // Load library and generate QR code
+    loadQRCode().then(() => {
+      setTimeout(() => {
+        generateQR();
+      }, 100);
+    });
   }
 
   // Compute page-breaks so that no table row is split across pages
@@ -640,34 +808,52 @@ export class PathologyPrintComponent implements OnInit {
       }
     };
 
-    const renderBarcodeThenPrint = () => {
-      try {
-        const svg = document.getElementById('reportBarcode') as SVGElement | null;
-        if (svg && anyWin.JsBarcode && barcodeVal) {
-          anyWin.JsBarcode(svg, barcodeVal, {
-            format: 'CODE128',
-            displayValue: true,
-            font: 'Raleway',
-            fontSize: 12,
-            height: 40,
-            margin: 0,
-            textMargin: 2,
-            width: 1.4,
-          });
+    // Load QRCode library first
+    const loadQRCode = () => {
+      return new Promise<void>((resolve) => {
+        if ((anyWin as any).QRCode) {
+          resolve();
+          return;
         }
-      } catch (_) { /* ignore */ }
-      ensureAssetsThenPrint();
+        const qrScript = document.createElement('script');
+        qrScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        qrScript.onload = () => resolve();
+        qrScript.onerror = () => resolve(); // Continue even if QR fails
+        document.head.appendChild(qrScript);
+      });
     };
 
-    if (!anyWin.JsBarcode) {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js';
-      s.onload = () => setTimeout(renderBarcodeThenPrint, 0);
-      s.onerror = () => ensureAssetsThenPrint();
-      document.head.appendChild(s);
-    } else {
-      renderBarcodeThenPrint();
-    }
+    const renderQRCode = () => {
+      try {
+        // Generate QR code in header (right side)
+        const qrContainer = document.getElementById('headerQRCode');
+        if (qrContainer && (anyWin as any).QRCode && barcodeVal) {
+          // Clear any existing QR code
+          qrContainer.innerHTML = '';
+          new (anyWin as any).QRCode(qrContainer, {
+            text: barcodeVal,
+            width: 80,
+            height: 80,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: (anyWin as any).QRCode?.CorrectLevel?.H || 2
+          });
+        }
+      } catch (err) {
+        console.warn('QR code generation failed:', err);
+      }
+    };
+
+    // Load QR code and print
+    loadQRCode().then(() => {
+      renderQRCode();
+      setTimeout(() => {
+        ensureAssetsThenPrint();
+      }, 100);
+    }).catch(() => {
+      // If QR code fails, still print
+      ensureAssetsThenPrint();
+    });
   }
 
   // Get status class for highlighting (value cell)

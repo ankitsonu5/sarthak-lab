@@ -195,12 +195,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     'Reported'
   ];
 
-  modeOptions = [
-    'OPD',
-    'IPD',
-    'Emergency'
-  ];
-
   // Invoice data and print functionality
   showPrintButton = false;
   invoiceData: any = null;
@@ -1019,16 +1013,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         return;
       }
 
-      // Detect and set mode (OPD/IPD) from params or URL for correct save/print
-      const incomingMode = (params['mode'] || '').toString().toUpperCase();
-      let modeToSet = incomingMode;
-      // Only set if explicit mode query param provided
-      if (modeToSet === 'IPD' || modeToSet === 'OPD') {
-        this.pathologyForm.patchValue({ mode: modeToSet });
-        console.log('✅ Mode set from navigation param:', modeToSet);
-        this.cdr.detectChanges();
-      }
-
       if (params['patientId']) {
         console.log('👤 Patient ID found in query params:', params['patientId']);
 
@@ -1457,19 +1441,16 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     return { num, ageIn: unit };
   }
 
-  // Normalize selected payment method to CASH or UPI (uppercase)
+  // Normalize selected payment method (supports CASH, UPI, CARD, NET_BANKING)
   private getSelectedPaymentMethod(): string {
     const val = (this.pathologyForm.get('paymentMethod')?.value || 'CASH').toString().trim().toUpperCase();
-    return (val === 'UPI') ? 'UPI' : 'CASH';
+    // Support multiple payment methods
+    const validMethods = ['CASH', 'UPI', 'CARD', 'NET_BANKING'];
+    return validMethods.includes(val) ? val : 'CASH';
   }
 
   // React to manual dropdown change and normalize to uppercase
-  onModeChange(event: Event): void {
-    const val = ((event?.target as HTMLSelectElement)?.value || '').toString().trim().toUpperCase();
-    this.pathologyForm.get('mode')?.setValue(val);
-    console.log('🧭 Mode changed →', val);
-    this.cdr.detectChanges();
-  }
+
 
 
   loadDropdownData(): void {
@@ -4021,15 +4002,53 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         }, 3000);
       };
 
-      if (!anyWin.JsBarcode) {
-        const s = doc.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js';
-        s.onload = () => setTimeout(renderAndPrint, 0);
-        s.onerror = renderAndPrint;
-        doc.head.appendChild(s);
-      } else {
-        renderAndPrint();
-      }
+      // Load QRCode library first, then barcode
+      const loadQRCode = () => {
+        return new Promise<void>((resolve) => {
+          if ((anyWin as any).QRCode) {
+            resolve();
+            return;
+          }
+          const qrScript = doc.createElement('script');
+          qrScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+          qrScript.onload = () => resolve();
+          qrScript.onerror = () => resolve(); // Continue even if QR fails
+          doc.head.appendChild(qrScript);
+        });
+      };
+
+      const renderQRCode = () => {
+        try {
+          const qrContainer = doc.getElementById('rcptQRCode');
+          if (qrContainer && (anyWin as any).QRCode && barcodeVal) {
+            // Clear any existing QR code
+            qrContainer.innerHTML = '';
+            new (anyWin as any).QRCode(qrContainer, {
+              text: barcodeVal,
+              width: 80,
+              height: 80,
+              colorDark: '#000000',
+              colorLight: '#ffffff',
+              correctLevel: (anyWin as any).QRCode?.CorrectLevel?.H || 2
+            });
+          }
+        } catch (err) {
+          console.warn('QR code generation failed:', err);
+        }
+      };
+
+      loadQRCode().then(() => {
+        renderQRCode();
+        if (!anyWin.JsBarcode) {
+          const s = doc.createElement('script');
+          s.src = 'https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js';
+          s.onload = () => setTimeout(renderAndPrint, 0);
+          s.onerror = renderAndPrint;
+          doc.head.appendChild(s);
+        } else {
+          renderAndPrint();
+        }
+      });
     };
   }
 
@@ -4161,7 +4180,7 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
           }
 
           body { font-family: 'Raleway', Arial, sans-serif; margin: 0; padding: 0; }
-          .invoice-container { width: 210mm; margin: 0; padding: 8mm; border: none; }
+          .invoice-container { width: 210mm; min-height: 297mm; margin: 0; padding: 8mm; border: none; position: relative; }
           .hospital-header { display: grid; grid-template-columns: 100px 1fr 140px; align-items: center; column-gap: 6px; margin-bottom: 0px; width: 100%; }
           .logo-section { width: 140px; }
           .gov-logo { width: 80px; height: 80px; object-fit: contain; }
@@ -4191,16 +4210,19 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
 
           .footer-note { text-align: center; margin-top: 16px; font-size: 10px; color: #666; border-top: 1px solid #ddd; padding-top: 10px; }
 
+          /* Page footer positioned at bottom */
+          .page-footer { position: absolute; bottom: 8mm; left: 8mm; right: 8mm; }
 
-              /* Brand chevrons and tri-signature */
-              .invoice-container { --brand-green: #16a34a; }
-              .chevron { height: 6mm; background: repeating-linear-gradient(-45deg, var(--brand-green) 0 12px, transparent 12px 24px); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              .chevron-top { margin: 6px 0 8px 0; }
-              .chevron-bottom { margin: 8px 0 0 0; }
+              /* Tri-signature footer */
               .footer-row.tri { display: flex; justify-content: space-between; gap: 10px; }
               .footer-row.tri .sign-col { width: 33.33%; text-align: center; }
               .footer-row.tri .signature-line { width: 90%; margin: 6px auto 0; height: 12px; border-bottom: 1px solid #000; }
+              .signature-label { font-weight: bold; font-size: 12px; }
               .barcode-box svg { width: 100%; max-width: 160px; height: 44px; }
+              .qr-barcode-container { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; gap: 10px; }
+              .qr-code-box { flex: 0 0 auto; }
+              .qr-code-box canvas, .qr-code-box img { width: 80px !important; height: 80px !important; }
+              .barcode-box { flex: 1; text-align: right; }
 
           /* Print behavior: table header/footer on each A4 page */
           @media print {
@@ -4221,14 +4243,13 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
               ${this.logoBase64 ? `<img src="${this.logoBase64}" alt="Government Logo" class="gov-logo" style="background: white; padding: 5px; border-radius: 5px;">` : '<div class="gov-logo" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px;">LOGO</div>'}
             </div>
             <div class="hospital-info">
-              <h1 class="hospital-name">${this.invoiceData.labInfo?.name || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय'}</h1>
-              <p class="hospital-address">${this.invoiceData.labInfo?.address || 'चौकाघाट, वाराणसी'}</p>
+              <h1 class="hospital-name">${this.invoiceData.labInfo?.name || 'सार्थक डायग्नोस्टिक नेटवर्क'}</h1>
+              <p class="hospital-address">${this.invoiceData.labInfo?.address || 'Advanced Diagnostic & Pathology Services'}</p>
             </div>
             <div class="logo-section" style="text-align:right">
               ${this.labSettings?.sideLogoDataUrl ? `<img src="${this.labSettings?.sideLogoDataUrl}" alt="Side Logo" class="gov-logo" style="height:80px; width:auto; object-fit:contain;">` : ''}
             </div>
           </div>
-          <div class="chevron chevron-top"></div>
           <div class="receipt-head">
               <h2 class="receipt-title">Hospital Cash Receipt</h2>
               <div class="date-container"><span class="reciept-date label">Date:</span> <span class="date-value">${this.invoiceData.bookingDate ? new Date(this.invoiceData.bookingDate).toLocaleDateString('en-IN') : new Date().toLocaleDateString('en-IN')}</span></div>
@@ -4245,13 +4266,16 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
                       <div><span class="label">Receipt No.:</span> <span class="value">${this.invoiceData.receiptNumber || ''}</span></div>
                       <div><span class="label">Age/Gender : </span> <span class="value age-center">${ageDisplay}/${genderDisplay}</span></div>
                     </div>
-                      <div class="barcode-box" style="text-align:right; margin-top:6px;">
+                    <div class="qr-barcode-container">
+                      <div class="qr-code-box" id="rcptQRCode"></div>
+                      <div class="barcode-box">
                         <svg id="rcptBarcode"></svg>
                       </div>
+                    </div>
 
                     <div class="receipt-row">
                       <div><span class="label">Reg. No./Doc Ref. No.:</span> <span class="value">${(this.invoiceData as any)?.patient?.registrationNumber || this.pathologyForm.get('registrationNumber')?.value || ''}${docRefDisplay ? (' / ' + docRefDisplay) : ''}</span></div>
-                      <div><span class="label">OPD/IPD:</span> <span class="value" style="${((this.invoiceData.mode || '').toString().toUpperCase()==='IPD') ? 'font-weight:900;font-size:14px' : ''}">${this.invoiceData.mode || ''}</span></div>
+                      <div></div>
                     </div>
                     <div class="receipt-row">
                       <div><span class="label">Name:</span> <span class="value">${this.invoiceData.patient?.name || ''}</span></div>
@@ -4281,7 +4305,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
               <tr class="page-bottom-spacer"><td colspan="2"></td></tr>
             </tfoot>
           </table>
-          <div class="chevron chevron-bottom"></div>
           <div class="page-footer">
             <div class="footer-row tri">
               <div class="sign-col">
@@ -5324,15 +5347,7 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     return tests.reduce((sum: number, t: any) => sum + Number(t?.netAmount ?? t?.amount ?? t?.cost ?? 0), 0);
   }
 
-  getVisitMode(record: any): string {
-    const raw = (record?.mode || record?.visitType || record?.patient?.visitType || '').toString().toUpperCase();
-    if (raw.includes('IPD')) return 'IPD';
-    if (raw.includes('OPD')) return 'OPD';
-    const alt = (record?.payment?.mode || '').toString().toUpperCase();
-    if (alt.includes('IPD')) return 'IPD';
-    if (alt.includes('OPD')) return 'OPD';
-    return (this.pathologyForm?.get('mode')?.value || 'OPD').toString().toUpperCase();
-  }
+
 
   getLastEditedAt(record: any): Date | null {
     const last = this.lastEditEntry(record);

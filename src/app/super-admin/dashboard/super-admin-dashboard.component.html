@@ -1,0 +1,190 @@
+<div class="super-admin-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <h1>🔐 Super Admin Dashboard</h1>
+    <p>Multi-Lab Management System</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🏥</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalLabs }}</h3>
+        <p>Total Labs</p>
+      </div>
+    </div>
+
+    <div class="stat-card pending">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-content">
+        <h3>{{ stats.pendingApprovals }}</h3>
+        <p>Pending Approvals</p>
+      </div>
+    </div>
+
+    <div class="stat-card active">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <h3>{{ stats.activeLabs }}</h3>
+        <p>Active Labs</p>
+      </div>
+    </div>
+
+    <div class="stat-card trial">
+      <div class="stat-icon">🆓</div>
+      <div class="stat-content">
+        <h3>{{ stats.trialLabs }}</h3>
+        <p>Trial Plans</p>
+      </div>
+    </div>
+
+    <div class="stat-card basic">
+      <div class="stat-icon">📦</div>
+      <div class="stat-content">
+        <h3>{{ stats.basicLabs }}</h3>
+        <p>Basic Plans</p>
+      </div>
+    </div>
+
+    <div class="stat-card premium">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-content">
+        <h3>{{ stats.premiumLabs }}</h3>
+        <p>Premium Plans</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Plan:</label>
+      <select [(ngModel)]="filterPlan" (change)="onFilterChange()" class="filter-select">
+        <option value="all">All Plans</option>
+        <option value="trial">Trial</option>
+        <option value="basic">Basic</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+
+    <div class="filter-group search-group">
+      <label>Search:</label>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onFilterChange()"
+        placeholder="Search by name, code, email, city..."
+        class="search-input"
+      >
+    </div>
+
+    <button (click)="loadDashboardData()" class="btn-refresh">
+      🔄 Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <p>🔄 Loading labs...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-alert">
+    <p>⚠️ {{ error }}</p>
+  </div>
+
+  <!-- Labs Table -->
+  <div *ngIf="!loading && !error" class="labs-table-container">
+    <table class="labs-table">
+      <thead>
+        <tr>
+          <th>Lab Code</th>
+          <th>Lab Name</th>
+          <th>Email</th>
+          <th>Location</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>Trial Ends</th>
+          <th>Stats</th>
+          <th>Registered</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lab of filteredLabs" [class.trial-expiring]="isTrialExpiring(lab)" (click)="viewLabProfile(lab._id)" style="cursor: pointer;">
+          <td><strong>{{ lab.labCode }}</strong></td>
+          <td>{{ lab.labName }}</td>
+          <td>{{ lab.email }}</td>
+          <td>{{ lab.city }}, {{ lab.state }}</td>
+          <td>
+            <span class="badge" [ngClass]="getPlanBadgeClass(lab.subscriptionPlan)">
+              {{ lab.subscriptionPlan | uppercase }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(lab.approvalStatus)">
+              {{ lab.approvalStatus | uppercase }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="lab.subscriptionPlan === 'trial'">
+              {{ formatDate(lab.trialEndsAt || '') }}
+              <span *ngIf="isTrialExpiring(lab)" class="expiring-badge">
+                ⚠️ {{ getDaysLeft(lab.trialEndsAt || '') }}d left
+              </span>
+            </span>
+            <span *ngIf="lab.subscriptionPlan !== 'trial'">-</span>
+          </td>
+          <td>
+            <div class="lab-stats">
+              <span title="Users">👥 {{ lab.totalUsers }}</span>
+              <span title="Patients">🧑‍⚕️ {{ lab.totalPatients }}</span>
+              <span title="Reports">📄 {{ lab.totalReports }}</span>
+            </div>
+          </td>
+          <td>{{ formatDate(lab.createdAt) }}</td>
+          <td>
+            <div class="action-buttons">
+              <button
+                *ngIf="lab.approvalStatus === 'pending'"
+                (click)="approveLab(lab._id)"
+                class="btn-approve"
+                title="Approve Lab"
+              >
+                ✅ Approve
+              </button>
+              <button
+                *ngIf="lab.approvalStatus === 'pending'"
+                (click)="rejectLab(lab._id)"
+                class="btn-reject"
+                title="Reject Lab"
+              >
+                ❌ Reject
+              </button>
+              <span *ngIf="lab.approvalStatus !== 'pending'" class="no-action">
+                -
+              </span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredLabs.length === 0" class="empty-state">
+      <p>📭 No labs found matching your filters.</p>
+    </div>
+  </div>
+</div>
+

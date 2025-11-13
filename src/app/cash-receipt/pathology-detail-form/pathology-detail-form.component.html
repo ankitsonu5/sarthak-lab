@@ -60,13 +60,7 @@
             </option>
           </select>
         </div>
-        <div class="grid-item" *ngIf="false">
-          <label>Mode:</label>
-          <select #modeSelect formControlName="mode" class="grid-input" (change)="onModeChange($event)" tabindex="2">
-            <option value="OPD">OPD</option>
-            <option value="IPD">IPD</option>
-          </select>
-        </div>
+
       </div>
 
       <div class="grid-row four-cols">
@@ -95,8 +89,14 @@
         <div class="grid-item">
           <label>Payment Method:</label>
           <select formControlName="paymentMethod" class="grid-input">
-            <option value="CASH">Cash</option>
-            <option value="UPI">UPI</option>
+            <optgroup label="💵 Offline Payment">
+              <option value="CASH">💵 Cash</option>
+            </optgroup>
+            <optgroup label="💳 Online Payment">
+              <option value="UPI">📱 UPI</option>
+              <option value="CARD">💳 Card</option>
+              <option value="NET_BANKING">🏦 Net Banking</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -154,8 +154,14 @@
         <div><small class="muted">Billing Date</small><div>{{ pathologyForm.get('collectionDate')?.value | date:'dd/MM/yyyy, h:mm a' }}</div></div>
         <div style="grid-column: span 2;"><label style="font-weight:600; display:block; margin-bottom:6px;">Payment Method</label>
           <select formControlName="paymentMethod" class="grid-input">
-            <option value="CASH">Cash</option>
-            <option value="UPI">UPI</option>
+            <optgroup label="💵 Offline Payment">
+              <option value="CASH">💵 Cash</option>
+            </optgroup>
+            <optgroup label="💳 Online Payment">
+              <option value="UPI">📱 UPI</option>
+              <option value="CARD">💳 Card</option>
+              <option value="NET_BANKING">🏦 Net Banking</option>
+            </optgroup>
           </select>
         </div>
       </div>
@@ -403,7 +409,6 @@
                 <th>Receipt No.</th>
                 <th>No. of Tests</th>
                 <th>Amount</th>
-                <th *ngIf="false">Mode</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -435,9 +440,7 @@
                 <td class="amount">
                   <strong class="amount-text">₹{{ patient.totalAmount | number:'1.0-0' }}</strong>
                 </td>
-                <td class="payment-mode" *ngIf="false">
-                  <span class="mode-badge mode-cash">{{ (patient.mode || pathologyForm.get('mode')?.value || 'OPD') }}</span>
-                </td>
+
                 <td class="status">
                   <span class="status-badge status-paid">{{ patient.status || 'PAID' }}</span>
                 </td>
@@ -621,7 +624,7 @@
       <div class="report-details one-row">
         <div class="detail-item"><strong>Receipt No.:</strong> <span>{{ rec.receiptNumber }}</span></div>
         <div class="detail-item"><strong>Reg. No.:</strong> <span>{{ rec.registrationNumber || rec.patientId }}</span></div>
-        <div class="detail-item" *ngIf="false"><strong>Mode:</strong> <span>{{ (rec.mode || pathologyForm.get('mode')?.value || 'OPD') }}</span></div>
+
       </div>
 
       <!-- Grouped by Category like Edit Record view -->
@@ -715,7 +718,7 @@
           <div class="detail-card"><div class="detail-label">REGISTRATION NO</div><div class="detail-value">{{ getRegistrationNumber(rec, 0) }}</div></div>
           <div class="detail-card"><div class="detail-label">RECEIPT NO</div><div class="detail-value">{{ rec.receiptNumber }}</div></div>
           <div class="detail-card"><div class="detail-label">INVOICE DATE</div><div class="detail-value">{{ (rec.invoiceDate || rec.bookingDate || rec.createdAt) | date:'dd/MM/yyyy' }}</div></div>
-          <div class="detail-card" *ngIf="false"><div class="detail-label">MODE</div><div class="detail-value"><span class="mode-chip">{{ getVisitMode(rec) }}</span></div></div>
+
         </div>
       </div>
 

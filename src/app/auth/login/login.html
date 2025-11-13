@@ -2,8 +2,8 @@
   <div class="login-card">
     <!-- Header -->
     <div class="login-header">
-      <h1>Sarthak Diagnostic Network</h1>
-      <p>Login</p>
+      <h1>Pathology SaaS</h1>
+      <p>Multi-Lab Management System</p>
     </div>
 
     <!-- Login Form -->
@@ -60,9 +60,13 @@
 
       <!-- Default Credentials Info -->
       <div class="info-alert">
-        <span>ℹ️ Default Login Credentials:</span>
+        <span>ℹ️ Login Credentials:</span>
         <br>
-        <strong>Admin:</strong> admin&#64;hospital.com / admin123
+        <strong>Super Admin:</strong> superadmin&#64;pathologysaas.com / SuperAdmin&#64;123
+        <br>
+        <strong>Lab Admin:</strong> Use your registered email / password
+        <br>
+        <strong>Old System:</strong> admin&#64;hospital.com / admin123
       </div>
 
       <!-- Error Message -->
@@ -83,9 +87,13 @@
 
     </form>
 
-    <!-- Footer (Registration visible only for SuperAdmin via direct URL; hide link here) -->
+    <!-- Footer -->
     <div class="login-footer">
       <p>
+        Don't have an account?
+        <a routerLink="/auth/lab-register" class="link" style="font-weight: 600;">Register Your Lab</a>
+      </p>
+      <p style="margin-top: 0.5rem;">
         <a routerLink="/auth/forgot-password" class="link">Forgot password?</a>
       </p>
     </div>
