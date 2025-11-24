@@ -13,8 +13,9 @@ export class Register implements OnInit {
   registerForm!: FormGroup;
   loading = false;
   error = '';
+  success = '';
 
-  roles = ['Admin', 'Pathology'];
+  roles = ['SuperAdmin', 'LabAdmin', 'Admin', 'Pathology', 'Technician', 'Doctor', 'Receptionist'];
 
   constructor(
     private fb: FormBuilder,
@@ -42,27 +43,40 @@ export class Register implements OnInit {
 
     this.loading = true;
     this.error = '';
+    this.success = '';
 
     const payload: RegisterRequest = this.registerForm.value;
 
-    this.auth.register(payload).subscribe({
+    this.auth.adminCreateUser(payload).subscribe({
       next: (res) => {
         this.loading = false;
-        // Route based on role
-        const role = res.user.role;
-        if (role === 'Pathology') {
-          this.router.navigate(['/dashboard/pathology'], { replaceUrl: true });
-        } else if (role === 'SuperAdmin') {
-          this.router.navigate(['/roles/super-admin'], { replaceUrl: true });
-        } else {
-          this.router.navigate(['/dashboard/admin'], { replaceUrl: true });
-        }
+        this.success = `User "${res.user.firstName} ${res.user.lastName}" created successfully!`;
+
+        // Reset form after 2 seconds
+        setTimeout(() => {
+          this.resetForm();
+          this.success = '';
+        }, 2000);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err?.error?.message || 'Registration failed. Please try again.';
+        this.error = err?.error?.message || 'Failed to create user. Please try again.';
       }
     });
+  }
+
+  resetForm(): void {
+    this.registerForm.reset({
+      firstName: '',
+      lastName: '',
+      username: '',
+      email: '',
+      phone: '',
+      role: 'Admin',
+      password: ''
+    });
+    this.error = '';
+    this.success = '';
   }
 
   get firstName() { return this.registerForm.get('firstName'); }

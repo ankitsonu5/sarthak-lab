@@ -1,0 +1,282 @@
+.user-management-container {
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Header */
+.page-header {
+  margin-bottom: 30px;
+}
+
+.page-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-header p {
+  margin: 0;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.stat-card.active {
+  border-left: 4px solid #28a745;
+}
+
+.stat-card.inactive {
+  border-left: 4px solid #dc3545;
+}
+
+.stat-card.filtered {
+  border-left: 4px solid #007bff;
+}
+
+.stat-icon {
+  font-size: 32px;
+  color: #007bff;
+}
+
+.stat-content h3 {
+  margin: 0;
+  font-size: 28px;
+  color: #2c3e50;
+}
+
+.stat-content p {
+  margin: 5px 0 0 0;
+  font-size: 12px;
+  color: #7f8c8d;
+  text-transform: uppercase;
+}
+
+/* Filters Bar */
+.filters-bar {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-transform: uppercase;
+}
+
+.search-input,
+.filter-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.btn-refresh {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btn-refresh:hover {
+  background: #0056b3;
+}
+
+/* Loading & Error States */
+.loading-state,
+.error-alert {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.error-alert {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  color: #856404;
+}
+
+/* Users Table */
+.users-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table thead {
+  background: #f8f9fa;
+}
+
+.users-table th {
+  padding: 15px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  text-transform: uppercase;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.users-table td {
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+}
+
+.users-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.user-name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-name strong {
+  color: #2c3e50;
+}
+
+.user-name small {
+  color: #7f8c8d;
+  font-size: 12px;
+}
+
+/* Badges */
+.badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.badge-danger {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.badge-role {
+  background: #e7f3ff;
+  color: #004085;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-activate {
+  background: #28a745;
+  color: white;
+}
+
+.btn-activate:hover {
+  background: #218838;
+}
+
+.btn-deactivate {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-deactivate:hover {
+  background: #e0a800;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+

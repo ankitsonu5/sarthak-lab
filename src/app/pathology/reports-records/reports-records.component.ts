@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
 import { environment } from '../../../environments/environment';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface PathologyReport {
   _id: string;
@@ -103,13 +105,19 @@ export class ReportsRecordsComponent implements OnInit, OnDestroy {
 
   private subscription = new Subscription();
 
+  // Lab settings for dynamic logo
+  labSettings: LabSettings | null = null;
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private dataRefresh: DataRefreshService
+    private dataRefresh: DataRefreshService,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) {}
 
   ngOnInit(): void {
+    this.loadLabSettings();
     this.loadAllData();
 
     // Auto-refresh on relevant events with debounce to prevent multiple rapid calls
@@ -122,6 +130,25 @@ export class ReportsRecordsComponent implements OnInit, OnDestroy {
         }, 500); // 500ms debounce
       })
     );
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   private refreshTimeout: any;

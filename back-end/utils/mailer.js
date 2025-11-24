@@ -4,6 +4,42 @@
 
 const { decrypt } = require('./secure');
 
+const nodemailer = require("nodemailer");
+
+// Transporter here
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "your@gmail.com",
+    pass: "your-app-password"
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+// Function to send email
+async function sendRegistrationMail(req, res) {
+  const { labEmail, patientName } = req.body;
+
+  try {
+    await transporter.sendMail({
+      from: "your@gmail.com",
+      to: labEmail,
+      subject: "New Patient Registered",
+      text: `A new patient (${patientName}) has registered. Please collect sample.`
+    });
+
+    res.status(200).send({ message: "Mail sent!" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ error: "Email failed" });
+  }
+}
+
+
 async function sendEmail({ to, subject, text = '', html = '', fromUser = null }) {
   // 1) Try to require nodemailer at runtime so app doesn't crash if not installed
   let nodemailer;
@@ -58,4 +94,4 @@ async function sendEmail({ to, subject, text = '', html = '', fromUser = null })
   }
 }
 
-module.exports = { sendEmail };
+module.exports = { sendEmail, sendRegistrationMail };

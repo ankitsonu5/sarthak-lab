@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface TestParameter {
   name: string;
@@ -103,7 +104,8 @@ export class PathologyPrintComponent implements OnInit {
     private route: ActivatedRoute,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private labService: LabSettingsService
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) { }
 
 
@@ -565,11 +567,7 @@ export class PathologyPrintComponent implements OnInit {
               // Fallback timeout
               setTimeout(done, 800);
             } else {
-              // As a fallback, preload the logo explicitly
-              const preload = new Image();
-              preload.onload = () => resolve();
-              preload.onerror = () => resolve();
-              preload.src = 'assets/images/myupgov.png';
+              // No hardcoded fallback - use lab settings logo
               setTimeout(resolve, 800);
             }
           } catch {

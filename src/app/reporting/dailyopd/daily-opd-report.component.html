@@ -1,7 +1,7 @@
 <div class="report-container">
   <!-- Page Title -->
   <div class="page-title">
-    <h2>Daily OPD Report</h2>
+    <h2>Daily Pathology Report</h2>
   </div>
 
   <!-- Search Section -->
@@ -22,39 +22,39 @@
   <div class="report-content" *ngIf="reportData">
     <div class="report-header">
       <div class="logo-container">
-        <img src="assets/images/myupgov.png" alt="UP Government Logo" class="logo" loading="eager">
+        <img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)" alt="Lab Logo" class="logo" loading="eager">
       </div>
       <div class="header-text">
-        <h1>राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
-        <h2>चौकाघाट, वाराणसी</h2>
-        <h3>Daily OPD Report : {{getFormattedDate()}}</h3>
+        <h1>{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
+        <h2>{{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city) }}</h2>
+        <h3>Daily Pathology Report : {{getFormattedDate()}}</h3>
       </div>
     </div>
 
 
 
-    <!-- Department-wise Report Table -->
+    <!-- Test Category-wise Report Table -->
     <div class="report-table">
       <table>
         <thead>
           <tr>
-            <th>Department</th>
-            <th>New Patient</th>
-            <th>Total</th>
+            <th>Test Category</th>
+            <th>Total Tests</th>
+            <th>Total Amount</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of displayRows" [hidden]="row.isTotal">
             <td>{{row.name}}</td>
-            <td>{{row.newPatients}}</td>
-            <td>{{row.total}}</td>
+            <td>{{row.totalTests}}</td>
+            <td>₹{{row.totalAmount | number:'1.2-2'}}</td>
           </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
             <td>Total</td>
-            <td>{{reportData.newPatients || 0}}</td>
-            <td>{{reportData.totalPatients || 0}}</td>
+            <td>{{reportData.totalTests || 0}}</td>
+            <td>₹{{reportData.totalAmount || 0 | number:'1.2-2'}}</td>
           </tr>
         </tfoot>
       </table>

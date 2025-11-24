@@ -30,7 +30,7 @@ app.use('/uploads', express.static('back-end/uploads'));
 // Serve static files from Angular build (resolve best available dist path)
 const candidateStaticRoots = [
   path.join(__dirname, 'back-end', 'dist', 'browser'),
-  path.join(__dirname, 'dist', 'hospital-management-system', 'browser'),
+  path.join(__dirname, 'dist', 'lab-management-system', 'browser'),
   path.join(__dirname, 'dist', 'browser'),
   path.join(__dirname, 'browser')
 ];
@@ -129,7 +129,7 @@ const { multiTenantMiddleware } = require('./back-end/middleware/multiTenantMong
 // Routes
 // API health check route
 app.get('/api/health', (req, res) => {
-  res.json({ message: 'Hospital Management System API is running!' });
+  res.json({ message: 'Lab Management System API is running!' });
 });
 
 // Test route

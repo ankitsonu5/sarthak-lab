@@ -38,6 +38,7 @@
             ],
             "styles": [
               "@angular/material/prebuilt-themes/azure-blue.css",
+              "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "src/styles.css"
             ],
             "allowedCommonJsDependencies": [
@@ -63,7 +64,14 @@
                 }
               ],
               "outputHashing": "all",
-              "optimization": true,
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": true
+                },
+                "fonts": true
+              },
               "aot": true,
               "namedChunks": false,
               "extractLicenses": true,

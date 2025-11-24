@@ -7,6 +7,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { DoctorService, Doctor } from '../services/doctor.service';
 import { environment } from '../../../../environments/environment';
+import { LabSettingsService, LabSettings } from '../../lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../../core/services/default-lab-config.service';
 
 @Component({
   selector: 'app-doctor-profile',
@@ -20,12 +22,15 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
   isDialog = false;
+  labSettings: LabSettings | null = null;
   private subscription: Subscription = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private doctorService: DoctorService,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService,
     @Optional() private dialogRef: MatDialogRef<DoctorProfileComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) public data: any
   ) {
@@ -40,7 +45,26 @@ export class DoctorProfileComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadLabSettings();
     this.loadDoctorProfile();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+      },
+      error: () => {}
+    });
   }
 
   ngOnDestroy(): void {

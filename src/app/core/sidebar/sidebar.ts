@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs';
 import { Auth, User } from '../services/auth';
 import { DeleteConfirmationModalComponent } from '../../shared/components/delete-confirmation-modal/delete-confirmation-modal.component';
 import { DeleteSuccessModalComponent } from '../../shared/components/delete-success-modal/delete-success-modal.component';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../services/default-lab-config.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -26,6 +28,9 @@ export class Sidebar implements OnInit, OnDestroy {
   showLogoutConfirm = false;
   // Logout success modal state
   showLogoutSuccess = false;
+  // Lab settings for dynamic logo
+  labSettings: LabSettings | null = null;
+  labLogoUrl: string = '';
 
   openLogoutConfirm(): void {
     this.showLogoutConfirm = true;
@@ -54,7 +59,7 @@ export class Sidebar implements OnInit, OnDestroy {
 
 
   // Cached sections to avoid rebuilds during change detection
-  sidebarSections: Array<{ icon: string; title: string; superAdminOnly?: boolean; children: Array<{ label: string; route: string }> }> = [];
+  sidebarSections: Array<{ icon: string; title: string; superAdminOnly?: boolean; children: Array<{ label: string; route: string; queryParams?: any }> }> = [];
 
   // trackBy functions to stabilize DOM
   trackSection = (_: number, s: any) => s?.title;
@@ -73,7 +78,10 @@ export class Sidebar implements OnInit, OnDestroy {
 
   constructor(
     private authService: Auth,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) {}
 
   avatarUrl(): string | null {
@@ -87,14 +95,44 @@ export class Sidebar implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load lab settings for logo
+    this.loadLabSettings();
+
     // Subscribe to current user changes
     this.subscription.add(
       this.authService.currentUser$.subscribe(user => {
         this.currentUser = user;
         this.setDefaultExpandedSection();
         this.buildSidebarSections();
+        this.cdr.markForCheck(); // Trigger change detection for OnPush
       })
     );
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl);
+        this.cdr.markForCheck();
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Use default logo if fetch fails
+        this.labLogoUrl = this.defaultLabConfig.getLabLogo();
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -147,9 +185,9 @@ export class Sidebar implements OnInit, OnDestroy {
           icon: '🏢',
           title: 'Lab Management',
           children: [
-            { label: 'All Labs', route: '/super-admin/dashboard' },
-            { label: 'Pending Approvals', route: '/super-admin/dashboard' },
-            { label: 'Active Labs', route: '/super-admin/dashboard' }
+            { label: 'All Labs', route: '/super-admin/dashboard', queryParams: { filter: 'all' } },
+            { label: 'Pending Approvals', route: '/super-admin/dashboard', queryParams: { filter: 'pending' } },
+            { label: 'Active Labs', route: '/super-admin/dashboard', queryParams: { filter: 'active' } }
           ]
         },
         {
@@ -157,7 +195,7 @@ export class Sidebar implements OnInit, OnDestroy {
           title: 'User Management',
           children: [
             { label: 'Create User', route: '/auth/register' },
-            { label: 'Manage Users', route: '/roles/list' }
+            { label: 'Manage Users', route: '/super-admin/users' }
           ]
         }
       ];

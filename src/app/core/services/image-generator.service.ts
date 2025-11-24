@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import html2canvas from 'html2canvas';
+import { DefaultLabConfigService } from './default-lab-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImageGeneratorService {
 
-  constructor() { }
+  constructor(private defaultLabConfig: DefaultLabConfigService) { }
 
   /**
    * Convert HTML element to image blob
@@ -229,11 +230,11 @@ export class ImageGeneratorService {
   /**
    * Generate professional pathology report image matching hospital format
    */
-  async generatePathologyReportImage(reportData: any): Promise<Blob> {
+  async generatePathologyReportImage(reportData: any, labSettings?: any): Promise<Blob> {
     console.log('🖼️ Generating professional pathology report image...');
 
     // Create professional HTML template
-    const reportElement = this.createProfessionalReportHTML(reportData);
+    const reportElement = this.createProfessionalReportHTML(reportData, labSettings);
 
     // Add to DOM temporarily
     document.body.appendChild(reportElement);
@@ -256,9 +257,9 @@ export class ImageGeneratorService {
   }
 
   /**
-   * Create professional HTML template matching hospital format with upgov.png logo
+   * Create professional HTML template matching hospital format with dynamic lab logo
    */
-  private createProfessionalReportHTML(reportData: any): HTMLElement {
+  private createProfessionalReportHTML(reportData: any, labSettings?: any): HTMLElement {
     const div = document.createElement('div');
     div.style.cssText = `
       width: 850px;
@@ -272,19 +273,21 @@ export class ImageGeneratorService {
       line-height: 1.4;
     `;
 
+    // Get lab info from settings or use defaults
+    const labLogo = labSettings?.logoDataUrl || this.defaultLabConfig.getLabLogo();
+    const labName = this.defaultLabConfig.getLabName(labSettings?.labName);
+    const labAddress = this.defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city);
+
     div.innerHTML = `
-      <!-- Simple Hospital Header - EXACTLY like reference image -->
+      <!-- Hospital Header with Dynamic Lab Logo -->
       <div style="border: 2px solid #000; padding: 20px; margin-bottom: 20px; position: relative; background: white;">
-        <!-- Simple Government Logo - NO CIRCLE -->
-        <img src="assets/images/upremovebg.png" style="position: absolute; left: 25px; top: 25px; width: 60px; height: 60px; object-fit: contain;" alt="UP Government Logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+        <!-- Lab Logo -->
+        <img src="${labLogo}" style="position: absolute; left: 25px; top: 25px; width: 60px; height: 60px; object-fit: contain;" alt="Lab Logo" />
 
-        <!-- Simple Fallback logo if upgov.png fails -->
-        <div style="display: none; position: absolute; left: 25px; top: 25px; width: 60px; height: 60px; text-align: center; line-height: 30px; font-weight: bold; font-size: 10px; color: black;">उत्तर<br>प्रदेश</div>
-
-        <!-- Simple Hospital Information - like reference -->
+        <!-- Lab Information -->
         <div style="text-align: center; margin-left: 100px; padding: 10px;">
-          <h1 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #000; font-family: 'Times New Roman', serif;">राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
-          <p style="margin: 5px 0; font-size: 14px; color: #000; font-family: 'Times New Roman', serif;">चौकाघाट, वाराणसी-221002</p>
+          <h1 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #000; font-family: 'Times New Roman', serif;">${labName}</h1>
+          <p style="margin: 5px 0; font-size: 14px; color: #000; font-family: 'Times New Roman', serif;">${labAddress}</p>
         </div>
       </div>
 

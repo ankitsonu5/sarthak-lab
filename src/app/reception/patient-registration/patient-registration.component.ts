@@ -135,8 +135,18 @@ export class PatientRegistrationComponent implements OnInit, OnDestroy, AfterVie
         this.isGenderLocked = true;
         this.lockedGender = g;
       } else if (raw) {
-        // Fallback lock to Female
-        const g: 'Male'|'Female'|'Other' = 'Female';
+        // Fallback: Use common sense mapping for standard prefixes
+        let g: 'Male'|'Female'|'Other' = 'Female';
+        if (lower === 'mr' || lower === 'master') {
+          g = 'Male';
+        } else if (lower === 'mrs' || lower === 'miss' || lower === 'ms') {
+          g = 'Female';
+        } else if (lower === 'dr' || lower === 'prof') {
+          // Don't lock for gender-neutral titles
+          this.isGenderLocked = false;
+          this.lockedGender = '';
+          return;
+        }
         genderCtrl?.setValue(g, { emitEvent: false });
         this.isGenderLocked = true;
         this.lockedGender = g;

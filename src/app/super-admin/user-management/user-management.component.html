@@ -1,0 +1,163 @@
+<div class="user-management-container">
+  <!-- Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-users"></i> User Management</h1>
+    <p>Manage all users across all labs</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fas fa-users"></i></div>
+      <div class="stat-content">
+        <h3>{{ users.length }}</h3>
+        <p>Total Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card active">
+      <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+      <div class="stat-content">
+        <h3>{{ getActiveUsersCount() }}</h3>
+        <p>Active Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card inactive">
+      <div class="stat-icon"><i class="fas fa-user-times"></i></div>
+      <div class="stat-content">
+        <h3>{{ getInactiveUsersCount() }}</h3>
+        <p>Inactive Users</p>
+      </div>
+    </div>
+
+    <div class="stat-card filtered">
+      <div class="stat-icon"><i class="fas fa-filter"></i></div>
+      <div class="stat-content">
+        <h3>{{ filteredUsers.length }}</h3>
+        <p>Filtered Results</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <div class="filter-group">
+      <label>Search:</label>
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onFilterChange()"
+        placeholder="Search by name, email, phone..."
+        class="search-input"
+      >
+    </div>
+
+    <div class="filter-group">
+      <label>Role:</label>
+      <select [(ngModel)]="filterRole" (change)="onFilterChange()" class="filter-select">
+        <option value="all">All Roles</option>
+        <option value="SuperAdmin">SuperAdmin</option>
+        <option value="LabAdmin">LabAdmin</option>
+        <option value="Admin">Admin</option>
+        <option value="Technician">Technician</option>
+        <option value="Doctor">Doctor</option>
+        <option value="Receptionist">Receptionist</option>
+        <option value="Pathology">Pathology</option>
+        <option value="Patient">Patient</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
+        <option value="all">All Status</option>
+        <option value="active">Active Only</option>
+        <option value="inactive">Inactive Only</option>
+      </select>
+    </div>
+
+    <button (click)="loadUsers()" class="btn-refresh">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <p><i class="fas fa-spinner fa-spin"></i> Loading users...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-alert">
+    <p><i class="fas fa-exclamation-triangle"></i> {{ error }}</p>
+  </div>
+
+  <!-- Users Table -->
+  <div *ngIf="!loading && !error" class="users-table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Sr No</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Last Login</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of filteredUsers; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="user-name">
+              <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+              <small>{{ user.username }}</small>
+            </div>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone }}</td>
+          <td>
+            <span class="badge badge-role" [class]="'badge-' + user.role.toLowerCase()">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span class="badge" [class.badge-success]="user.isActive" [class.badge-danger]="!user.isActive">
+              {{ user.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>{{ formatDate(user.createdAt) }}</td>
+          <td>{{ formatDate(user.lastLogin || '') }}</td>
+          <td>
+            <div class="action-buttons">
+              <button
+                (click)="toggleUserStatus(user)"
+                class="btn-action"
+                [class.btn-activate]="!user.isActive"
+                [class.btn-deactivate]="user.isActive"
+                title="{{ user.isActive ? 'Deactivate' : 'Activate' }}"
+              >
+                <i [class]="user.isActive ? 'fas fa-ban' : 'fas fa-check'"></i>
+              </button>
+              <button
+                (click)="deleteUser(user)"
+                class="btn-action btn-delete"
+                title="Delete User"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="filteredUsers.length === 0" class="empty-state">
+      <p>No users found matching the filters.</p>
+    </div>
+  </div>
+</div>
+

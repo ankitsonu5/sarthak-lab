@@ -6,9 +6,9 @@
       <!-- Hospital Header with Logo and Title -->
       <div class="hospital-header">
         <div class="hospital-logo">
-          <span class="medical-cross"><img src="assets/images/upremovebg.png"></span>
-          <div class="hospital-name"><strong>   <h1>सार्थक डायग्नोस्टिक नेटवर्क <br>
-       <span class="sub-title">Advanced Diagnostic & Pathology Services</span></h1></strong></div>
+          <span class="medical-cross"><img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)" alt="Lab Logo"></span>
+          <div class="hospital-name"><strong>   <h1>{{ defaultLabConfig.getLabName(labSettings?.labName) }} <br>
+       <span class="sub-title">{{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city) }}</span></h1></strong></div>
         </div>
         <div class="main-title"></div> <!-- Empty for layout adjustment -->
       </div>

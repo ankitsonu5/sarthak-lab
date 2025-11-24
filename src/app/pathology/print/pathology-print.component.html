@@ -42,13 +42,13 @@
       <table class="header-table" role="presentation" style="width:100%;">
         <tr>
           <td class="logo-cell" style="width:140px; vertical-align:middle">
-            <img [src]="labSettings?.logoDataUrl || 'assets/images/myupgov.png'" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+            <img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
           </td>
           <td class="hospital-info-cell" style="text-align:center">
             <div class="hospital-info">
-              <h1 class="hospital-name">{{ labSettings?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय' }}</h1>
+              <h1 class="hospital-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
               <h2 class="hospital-location">
-                {{ (labSettings?.addressLine1 || '') }} {{ labSettings?.addressLine2 || '' }} {{ labSettings?.city || '' }} {{ labSettings?.state || '' }} {{ labSettings?.pincode || '' }}
+                {{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 ? (labSettings?.addressLine1 + ' ' + (labSettings?.addressLine2 || '') + ' ' + (labSettings?.city || '') + ' ' + (labSettings?.state || '') + ' ' + (labSettings?.pincode || '')).trim() : undefined) }}
               </h2>
               <div class="header-note" *ngIf="labSettings?.headerNote">{{ labSettings?.headerNote }}</div>
             </div>

@@ -140,13 +140,9 @@ const connectDB = async () => {
       throw new Error('MONGODB_URI environment variable is required');
     }
 
-    // Add database name if not present in Atlas URI
-    if (mongoUri.includes('mongodb+srv://') && !mongoUri.includes('/hospital_management')) {
-      mongoUri = mongoUri.replace('/?', '/hospital_management?');
-      if (!mongoUri.includes('?')) {
-        mongoUri += '/hospital_management';
-      }
-    }
+    // Use the URI as-is from .env file (database name already included)
+    console.log('📍 Using MongoDB URI from .env file');
+    console.log('🗃️ Database:', mongoUri.split('/').pop().split('?')[0]);
 
     console.log(`🔄 Attempting to connect to MongoDB Atlas...`);
     console.log(`📍 Connection URI: ${mongoUri.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')}`);

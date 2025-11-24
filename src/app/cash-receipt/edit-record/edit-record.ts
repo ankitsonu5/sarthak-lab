@@ -12,6 +12,7 @@ import { PatientService } from '../../reception/patient.service';
 import { AlertService } from '../../shared/services/alert.service';
 
 import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 @Component({
 
@@ -105,7 +106,8 @@ export class EditRecord implements OnInit, OnDestroy {
     private patientService: PatientService,
     private alertService: AlertService,
     private http: HttpClient,
-    private labService: LabSettingsService
+    private labService: LabSettingsService,
+    private defaultLabConfig: DefaultLabConfigService
   ) {}
 
   ngOnInit(): void {
@@ -191,27 +193,9 @@ export class EditRecord implements OnInit, OnDestroy {
         }
       }
     } catch {}
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx?.drawImage(img, 0, 0);
-        this.logoBase64 = canvas.toDataURL('image/png');
-        console.log('✅ EditRecord: Fallback logo loaded for print');
-      };
-      img.onerror = () => {
-        console.warn('⚠️ EditRecord: Fallback logo failed to load');
-        this.logoBase64 = '';
-      };
-      img.src = 'assets/images/upremovebg.png';
-    } catch (e) {
-      console.warn('⚠️ EditRecord: Error preparing logo for print', e);
-      this.logoBase64 = '';
-    }
+    // Use default lab config logo as fallback
+    this.logoBase64 = this.defaultLabConfig.getLabLogo();
+    console.log('✅ EditRecord: Using default lab logo for print');
   }
 
   loadInvoiceRecords(page?: number, soft?: boolean): void {
@@ -1753,8 +1737,8 @@ export class EditRecord implements OnInit, OnDestroy {
         paymentMethod: record.payment?.paymentMethod || record.paymentMethod || 'CASH'
       },
       labInfo: {
-        name: (activeLab?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय'),
-        address: (labAddress || 'चौकाघाट, वाराणसी')
+        name: this.defaultLabConfig.getLabName(activeLab?.labName),
+        address: this.defaultLabConfig.getLabAddress(labAddress)
       },
       mode: (record.mode || record.payment?.mode || record.payment?.paymentMode || '').toString().toUpperCase(),
       doctorRefNo: record.doctorRefNo || record.doctorRef || '',
@@ -1987,11 +1971,11 @@ export class EditRecord implements OnInit, OnDestroy {
           ${showHeader ? `
           <div class="hospital-header">
             <div class="logo-section">
-              ${this.logoBase64 ? `<img src="${this.logoBase64}" alt="Lab Logo" class="gov-logo" style="background: white; padding: 5px; border-radius: 5px;">` : '<div class="gov-logo" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px;">LOGO</div>'}
+              ${this.logoBase64 || this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl) ? `<img src="${this.logoBase64 || this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl)}" alt="Lab Logo" class="gov-logo" style="background: white; padding: 5px; border-radius: 5px;">` : '<div class="gov-logo" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px;">LOGO</div>'}
             </div>
             <div class="hospital-info">
-              <h1 class="hospital-name">${this.invoiceData.labInfo?.name || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय'}</h1>
-              <p class="hospital-address">${this.invoiceData.labInfo?.address || 'चौकाघाट, वाराणसी'}</p>
+              <h1 class="hospital-name">${this.defaultLabConfig.getLabName(this.invoiceData.labInfo?.name)}</h1>
+              <p class="hospital-address">${this.defaultLabConfig.getLabAddress(this.invoiceData.labInfo?.address)}</p>
               ${headerNote ? `<div class="header-note" style="font-size:12px; margin-top:4px;">${headerNote}</div>` : ''}
             </div>
             <div class="logo-section" style="text-align:right">

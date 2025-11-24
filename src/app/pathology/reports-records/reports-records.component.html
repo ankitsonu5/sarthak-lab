@@ -62,11 +62,10 @@
   <!-- 3. Hospital Header with Logo -->
   <div class="hospital-header-section" #pdfHeader>
     <div class="logo-section">
-      <img src="assets/images/myupgov.png" alt="UP Government Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+      <img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)" alt="Lab Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
       <div class="hospital-info">
-        <h2>सार्थक डायग्नोस्टिक नेटवर्क</h2>
-        <h3>SARTHAK DIAGNOSTIC NETWORK</h3>
-        <p>Advanced Diagnostic & Pathology Services</p>
+        <h2>{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h2>
+        <p>{{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city) }}</p>
       </div>
     </div>
   </div>

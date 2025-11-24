@@ -7,6 +7,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { PathologyInvoiceService } from '../../services/pathology-invoice.service';
 import { environment } from '../../../environments/environment';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
+import { LabNameService } from '../../core/services/lab-name.service';
 import { PathologyService as MasterPathologyService } from '../../setup/pathology/services/pathology.service';
 import { AlertService } from '../../shared/services/alert.service';
 import { SuccessAlertComponent } from '../../shared/components/success-alert/success-alert.component';
@@ -74,6 +75,9 @@ export class PathologyRegistrationComponent implements OnInit {
   dailyNumber: number = 0;
   yearlyNumber: string = '';
   currentDate: string = '';
+
+  // Lab branding
+  labName: string = 'SARTHAK DIAGNOSTIC NETWORK';
 
   // Lab numbers edit mode (from Registered Reports)
   labEditMode: boolean = false;
@@ -150,7 +154,8 @@ export class PathologyRegistrationComponent implements OnInit {
     private http: HttpClient,
     private dataRefresh: DataRefreshService,
     private masterPathologyService: MasterPathologyService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private labNameService: LabNameService
   ) {}
 
   ngOnInit(): void {
@@ -158,6 +163,22 @@ export class PathologyRegistrationComponent implements OnInit {
     this.initializeDynamicData();
     this.initializeForm();
     this.loadCategories(); // Load category mapping
+
+    // Load lab name for header branding
+    try {
+      const initialName = this.labNameService.getLabName();
+      if (initialName) {
+        this.labName = String(initialName).toUpperCase();
+      }
+      this.subscription.add(
+        this.labNameService.labName$.subscribe(name => {
+          if (name) {
+            this.labName = String(name).toUpperCase();
+            try { this.cdr.detectChanges(); } catch {}
+          }
+        })
+      );
+    } catch {}
 
     // Auto-refresh categories/test definitions when pathology master changes
     try {

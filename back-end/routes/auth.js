@@ -137,8 +137,13 @@ router.post('/login', async (req, res) => {
     // MongoDB authentication
     console.log('🔄 Authenticating user with MongoDB');
 
+    // Normalize email to ensure case-insensitive lookup
+    const emailNorm = String(email || '').trim().toLowerCase();
+    // Normalize password to avoid leading/trailing space issues
+    const passwordNorm = String(password || '').trim();
+
     // Normal database authentication
-    const user = await User.findOne({ email }).populate('labId');
+    const user = await User.findOne({ email: emailNorm }).populate('labId');
     console.log('👤 User found:', user ? 'YES' : 'NO');
 
     if (!user) {
@@ -153,7 +158,7 @@ router.post('/login', async (req, res) => {
 
     // Verify password
     console.log('🔐 Verifying password...');
-    const isPasswordValid = await user.comparePassword(password);
+    const isPasswordValid = await user.comparePassword(passwordNorm);
     console.log('🔐 Password valid:', isPasswordValid ? 'YES' : 'NO');
 
     if (!isPasswordValid) {

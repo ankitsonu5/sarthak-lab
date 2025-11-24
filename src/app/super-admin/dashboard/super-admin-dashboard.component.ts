@@ -1,7 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+
+interface AdminUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePicture?: string;
+}
 
 interface Lab {
   _id: string;
@@ -19,6 +27,7 @@ interface Lab {
   totalPatients: number;
   totalReports: number;
   createdAt: string;
+  adminUser?: AdminUser; // Lab admin user details
 }
 
 interface DashboardStats {
@@ -56,13 +65,28 @@ export class SuperAdminDashboardComponent implements OnInit {
   filterPlan: string = 'all'; // all, trial, basic, premium
   searchQuery: string = '';
 
+  // View mode
+  viewMode: 'table' | 'cards' = 'cards'; // Default to cards view
+
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.loadDashboardData();
+    // Subscribe to query params to handle filter changes from sidebar
+    this.route.queryParams.subscribe(params => {
+      const filter = params['filter'];
+      if (filter === 'all') {
+        this.filterStatus = 'all';
+      } else if (filter === 'pending') {
+        this.filterStatus = 'pending';
+      } else if (filter === 'active') {
+        this.filterStatus = 'approved';
+      }
+      this.loadDashboardData();
+    });
   }
 
   loadDashboardData(): void {
@@ -76,15 +100,13 @@ export class SuperAdminDashboardComponent implements OnInit {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
       next: (response) => {
-        console.log('✅ Labs loaded:', response);
         this.labs = response.labs || [];
         this.calculateStats();
         this.applyFilters();
         this.loading = false;
       },
       error: (error) => {
-        console.error('❌ Error loading labs:', error);
-        this.error = error.error?.message || 'Failed to load labs';
+        this.error = error.error?.message || error.message || 'Failed to load labs';
         this.loading = false;
       }
     });
@@ -141,13 +163,11 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.put<any>(apiUrl, {}, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
-      next: (response) => {
-        console.log('✅ Lab approved:', response);
+      next: () => {
         alert('Lab approved successfully!');
         this.loadDashboardData();
       },
       error: (error) => {
-        console.error('❌ Error approving lab:', error);
         alert(error.error?.message || 'Failed to approve lab');
       }
     });
@@ -165,13 +185,11 @@ export class SuperAdminDashboardComponent implements OnInit {
     this.http.put<any>(apiUrl, { reason }, {
       headers: { Authorization: `Bearer ${token}` }
     }).subscribe({
-      next: (response) => {
-        console.log('✅ Lab rejected:', response);
+      next: () => {
         alert('Lab rejected successfully!');
         this.loadDashboardData();
       },
       error: (error) => {
-        console.error('❌ Error rejecting lab:', error);
         alert(error.error?.message || 'Failed to reject lab');
       }
     });
@@ -203,6 +221,28 @@ export class SuperAdminDashboardComponent implements OnInit {
       month: 'short',
       year: 'numeric'
     });
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'table' ? 'cards' : 'table';
+  }
+
+  getAdminInitials(lab: Lab): string {
+    if (!lab.adminUser) return 'LA';
+    const firstName = lab.adminUser.firstName || '';
+    const lastName = lab.adminUser.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'LA';
+  }
+
+  getAdminProfilePicture(lab: Lab): string | null {
+    if (!lab.adminUser?.profilePicture) return null;
+    const pic = lab.adminUser.profilePicture;
+    // If it's already a full URL, return as-is
+    if (pic.startsWith('http://') || pic.startsWith('https://')) return pic;
+    // If it starts with /uploads, proxy will handle it
+    if (pic.startsWith('/uploads/')) return pic;
+    // Otherwise prepend /
+    return pic.startsWith('/') ? pic : '/' + pic;
   }
 
   isTrialExpiring(lab: Lab): boolean {

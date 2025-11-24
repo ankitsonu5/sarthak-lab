@@ -2,8 +2,10 @@
   <!-- Sidebar Header -->
   <div class="sidebar-header">
     <h2 class="sidebar-title">
-      <span class="sidebar-icon iconw"><img src="../../assets/images/logofinal2.png"></span>
-
+      <span class="sidebar-icon iconw">
+        <img [src]="labLogoUrl || defaultLabConfig.getLabLogo()" alt="Lab Logo" class="lab-logo">
+      </span>
+      <span class="lab-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</span>
     </h2>
   </div>
 
@@ -55,8 +57,9 @@
         <a
           *ngFor="let child of section.children; trackBy: trackChild"
           [routerLink]="child.route"
+          [queryParams]="child.queryParams || {}"
           routerLinkActive="sidebar-child-active"
-          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActiveOptions]="{ exact: false }"
           class="sidebar-child-link">
           {{ child.label }}
         </a>

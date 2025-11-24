@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface CentralOpdRow {
   regNo: string;
@@ -63,13 +65,19 @@ export class CentralOpdRegistrationComponent implements OnInit {
   rows: CentralOpdRow[] = [];
   total = 0;
   stats: { male: number; female: number; other: number; aadhaar: number; contact: number } = { male: 0, female: 0, other: 0, aadhaar: 0, contact: 0 };
+  labSettings: LabSettings | null = null;
 
   // Client-side pagination (server-side backed)
   pageSize = 100;
   currentPage = 1;
   private requestToken = 0;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
+  ) {}
 
   // Today reference for templates
   now: Date = new Date();
@@ -112,7 +120,27 @@ export class CentralOpdRegistrationComponent implements OnInit {
     // Default to current month range: 1st -> today
     this.startDate = firstOfMonth;
     this.endDate = isoToday;
+    this.loadLabSettings();
     this.fetch();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   get totalPages(): number {

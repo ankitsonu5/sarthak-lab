@@ -17,6 +17,8 @@ import { DataRefreshService } from '../../core/services/data-refresh.service';
 import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AlertService } from '../../shared/services/alert.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
 
 
 
@@ -84,6 +86,7 @@ export class PatientModalNewComponent implements OnInit {
   // Logo for print
   logoBase64: string = '';
   secondaryLogoBase64: string = '';
+  labSettings: LabSettings | null = null;
 
   genderOptions = ['Male', 'Female', 'Other'];
   ageInOptions = ['Years', 'Months', 'Days'];
@@ -109,7 +112,9 @@ export class PatientModalNewComponent implements OnInit {
     private dataRefresh: DataRefreshService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private alerts: AlertService
+    private alerts: AlertService,
+    private defaultLabConfig: DefaultLabConfigService,
+    private labService: LabSettingsService
   ) {
     this.isEditMode = data.mode === 'edit';
     this.isViewMode = data.mode === 'view';
@@ -144,6 +149,19 @@ export class PatientModalNewComponent implements OnInit {
     console.log('🚀 NgOnInit - Patient:', this.data?.patient);
     console.log('🚀 NgOnInit - Appointment:', this.data?.appointment);
     console.log('🚀 NgOnInit - Mode:', this.data?.mode);
+
+    // Load lab settings
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) this.labSettings = JSON.parse(cached);
+    } catch {}
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
 
     this.initializeForm();
     this.loadDoctorsAndDepartments();
@@ -1267,11 +1285,11 @@ export class PatientModalNewComponent implements OnInit {
           <!-- Header with logos and hospital name -->
           <div class="header">
             <div class="logo-circle">
-              ${this.logoBase64 ? `<img src="${this.logoBase64}" alt="UP Government Logo" class="logo-image">` : `<img src="${this.getAssetUrl('assets/images/myupgov.png')}" alt="UP Government Logo" class="logo-image">`}
+              <img src="${this.logoBase64 || this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl)}" alt="Lab Logo" class="logo-image">
             </div>
             <div class="hospital-info">
-              <div class="hospital-name">सार्थक डायग्नोस्टिक नेटवर्क</div>
-              <div class="hospital-address">Advanced Diagnostic & Pathology Services</div>
+              <div class="hospital-name">${this.defaultLabConfig.getLabName(this.labSettings?.labName)}</div>
+              <div class="hospital-address">${this.defaultLabConfig.getLabAddress(this.labSettings?.addressLine1 || this.labSettings?.city)}</div>
             </div>
             <div class="logo-circle">
               ${this.secondaryLogoBase64 ? `<img src="${this.secondaryLogoBase64}" alt="One Rupee Logo" class="logo-image">` : `<img src="${this.getAssetUrl('assets/images/onerupeermbg.png')}" alt="One Rupee Logo" class="logo-image">`}
@@ -1629,65 +1647,15 @@ export class PatientModalNewComponent implements OnInit {
 
   // Load logos as base64 for print
   loadLogos(): void {
-    console.log('🎯 MODAL LOGO LOADING: Starting logo load process...');
+    console.log('🎯 MODAL LOGO LOADING: Using lab settings logo...');
 
-    // Load primary logo
-    const img1 = new Image();
-    img1.crossOrigin = 'anonymous';
-    img1.onload = () => {
-      console.log('✅ MODAL PRIMARY LOGO: Image loaded successfully', {
-        width: img1.width,
-        height: img1.height,
-        src: img1.src
-      });
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img1.width;
-      canvas.height = img1.height;
-      ctx?.drawImage(img1, 0, 0);
-      this.logoBase64 = canvas.toDataURL('image/png');
-      console.log('✅ MODAL PRIMARY LOGO: Base64 conversion complete', { width: img1.width, height: img1.height, src: img1.src, base64Length: this.logoBase64.length, preview: this.logoBase64.substring(0, 50) + '...' });
+    // Use lab settings logo or default
+    this.logoBase64 = this.labSettings?.logoDataUrl || this.defaultLabConfig.getLabLogo();
+    console.log('✅ MODAL PRIMARY LOGO: Using lab logo from settings');
 
-    };
-    img1.onerror = (error) => {
-      console.error('❌ MODAL PRIMARY LOGO: Failed to load', {
-        src: img1.src,
-        error: error
-      });
-      this.logoBase64 = '';
-    };
-    console.log('🔄 MODAL PRIMARY LOGO: Setting src to assets/images/myupgov.png');
-    img1.src = 'assets/images/myupgov.png';
-
-    // Load secondary logo
-    const img2 = new Image();
-    img2.crossOrigin = 'anonymous';
-    img2.onload = () => {
-      console.log('✅ MODAL SECONDARY LOGO: Image loaded successfully', {
-        width: img2.width,
-        height: img2.height,
-        src: img2.src
-      });
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img2.width;
-      canvas.height = img2.height;
-      ctx?.drawImage(img2, 0, 0);
-      this.secondaryLogoBase64 = canvas.toDataURL('image/png');
-      console.log('✅ MODAL SECONDARY LOGO: Base64 conversion complete', {
-        base64Length: this.secondaryLogoBase64.length,
-        preview: this.secondaryLogoBase64.substring(0, 50) + '...'
-      });
-    };
-    img2.onerror = (error) => {
-      console.error('❌ MODAL SECONDARY LOGO: Failed to load', {
-        src: img2.src,
-        error: error
-      });
-      this.secondaryLogoBase64 = '';
-    };
-    console.log('🔄 MODAL SECONDARY LOGO: Setting src to assets/images/onerupeermbg.png');
-    img2.src = 'assets/images/onerupeermbg.png';
+    // Secondary logo from lab settings (if available)
+    this.secondaryLogoBase64 = this.labSettings?.sideLogoDataUrl || '';
+    console.log('✅ MODAL SECONDARY LOGO: Using side logo from settings');
   }
 
   // Calculate registration number for patient (cumulative from Jan 1st)

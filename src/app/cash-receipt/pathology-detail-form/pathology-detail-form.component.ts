@@ -16,6 +16,7 @@ import { environment } from '../../../environments/environment';
 
 import { AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 @Component({
   selector: 'app-pathology-detail-form',
@@ -234,7 +235,8 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     private cdr: ChangeDetectorRef,
     private dataRefresh: DataRefreshService,
     private alertService: AlertService,
-    private labService: LabSettingsService
+    private labService: LabSettingsService,
+    private defaultLabConfig: DefaultLabConfigService
   ) {}
 
   private routerSub?: any;
@@ -3598,22 +3600,9 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         }
       }
     } catch {}
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      this.logoBase64 = canvas.toDataURL('image/png');
-      console.log('✅ Logo loaded for print');
-    };
-    img.onerror = () => {
-      console.log('❌ Logo failed to load');
-      this.logoBase64 = '';
-    };
-    img.src = 'assets/images/upremovebg.png'; // Fallback logo if none set
+    // Use default lab config logo as fallback
+    this.logoBase64 = this.defaultLabConfig.getLabLogo();
+    console.log('✅ Using default lab logo for print');
   }
 
   // Get short version of receipt number for table display
@@ -3916,7 +3905,11 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
       tests: tests,
       payment: { totalAmount: patient.totalAmount || patient.payment?.totalAmount || 0 },
       mode: patient.mode || this.pathologyForm.get('mode')?.value || 'OPD',
-      labInfo: { name: this.labSettings?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय', address: [this.labSettings?.addressLine1, this.labSettings?.addressLine2, this.labSettings?.city, this.labSettings?.state, this.labSettings?.pincode].filter(Boolean).join(', ') || 'चौकाघाट, वाराणसी', phone: this.labSettings?.phone || this.labSettings?.altPhone || '' },
+      labInfo: {
+        name: this.defaultLabConfig.getLabName(this.labSettings?.labName),
+        address: this.defaultLabConfig.getLabAddress([this.labSettings?.addressLine1, this.labSettings?.addressLine2, this.labSettings?.city, this.labSettings?.state, this.labSettings?.pincode].filter(Boolean).join(', ')),
+        phone: this.labSettings?.phone || this.labSettings?.altPhone || ''
+      },
       department: patient.department || null,
       doctor: patient.doctor || null,
       doctorRefNo: patient.doctorRefNo || this.pathologyForm.get('doctorRefNo')?.value || ''
@@ -4240,11 +4233,11 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         <div class="invoice-container">
           <div class="hospital-header">
             <div class="logo-section">
-              ${this.logoBase64 ? `<img src="${this.logoBase64}" alt="Government Logo" class="gov-logo" style="background: white; padding: 5px; border-radius: 5px;">` : '<div class="gov-logo" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px;">LOGO</div>'}
+              ${this.logoBase64 || this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl) ? `<img src="${this.logoBase64 || this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl)}" alt="Lab Logo" class="gov-logo" style="background: white; padding: 5px; border-radius: 5px;">` : '<div class="gov-logo" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px;">LOGO</div>'}
             </div>
             <div class="hospital-info">
-              <h1 class="hospital-name">${this.invoiceData.labInfo?.name || 'सार्थक डायग्नोस्टिक नेटवर्क'}</h1>
-              <p class="hospital-address">${this.invoiceData.labInfo?.address || 'Advanced Diagnostic & Pathology Services'}</p>
+              <h1 class="hospital-name">${this.defaultLabConfig.getLabName(this.invoiceData.labInfo?.name)}</h1>
+              <p class="hospital-address">${this.defaultLabConfig.getLabAddress(this.invoiceData.labInfo?.address)}</p>
             </div>
             <div class="logo-section" style="text-align:right">
               ${this.labSettings?.sideLogoDataUrl ? `<img src="${this.labSettings?.sideLogoDataUrl}" alt="Side Logo" class="gov-logo" style="height:80px; width:auto; object-fit:contain;">` : ''}

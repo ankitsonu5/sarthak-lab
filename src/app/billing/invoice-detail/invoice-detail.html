@@ -2,15 +2,14 @@
   <!-- Hospital Header -->
   <div class="hospital-header">
     <div class="logo-section">
-      <img src="/assets/images/upgov.png"
-           alt="Government Logo"
+      <img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)"
+           alt="Lab Logo"
            class="gov-logo"
-           style="background: white; padding: 5px; border-radius: 5px;"
-           onerror="this.style.display='none'">
+           style="background: white; padding: 5px; border-radius: 5px;">
     </div>
     <div class="hospital-info">
-      <h1 class="hospital-name">{{ invoiceData.labInfo.name }}</h1>
-      <p class="hospital-address">{{ invoiceData.labInfo.address }}</p>
+      <h1 class="hospital-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
+      <p class="hospital-address">{{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city) }}</p>
       <h2 class="receipt-title">Hospital Cash Receipt</h2>
     </div>
   </div>

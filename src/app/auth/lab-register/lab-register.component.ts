@@ -78,9 +78,11 @@ export class LabRegisterComponent implements OnInit {
           this.success = true;
           this.registeredLabCode = response.lab.labCode;
 
-          // Redirect to login after 3 seconds
+          // Redirect to login after 5 seconds; prefill login email
+          const prefillEmail = (this.registerForm.value.adminEmail || '').toLowerCase();
+          try { localStorage.setItem('prefillLoginEmail', prefillEmail); } catch {}
           setTimeout(() => {
-            this.router.navigate(['/auth/login']);
+            this.router.navigate(['/auth/login'], { queryParams: { email: prefillEmail, new: '1' } });
           }, 5000);
         },
         error: (error) => {

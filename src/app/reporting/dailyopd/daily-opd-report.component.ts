@@ -5,16 +5,18 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
-interface DailyOpdData {
+interface DailyPathologyData {
   date: string;
-  totalPatients: number;
-  newPatients: number;
-  departments: {
+  totalTests: number;
+  totalAmount: number;
+  categories: {
     _id: string;
     name: string;
-    newPatients: number;
-    total: number;
+    totalTests: number;
+    totalAmount: number;
   }[];
 }
 
@@ -26,16 +28,19 @@ interface DailyOpdData {
   styleUrl: './daily-opd-report.component.css'
 })
 export class DailyOpdReportComponent implements OnInit {
-  reportData: DailyOpdData | null = null;
+  reportData: DailyPathologyData | null = null;
   selectedDate: string = '';
   isLoading = false;
+  labSettings: LabSettings | null = null;
 
-  // Rows to render in table (departments + final Total row)
-  displayRows: Array<{ name: string; newPatients: number; total: number; isTotal?: boolean }> = [];
+  // Rows to render in table (categories + final Total row)
+  displayRows: Array<{ name: string; totalTests: number; totalAmount: number; isTotal?: boolean }> = [];
 
   constructor(
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) {
     // Set default date to today
     const today = new Date();
@@ -50,7 +55,27 @@ export class DailyOpdReportComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadLabSettings();
     this.generateReport();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   generateReport(): void {
@@ -65,27 +90,28 @@ export class DailyOpdReportComponent implements OnInit {
       date: this.selectedDate
     };
 
-    this.http.get<DailyOpdData>(`${environment.apiUrl}/reports/daily-opd`, { params })
+    this.http.get<DailyPathologyData>(`${environment.apiUrl}/reports/daily-pathology`, { params })
       .subscribe({
         next: (data) => {
-          console.log('✅ Daily OPD Report Response:', data);
-          console.log('📊 Departments:', data.departments);
-          console.log('📊 Total New Patients:', data.newPatients);
+          console.log('✅ Daily Pathology Report Response:', data);
+          console.log('📊 Categories:', data.categories);
+          console.log('📊 Total Tests:', data.totalTests);
+          console.log('📊 Total Amount:', data.totalAmount);
           this.reportData = data;
 
-          // Build display rows: departments + Total as the last row
-          const rows: Array<{ name: string; newPatients: number; total: number; isTotal?: boolean }> = [];
-          if (data?.departments?.length) {
-            for (const d of data.departments) {
-              if (d?.name && String(d.name).trim().length) {
-                rows.push({ name: d.name, newPatients: d.newPatients || 0, total: d.total || 0 });
+          // Build display rows: categories + Total as the last row
+          const rows: Array<{ name: string; totalTests: number; totalAmount: number; isTotal?: boolean }> = [];
+          if (data?.categories?.length) {
+            for (const c of data.categories) {
+              if (c?.name && String(c.name).trim().length) {
+                rows.push({ name: c.name, totalTests: c.totalTests || 0, totalAmount: c.totalAmount || 0 });
               }
             }
           }
           rows.push({
             name: 'Total',
-            newPatients: data?.newPatients || 0,
-            total: data?.totalPatients || 0,
+            totalTests: data?.totalTests || 0,
+            totalAmount: data?.totalAmount || 0,
             isTotal: true
           });
           this.displayRows = rows;
@@ -94,7 +120,7 @@ export class DailyOpdReportComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('❌ Error loading daily OPD report:', error);
+          console.error('❌ Error loading daily pathology report:', error);
           this.isLoading = false;
           this.cdr.detectChanges();
           alert('Error loading report: ' + (error.error?.message || error.message));

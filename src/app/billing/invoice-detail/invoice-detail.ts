@@ -1,4 +1,6 @@
 import { Component, OnInit, Input, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface PatientInfo {
   patientId: string;
@@ -54,14 +56,40 @@ export class InvoiceDetail implements OnInit, OnChanges {
   @Input() invoiceData: InvoiceData | null = null;
   @Input() bookingId: string = '';
 
-  // No sample data - use only real data from pathology form
+  // Lab settings for dynamic logo
+  labSettings: LabSettings | null = null;
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
+  ) {}
 
   ngOnInit(): void {
+    // Load lab settings
+    this.loadLabSettings();
     // Only use real data passed from pathology form
     this.computeGrouping();
     this.cdr.detectChanges();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {

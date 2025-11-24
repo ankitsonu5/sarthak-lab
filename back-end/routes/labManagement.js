@@ -173,6 +173,7 @@ router.post('/register', async (req, res) => {
  */
 router.get('/labs', authenticateToken, async (req, res) => {
   try {
+    console.log('🔍 Fetching labs for SuperAdmin...');
     const user = req.user;
 
     if (user.role !== 'SuperAdmin') {
@@ -196,18 +197,53 @@ router.get('/labs', authenticateToken, async (req, res) => {
     }
 
     // Get total count
+    console.log('📊 Counting labs with filter:', filter);
     const total = await Lab.countDocuments(filter);
+    console.log('📊 Total labs found:', total);
 
     // Get labs with pagination
+    console.log('🔍 Fetching labs from database...');
     const labs = await Lab.find(filter)
       .select('-settings -deletedAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
+    console.log('✅ Labs fetched:', labs.length);
+
+    // Fetch admin user for each lab
+    console.log('👤 Fetching admin users for labs...');
+    const labsWithAdmin = await Promise.all(labs.map(async (lab) => {
+      const labObj = lab.toObject();
+
+      try {
+        // Find the lab admin user
+        const adminUser = await User.findOne({
+          labId: lab._id,
+          role: 'LabAdmin'
+        }).select('firstName lastName email profilePicture').lean();
+
+        if (adminUser) {
+          labObj.adminUser = {
+            _id: adminUser._id,
+            firstName: adminUser.firstName,
+            lastName: adminUser.lastName,
+            email: adminUser.email,
+            profilePicture: adminUser.profilePicture
+          };
+        }
+      } catch (err) {
+        console.error(`⚠️ Error fetching admin for lab ${lab._id}:`, err.message);
+        // Continue without admin user data
+      }
+
+      return labObj;
+    }));
+
+    console.log('✅ Admin users fetched. Sending response...');
     res.json({
       success: true,
-      labs,
+      labs: labsWithAdmin,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -215,6 +251,7 @@ router.get('/labs', authenticateToken, async (req, res) => {
         pages: Math.ceil(total / limit)
       }
     });
+    console.log('✅ Response sent successfully!');
 
   } catch (error) {
     console.error('❌ Error fetching labs:', error);

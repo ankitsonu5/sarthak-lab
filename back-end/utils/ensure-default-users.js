@@ -9,7 +9,8 @@ async function ensureDefaultUsers() {
         role: 'SuperAdmin',
         email: process.env.SUPERADMIN_EMAIL || 'superadmin@pathologysaas.com',
         username: process.env.SUPERADMIN_USERNAME || 'superadmin',
-        password: process.env.SUPERADMIN_PASSWORD || 'superadmin123',
+        // Keep SuperAdmin password consistent across scripts and UI
+        password: process.env.SUPERADMIN_PASSWORD || 'SuperAdmin@123',
         firstName: 'Super',
         lastName: 'Admin',
         phone: '9999999990'

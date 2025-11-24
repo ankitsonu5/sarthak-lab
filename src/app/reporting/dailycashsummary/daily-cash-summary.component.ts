@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { CategoryHeadService, CategoryHead } from '../../setup/category-heads/services/category-head.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
 
 interface PivotRow {
   receiptNumber: number;
@@ -36,11 +38,14 @@ export class DailyCashSummaryComponent implements OnInit {
   grandTotal = 0;
 
   isLoading = false;
+  labSettings: LabSettings | null = null;
 
   constructor(
     private http: HttpClient,
     private categoryHeadService: CategoryHeadService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public defaultLabConfig: DefaultLabConfigService,
+    private labService: LabSettingsService
   ) {
     const today = new Date();
     this.todayDate = this.formatDateForInput(today);
@@ -50,6 +55,19 @@ export class DailyCashSummaryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Load lab settings
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) this.labSettings = JSON.parse(cached);
+    } catch {}
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+
     this.generateReport();
   }
 

@@ -5,6 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface Department {
   _id: string;
@@ -32,10 +34,13 @@ export class ConsolidatedOpdReportComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   isLoading = false;
+  labSettings: LabSettings | null = null;
 
   constructor(
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) {}
 
   private formatDateForInput(date: Date): string {
@@ -51,8 +56,30 @@ export class ConsolidatedOpdReportComponent implements OnInit {
     this.fromDate = '2025-01-01'; // Fixed start date
     this.toDate = this.formatDateForInput(today);
 
+    // Load lab settings first
+    this.loadLabSettings();
+
     // Generate report automatically with default dates
     this.generateReport();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   generateReport(): void {

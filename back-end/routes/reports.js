@@ -5,6 +5,7 @@ const Appointment = require('../models/Appointment');
 const Department = require('../models/Department');
 const Counter = require('../models/Counter');
 const CounterService = require('../services/counter-service');
+const PathologyInvoice = require('../models/PathologyInvoice');
 
 const { authenticateToken, requirePermissions, authorizeRoles } = require('../middlewares/auth');
 const router = express.Router();
@@ -368,6 +369,90 @@ router.get('/daily-opd', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error generating daily OPD report',
+      error: error.message
+    });
+  }
+});
+
+
+// Daily Pathology Report - Category-wise test count and revenue
+router.get('/daily-pathology', async (req, res) => {
+  try {
+    console.log('📊 Generating daily pathology report...');
+    const { date } = req.query;
+
+    // Default to today if no date provided
+    const today = new Date();
+    const selectedDate = date ? new Date(date) : today;
+
+    const startOfDay = new Date(selectedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    console.log(`📅 Generating pathology report for date: ${selectedDate.toDateString()}`);
+
+    // Get all pathology invoices for the selected date
+    const invoices = await PathologyInvoice.find({
+      bookingDate: { $gte: startOfDay, $lte: endOfDay },
+      deleted: { $ne: true }
+    }).lean();
+
+    console.log(`📋 Found ${invoices.length} pathology invoices`);
+
+    // Group by test category
+    const categoryMap = new Map();
+    let totalTests = 0;
+    let totalAmount = 0;
+
+    for (const invoice of invoices) {
+      const tests = invoice.tests || [];
+      const invoiceAmount = invoice.payment?.totalAmount || 0;
+
+      // Count tests per category
+      for (const test of tests) {
+        const category = test.category || 'Uncategorized';
+        const testPrice = test.price || 0;
+
+        if (!categoryMap.has(category)) {
+          categoryMap.set(category, {
+            name: category,
+            totalTests: 0,
+            totalAmount: 0
+          });
+        }
+
+        const catData = categoryMap.get(category);
+        catData.totalTests += 1;
+        catData.totalAmount += testPrice;
+        totalTests += 1;
+      }
+
+      totalAmount += invoiceAmount;
+    }
+
+    // Convert map to array
+    const categories = Array.from(categoryMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    const reportData = {
+      date: selectedDate.toISOString().split('T')[0],
+      totalTests,
+      totalAmount,
+      categories
+    };
+
+    console.log('✅ Daily Pathology Report Generated Successfully');
+    console.log(`📊 Summary: Tests=${totalTests}, Amount=₹${totalAmount}`);
+
+    res.json(reportData);
+
+  } catch (error) {
+    console.error('❌ Error generating daily pathology report:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating daily pathology report',
       error: error.message
     });
   }

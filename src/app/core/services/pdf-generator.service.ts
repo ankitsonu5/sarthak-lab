@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { DefaultLabConfigService } from './default-lab-config.service';
 
 // Centralized configuration for styling
 const CONFIG = {
@@ -36,7 +37,6 @@ const CONFIG = {
     },
   },
   image: {
-    logoPath: 'assets/images/myupgov.png',
     logoWidth: 140, // Adjusted for better proportion
     logoHeight: 140,
     watermarkOpacity: 0.1, // For subtle background watermark
@@ -81,16 +81,17 @@ export interface ReportData {
   providedIn: 'root',
 })
 export class PdfGeneratorService {
-  constructor() {}
+  constructor(private defaultLabConfig: DefaultLabConfigService) {}
 
   /**
    * Generate PDF report for pathology test results
    * @param reportData Report data object
+   * @param labSettings Optional lab settings for dynamic branding
    * @returns Promise<Blob> PDF blob
    */
-  async generatePathologyReport(reportData: ReportData): Promise<Blob> {
+  async generatePathologyReport(reportData: ReportData, labSettings?: any): Promise<Blob> {
     try {
-      return await this.generateHTMLBasedPDF(reportData);
+      return await this.generateHTMLBasedPDF(reportData, labSettings);
     } catch (error) {
       console.error('HTML-based PDF generation failed:', error);
       throw new Error('Failed to generate PDF report');
@@ -332,7 +333,7 @@ export class PdfGeneratorService {
   /**
    * Generate HTML for the report
    */
-  private async createReportHTML(reportData: ReportData): Promise<HTMLElement> {
+  private async createReportHTML(reportData: ReportData, labSettings?: any): Promise<HTMLElement> {
     const container = document.createElement('div');
     container.style.cssText = `
       width: 850px;
@@ -345,13 +346,10 @@ export class PdfGeneratorService {
       box-sizing: border-box;
     `;
 
-    // Load watermark image if available
-    let watermarkBase64 = '';
-    try {
-      watermarkBase64 = await this.loadImageAsBase64(CONFIG.image.logoPath);
-    } catch (error) {
-      console.warn('Failed to load watermark image:', error);
-    }
+    // Get lab logo from settings or use default
+    const labLogo = labSettings?.logoDataUrl || this.defaultLabConfig.getLabLogo();
+    const labName = this.defaultLabConfig.getLabName(labSettings?.labName);
+    const labAddress = this.defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city);
 
     const css = `
       .pathology-report-print {
@@ -564,17 +562,16 @@ export class PdfGeneratorService {
     container.innerHTML = `
       <style>${css}</style>
       <div id="pathology-report-print" class="pathology-report-print">
-        ${watermarkBase64 ? `<img src="${watermarkBase64}" class="watermark" alt="Watermark">` : ''}
         <div class="report-header-block">
           <table class="header-table" role="presentation">
             <tr>
               <td class="logo-cell" style="width:${CONFIG.image.logoWidth}px; vertical-align:middle">
-                <img src="${CONFIG.image.logoPath}" alt="Government Logo" class="govt-logo" loading="eager">
+                <img src="${labLogo}" alt="Lab Logo" class="govt-logo" loading="eager">
               </td>
               <td class="hospital-info-cell" style="text-align:center">
                 <div class="hospital-info">
-                  <h1 class="hospital-name">राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</h1>
-                  <h2 class="hospital-location">चौकाघाट, वाराणसी-221002</h2>
+                  <h1 class="hospital-name">${labName}</h1>
+                  <h2 class="hospital-location">${labAddress}</h2>
                 </div>
               </td>
             </tr>
@@ -621,7 +618,7 @@ export class PdfGeneratorService {
   /**
    * Create repeatable header for subsequent pages
    */
-  private async createRepeatableHeaderHTML(reportData: ReportData): Promise<HTMLElement> {
+  private async createRepeatableHeaderHTML(reportData: ReportData, labSettings?: any): Promise<HTMLElement> {
     const container = document.createElement('div');
     container.style.cssText = `
         width: 850px;
@@ -789,13 +786,13 @@ export class PdfGeneratorService {
   /**
    * Generate HTML-based PDF
    */
-  async generateHTMLBasedPDF(reportData: ReportData): Promise<Blob> {
+  async generateHTMLBasedPDF(reportData: ReportData, labSettings?: any): Promise<Blob> {
     console.log('🎨 Generating HTML-based PDF report...');
 
     try {
       // Create main HTML and header elements
-      const htmlElement = await this.createReportHTML(reportData);
-      const headerElement = await this.createRepeatableHeaderHTML(reportData);
+      const htmlElement = await this.createReportHTML(reportData, labSettings);
+      const headerElement = await this.createRepeatableHeaderHTML(reportData, labSettings);
       const footerElement = await this.createRepeatableFooterHTML();
       document.body.appendChild(htmlElement);
       document.body.appendChild(headerElement);

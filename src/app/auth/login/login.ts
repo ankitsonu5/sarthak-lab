@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Auth, LoginRequest } from '../../core/services/auth';
 
 @Component({
@@ -18,7 +18,8 @@ export class Login implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private authService: Auth,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -29,6 +30,14 @@ export class Login implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+
+    // If redirected from Lab Register, prefill email from query param or localStorage
+    const qpEmail = this.route.snapshot.queryParamMap.get('email');
+    const prefill = qpEmail || localStorage.getItem('prefillLoginEmail');
+    if (prefill) {
+      this.loginForm.patchValue({ email: prefill });
+      if (qpEmail) { try { localStorage.removeItem('prefillLoginEmail'); } catch {} }
+    }
 
     // Clear any existing errors
     this.error = '';
@@ -90,7 +99,8 @@ export class Login implements OnInit {
       this.loading = true;
       this.error = '';
 
-      const credentials: LoginRequest = this.loginForm.value;
+      const emailNorm = String(this.loginForm.value.email || '').trim().toLowerCase();
+      const credentials: LoginRequest = { email: emailNorm, password: this.loginForm.value.password };
       console.log('🔄 Attempting login with:', credentials);
 
       // Always use real authentication (no bypass)
@@ -114,6 +124,10 @@ export class Login implements OnInit {
           // If server is not available, show helpful message
           if (error.status === 0 || error.status === 500) {
             this.error = 'Server is not running. Please check backend server.';
+          } else if (error.status === 401) {
+            this.error = 'Email ya password galat hai.';
+          } else if (error.status === 403) {
+            this.error = error.error?.message || 'Access denied.';
           } else {
             this.error = error.error?.message || 'Login failed. Please try again.';
           }

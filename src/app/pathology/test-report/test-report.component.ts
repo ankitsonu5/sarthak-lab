@@ -10,6 +10,7 @@ import { PdfGeneratorService } from '../../core/services/pdf-generator.service';
 import { ImageGeneratorService } from '../../core/services/image-generator.service';
 import { PathologyService } from '../../setup/pathology/services/pathology.service';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 import { AlertService } from '../../shared/services/alert.service';
 
@@ -159,7 +160,8 @@ export class TestReportComponent implements OnInit {
     private imageGenerator: ImageGeneratorService,
     private pathologyService: PathologyService,
     private dataRefresh: DataRefreshService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private defaultLabConfig: DefaultLabConfigService
   ) {
     this.initializeForm();
   }
