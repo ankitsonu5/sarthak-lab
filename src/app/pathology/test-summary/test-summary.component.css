@@ -27,11 +27,10 @@
 /* 3. Hospital Header */
 .hospital-header-section { background: #fff; padding: 16px 18px; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.06); border: 1.5px solid #1e40af; }
 .logo-section { display: flex; align-items: center; justify-content: center; gap: 16px; }
-.govt-logo { width: 130px; height: auto; }
+.govt-logo { width: 130px; height: auto; max-height: 130px; object-fit: contain; }
 .hospital-info { text-align: center; }
 .hospital-info h2 { margin: 0; color: #1e40af; font-size: 18px; line-height: 1.2; font-weight: 800; }
-.hospital-info h3 { margin: 4px 0 2px; color: #1f2937; font-size: 14px; line-height: 1.2; font-weight: 700; }
-.hospital-info p { margin: 0; color: #6b7280; font-size: 12px; line-height: 1.2; }
+.hospital-info p { margin: 4px 0 0; color: #6b7280; font-size: 12px; line-height: 1.2; }
 
 /* 4. Table */
 .table-container { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,.1); margin-bottom: 25px; }

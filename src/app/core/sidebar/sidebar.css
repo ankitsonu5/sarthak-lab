@@ -69,6 +69,31 @@
   object-fit: contain;
 }
 
+/* Font Awesome Icon Styling */
+.sidebar-link-icon {
+  font-size: 1.25rem;
+  margin-right: 0.75rem;
+  color: #ffffff;
+  width: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar-section-icon {
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+  color: #ffffff;
+  width: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar-link:hover .sidebar-link-icon,
+.sidebar-section-header:hover .sidebar-section-icon {
+  transform: scale(1.1);
+  color: #60a5fa;
+}
+
 .lab-name {
   font-size: 0.9rem;
   font-weight: 600;

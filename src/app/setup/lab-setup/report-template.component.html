@@ -1,0 +1,91 @@
+<div class="lab-setup-container">
+  <h1>Report Template</h1>
+  <p class="muted">Choose your preferred report template design. Changes will apply to all future reports.</p>
+
+  <div class="form-section">
+    <form [formGroup]="form">
+      <h2>Select Template</h2>
+      <p class="section-description">Choose from three professionally designed templates. Each template offers a unique style while maintaining medical report standards.</p>
+
+      <div class="template-selector">
+        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'classic'">
+          <input type="radio" formControlName="reportTemplate" value="classic" />
+          <div class="template-preview classic-preview">
+            <div class="template-header">
+              <div class="template-logo">🏥</div>
+              <div class="template-info">
+                <div class="template-title">Classic Template</div>
+                <div class="template-subtitle">Traditional Medical Report</div>
+              </div>
+            </div>
+            <div class="template-body">
+              <div class="template-line"></div>
+              <div class="template-line short"></div>
+              <div class="template-line"></div>
+            </div>
+          </div>
+          <div class="template-name">
+            <i class="fa-solid fa-file-medical"></i> Classic
+          </div>
+          <div class="template-description">Traditional layout with header, patient info, and test results in table format</div>
+        </label>
+
+        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'modern'">
+          <input type="radio" formControlName="reportTemplate" value="modern" />
+          <div class="template-preview modern-preview">
+            <div class="template-header modern">
+              <div class="template-logo">🔬</div>
+              <div class="template-info">
+                <div class="template-title">Modern Template</div>
+                <div class="template-subtitle">Clean & Minimal Design</div>
+              </div>
+            </div>
+            <div class="template-body">
+              <div class="template-line"></div>
+              <div class="template-line short"></div>
+              <div class="template-line"></div>
+            </div>
+          </div>
+          <div class="template-name">
+            <i class="fa-solid fa-file-lines"></i> Modern
+          </div>
+          <div class="template-description">Contemporary design with card-based layout and modern typography</div>
+        </label>
+
+        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'professional'">
+          <input type="radio" formControlName="reportTemplate" value="professional" />
+          <div class="template-preview professional-preview">
+            <div class="template-header professional">
+              <div class="template-logo">⚕️</div>
+              <div class="template-info">
+                <div class="template-title">Professional Template</div>
+                <div class="template-subtitle">Corporate Style</div>
+              </div>
+            </div>
+            <div class="template-body">
+              <div class="template-line"></div>
+              <div class="template-line short"></div>
+              <div class="template-line"></div>
+            </div>
+          </div>
+          <div class="template-name">
+            <i class="fa-solid fa-file-contract"></i> Professional
+          </div>
+          <div class="template-description">Corporate style with borders, professional colors, and structured layout</div>
+        </label>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="btn-primary" (click)="saveTemplate()" [disabled]="saving">
+          <i class="fa-solid" [class.fa-spinner]="saving" [class.fa-spin]="saving" [class.fa-save]="!saving"></i>
+          {{ saving ? 'Saving...' : 'Save Template' }}
+        </button>
+        <div class="status-message" *ngIf="statusMessage" [class.error]="statusError" [class.success]="!statusError">
+          <i class="fa-solid" [class.fa-check-circle]="!statusError" [class.fa-exclamation-circle]="statusError"></i>
+          {{ statusMessage }}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+

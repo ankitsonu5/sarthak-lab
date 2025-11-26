@@ -18,7 +18,9 @@
           <!-- Profile icon like Admin dashboard -->
           <div class="user-info">
             <span class="user-role">{{ userRole }}</span>
-            <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
+            <a routerLink="/profile" class="profile-icon" title="View Profile">
+              <i class="fa-solid fa-user-circle"></i>
+            </a>
           </div>
         </div>
 
@@ -68,7 +70,7 @@
       <!-- Total Registration Card -->
       <div class="stat-card" style="border-left-color: #3b82f6">
         <div class="stat-header">
-          <span class="stat-icon">📋</span>
+          <i class="fa-solid fa-clipboard-list stat-icon"></i>
         </div>
         <div class="stat-content">
           <h3 class="stat-value">{{ totalRegistrations }}</h3>
@@ -80,7 +82,7 @@
       <!-- Pending Reports Card -->
       <div class="stat-card" style="border-left-color: #ef4444">
         <div class="stat-header">
-          <span class="stat-icon">⏳</span>
+          <i class="fa-solid fa-hourglass-half stat-icon"></i>
         </div>
         <div class="stat-content">
           <h3 class="stat-value">{{ totalPendingReports }}</h3>
@@ -92,7 +94,7 @@
       <!-- Total Reports Card -->
       <div class="stat-card" style="border-left-color: #10b981">
         <div class="stat-header">
-          <span class="stat-icon">📊</span>
+          <i class="fa-solid fa-chart-column stat-icon"></i>
         </div>
         <div class="stat-content">
           <h3 class="stat-value">{{ totalReports }}</h3>
@@ -112,7 +114,7 @@
       <!-- Test Trends Chart -->
       <div class="dashboard-card chart-card">
         <div class="card-header">
-          <h3>📈 Weekly Test Trends</h3>
+          <h3><i class="fa-solid fa-chart-line"></i> Weekly Test Trends</h3>
           <div class="chart-controls">
             <button class="chart-btn active">7 Days</button>
             <button class="chart-btn">30 Days</button>
@@ -129,7 +131,7 @@
       <!-- Calendar Widget -->
       <div class="dashboard-card calendar-card">
         <div class="card-header">
-          <h3>📅 Hospital Calendar</h3>
+          <h3><i class="fa-solid fa-calendar-days"></i> Hospital Calendar</h3>
           <div class="calendar-date">{{ currentDate | date:'MMMM yyyy' }}</div>
         </div>
         <div class="card-content">
@@ -171,24 +173,24 @@
       <!-- Quick Actions -->
       <div class="dashboard-card actions-card">
         <div class="card-header">
-          <h3>⚡ Quick Actions</h3>
+          <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
         </div>
         <div class="card-content">
           <div class="action-buttons">
             <button class="action-btn primary" (click)="navigateToInvoice()">
-              <span class="action-icon">🧪</span>
+              <i class="fa-solid fa-file-invoice action-icon"></i>
               <span class="action-text">New Invoice</span>
             </button>
             <button class="action-btn secondary" (click)="navigateToTestReport()">
-              <span class="action-icon">📋</span>
+              <i class="fa-solid fa-file-medical action-icon"></i>
               <span class="action-text">Generate Report</span>
             </button>
             <button class="action-btn success" (click)="navigateToAllReports()">
-              <span class="action-icon">📊</span>
+              <i class="fa-solid fa-chart-bar action-icon"></i>
               <span class="action-text">View Reports</span>
             </button>
             <button class="action-btn warning" (click)="navigateToReportsRecords()">
-              <span class="action-icon">📁</span>
+              <i class="fa-solid fa-folder-open action-icon"></i>
               <span class="action-text">Reports Records</span>
             </button>
           </div>
@@ -198,7 +200,7 @@
       <!-- Recent Data Table -->
       <div class="dashboard-card recent-data-card">
         <div class="card-header">
-          <h3>📋 Recent Activity</h3>
+          <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h3>
           <div class="table-tabs">
             <button class="tab-btn" [class.active]="activeTab === 'registrations'" (click)="setActiveTab('registrations')">
               Today's Registrations

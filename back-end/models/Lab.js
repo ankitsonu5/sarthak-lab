@@ -67,7 +67,15 @@ const labSchema = new mongoose.Schema({
   footerNote: {
     type: String
   },
-  
+  reportDisclaimer: {
+    type: String
+  },
+  reportTemplate: {
+    type: String,
+    enum: ['classic', 'modern', 'professional'],
+    default: 'classic'
+  },
+
   // Subscription
   subscriptionPlan: {
     type: String,

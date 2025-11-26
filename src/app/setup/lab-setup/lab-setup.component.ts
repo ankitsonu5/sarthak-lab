@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { LabSettingsService, LabSettings } from './lab-settings.service';
 
 @Component({
@@ -18,7 +19,12 @@ export class LabSetupComponent implements OnInit {
   statusMessage: string | null = null;
   statusError = false;
 
-  constructor(private fb: FormBuilder, private api: LabSettingsService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private fb: FormBuilder,
+    private api: LabSettingsService,
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -27,6 +33,7 @@ export class LabSetupComponent implements OnInit {
       phone: [''], altPhone: [''], email: [''], website: [''],
       logoDataUrl: [''], sideLogoDataUrl: [''], signatureDataUrl: [''],
       headerNote: [''], footerNote: [''], reportDisclaimer: [''],
+      reportTemplate: ['classic'], // NEW: Report template selection
       prefixes: this.fb.group({ receipt: [''], report: [''], labYearlyPrefix: [''], labDailyPrefix: [''] }),
       numbering: this.fb.group({ receiptStart: [1], reportStart: [1], resetRule: ['yearly'] }),
       printLayout: this.fb.group({ template: ['classic'], showHeader: [true], showFooter: [true], showQr: [false], showRefDoctor: [true], showAmount: [true] })
@@ -41,6 +48,18 @@ export class LabSetupComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => { this.cdr.markForCheck(); }
+    });
+
+    // Handle query params for auto-scroll to section
+    this.route.queryParams.subscribe(params => {
+      if (params['section'] === 'template') {
+        setTimeout(() => {
+          const templateSection = document.getElementById('template');
+          if (templateSection) {
+            templateSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 300);
+      }
     });
   }
 

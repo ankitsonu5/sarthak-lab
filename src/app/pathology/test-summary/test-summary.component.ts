@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { PathologyService, TestDefinition } from '../../setup/pathology/services/pathology.service';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
 
 interface SummaryRow {
   category: string;
@@ -60,14 +62,39 @@ export class TestSummaryComponent implements OnInit {
     return this.paged.length;
   }
 
+  // Lab Settings
+  labSettings: LabSettings | null = null;
+
   constructor(
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private pathologyService: PathologyService
+    private pathologyService: PathologyService,
+    private labService: LabSettingsService,
+    public defaultLabConfig: DefaultLabConfigService
   ) {}
 
   async ngOnInit(): Promise<void> {
+    this.loadLabSettings();
     await this.loadData();
+  }
+
+  private loadLabSettings(): void {
+    // Load from cache first
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) {
+        this.labSettings = JSON.parse(cached);
+      }
+    } catch {}
+
+    // Then fetch fresh data
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   async refreshData(): Promise<void> {

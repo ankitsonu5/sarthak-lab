@@ -21,6 +21,7 @@ export interface LabSettings {
   headerNote?: string;
   footerNote?: string;
   reportDisclaimer?: string;
+  reportTemplate?: 'classic' | 'modern' | 'professional'; // NEW: Report template selection
   prefixes?: {
     receipt?: string;
     report?: string;

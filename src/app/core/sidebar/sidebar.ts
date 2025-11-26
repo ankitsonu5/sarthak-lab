@@ -67,6 +67,7 @@ export class Sidebar implements OnInit, OnDestroy {
 
 
   expandedSections: { [key: string]: boolean } = {
+    'Lab Settings': false,
     'Patients': false,
     'Tests / Lab Reports': false,
     'Appointments / Sample Collection': false,
@@ -182,7 +183,7 @@ export class Sidebar implements OnInit, OnDestroy {
     if (this.currentUser?.role === 'SuperAdmin') {
       this.sidebarSections = [
         {
-          icon: '🏢',
+          icon: 'fa-solid fa-building',
           title: 'Lab Management',
           children: [
             { label: 'All Labs', route: '/super-admin/dashboard', queryParams: { filter: 'all' } },
@@ -191,7 +192,7 @@ export class Sidebar implements OnInit, OnDestroy {
           ]
         },
         {
-          icon: '👥',
+          icon: 'fa-solid fa-users',
           title: 'User Management',
           children: [
             { label: 'Create User', route: '/auth/register' },
@@ -205,7 +206,15 @@ export class Sidebar implements OnInit, OnDestroy {
     // Lab users (LabAdmin, Technician, etc.) get full pathology sidebar
     const allSections = [
       {
-        icon: '🛠️',
+        icon: 'fa-solid fa-cog',
+        title: 'Lab Settings',
+        children: [
+          { label: 'Lab Setup', route: '/lab-setup' },
+          { label: 'Report Template', route: '/lab-setup/report-template' }
+        ]
+      },
+      {
+        icon: 'fa-solid fa-gear',
         title: 'Setup',
         children: [
 
@@ -221,7 +230,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '👤',
+        icon: 'fa-solid fa-user-injured',
         title: 'Patients',
         children: [
           { label: 'All Patients', route: '/reception/search-patient' },
@@ -229,7 +238,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '🧪',
+        icon: 'fa-solid fa-flask-vial',
         title: 'Tests / Lab Reports',
         children: [
           { label: 'Generate Report', route: '/pathology/test-report' },
@@ -239,7 +248,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '📅',
+        icon: 'fa-solid fa-calendar-check',
         title: 'Appointments / Sample Collection',
         children: [
           { label: 'All Appointments', route: '/appointments' },
@@ -248,7 +257,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '💳',
+        icon: 'fa-solid fa-credit-card',
         title: 'Billing / Payments',
         children: [
           { label: 'Receive Cash', route: '/cash-receipt/register-opt-ipd' },
@@ -257,7 +266,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '📦',
+        icon: 'fa-solid fa-boxes-stacked',
         title: 'Inventory',
         children: [
           { label: 'Manage Equipment / Reagents', route: '/inventory/manage' },
@@ -265,7 +274,7 @@ export class Sidebar implements OnInit, OnDestroy {
         ]
       },
       {
-        icon: '📈',
+        icon: 'fa-solid fa-chart-line',
         title: 'Analytics / Reports',
         children: [
           { label: 'Daily Cash Report', route: '/reporting/daily-cash-report' },

@@ -16,17 +16,10 @@
       [routerLink]="getDashboardRoute()"
       routerLinkActive="sidebar-link-active"
       class="sidebar-link">
-      <span class="sidebar-link-icon iconwl"><img src="../../assets/images/dashboardiconicon.png"></span>
+      <i class="fa-solid fa-chart-pie sidebar-link-icon"></i>
       <span class="sidebar-link-text">{{ getDashboardLabel() }}</span>
     </a>
-    <!-- Standalone Lab Setup link (only for lab users, not SuperAdmin) -->
-    <a *ngIf="currentUser?.role !== 'SuperAdmin'"
-       [routerLink]="'/lab-setup'"
-       routerLinkActive="sidebar-link-active"
-       class="sidebar-link">
-      <span class="sidebar-link-icon">🧪</span>
-      <span class="sidebar-link-text">Lab Setup</span>
-    </a>
+    <!-- Lab Settings section removed from here - now in collapsible sections -->
 
 
     <!-- Collapsible Sections -->
@@ -37,7 +30,7 @@
         class="sidebar-section-header"
         [class.expanded]="isSectionExpanded(section.title)">
         <div class="sidebar-section-title">
-          <span class="sidebar-section-icon">{{ section.icon }}</span>
+          <i [class]="section.icon + ' sidebar-section-icon'"></i>
           <span class="sidebar-section-text">{{ section.title }}</span>
         </div>
         <svg

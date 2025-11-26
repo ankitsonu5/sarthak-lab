@@ -69,31 +69,31 @@
     <div class="stats-grid-compact">
       <!-- Total Tests Card -->
       <div class="stat-card-compact" style="border-left-color: #3b82f6">
-        <div class="stat-icon-compact">🧪</div>
+        <i class="fa-solid fa-flask-vial stat-icon-compact"></i>
         <div class="stat-content-compact">
           <h3 class="stat-value-compact">{{ totalTests }}</h3>
           <p class="stat-title-compact">TOTAL TESTS</p>
-          <p class="stat-subtitle-compact">+{{ todayTests }} today <span class="trend-indicator">🔴</span></p>
+          <p class="stat-subtitle-compact">+{{ todayTests }} today <i class="fa-solid fa-circle trend-indicator"></i></p>
         </div>
       </div>
 
       <!-- Total Reports Card -->
       <div class="stat-card-compact" style="border-left-color: #f59e0b">
-        <div class="stat-icon-compact">📊</div>
+        <i class="fa-solid fa-chart-column stat-icon-compact"></i>
         <div class="stat-content-compact">
           <h3 class="stat-value-compact">{{ totalReports }}</h3>
           <p class="stat-title-compact">TOTAL REPORTS</p>
-          <p class="stat-subtitle-compact">+{{ todayReports }} today <span class="trend-indicator">🔴</span></p>
+          <p class="stat-subtitle-compact">+{{ todayReports }} today <i class="fa-solid fa-circle trend-indicator"></i></p>
         </div>
       </div>
 
       <!-- Total Registration Card -->
       <div class="stat-card-compact" style="border-left-color: #10b981">
-        <div class="stat-icon-compact">📋</div>
+        <i class="fa-solid fa-clipboard-list stat-icon-compact"></i>
         <div class="stat-content-compact">
           <h3 class="stat-value-compact">{{ totalRegistrations }}</h3>
           <p class="stat-title-compact">TOTAL REGISTRATION</p>
-          <p class="stat-subtitle-compact">+{{ todayRegistrations }} today <span class="trend-indicator">🔴</span></p>
+          <p class="stat-subtitle-compact">+{{ todayRegistrations }} today <i class="fa-solid fa-circle trend-indicator"></i></p>
         </div>
       </div>
     </div>
@@ -104,7 +104,7 @@
     <!-- Daily Test Trends Chart -->
     <div class="dashboard-card chart-card">
       <div class="card-header">
-        <h3>📈 Daily Test Trends</h3>
+        <h3><i class="fa-solid fa-chart-line"></i> Daily Test Trends</h3>
       </div>
       <div class="card-content">
         <div class="chart-container">
@@ -117,7 +117,7 @@
     <!-- Calendar Widget -->
     <div class="dashboard-card calendar-card">
       <div class="card-header">
-        <h3>📅 Hospital Calendar</h3>
+        <h3><i class="fa-solid fa-calendar-days"></i> Hospital Calendar</h3>
         <div class="calendar-date">{{ currentDate | date:'MMMM yyyy' }}</div>
       </div>
       <div class="card-content">
@@ -157,32 +157,32 @@
   <div class="quick-actions-section">
     <div class="dashboard-card actions-card">
       <div class="card-header">
-        <h3>📊 Reporting & Analytics</h3>
+        <h3><i class="fa-solid fa-chart-pie"></i> Reporting & Analytics</h3>
       </div>
       <div class="card-content">
         <div class="action-buttons">
           <a class="action-btn primary" routerLink="/pathology-module/scheduled-tests">
             <span class="live-pill">LIVE</span>
             <span class="action-count">{{ todayTests }}</span>
-            <span class="action-icon">🧪</span>
+            <i class="fa-solid fa-flask action-icon"></i>
             <span class="action-text">Today Tests</span>
           </a>
           <a class="action-btn secondary" routerLink="/pathology-module/registered-report">
             <span class="live-pill">LIVE</span>
             <span class="action-count">{{ todayReports }}</span>
-            <span class="action-icon">📝</span>
+            <i class="fa-solid fa-file-medical action-icon"></i>
             <span class="action-text">Generate Report</span>
           </a>
           <a class="action-btn success" routerLink="/pathology-module/all-reports">
             <span class="live-pill">LIVE</span>
             <span class="action-count">{{ totalReports }}</span>
-            <span class="action-icon">📊</span>
+            <i class="fa-solid fa-chart-bar action-icon"></i>
             <span class="action-text">View Reports</span>
           </a>
           <a class="action-btn warning" routerLink="/pathology-module/reports-records">
             <span class="live-pill">LIVE</span>
             <span class="action-count">{{ totalReports }}</span>
-            <span class="action-icon">📁</span>
+            <i class="fa-solid fa-folder-open action-icon"></i>
             <span class="action-text">Reports Records</span>
           </a>
         </div>
@@ -195,7 +195,7 @@
     <!-- Latest Tests Table -->
     <div class="dashboard-card table-card">
       <div class="card-header">
-        <h3>📋 Latest Tests ({{ todayRegistrations }})</h3>
+        <h3><i class="fa-solid fa-list-check"></i> Latest Tests ({{ todayRegistrations }})</h3>
       </div>
       <div class="card-content">
         <div class="data-table" style="max-height: 400px; overflow-y: auto;">
@@ -228,7 +228,7 @@
     <!-- Latest Reports Table -->
     <div class="dashboard-card table-card">
       <div class="card-header">
-        <h3>📊 Latest Reports ({{ recentReports.length }})</h3>
+        <h3><i class="fa-solid fa-file-lines"></i> Latest Reports ({{ recentReports.length }})</h3>
       </div>
       <div class="card-content">
         <div class="data-table" style="max-height: 400px; overflow-y: auto;">

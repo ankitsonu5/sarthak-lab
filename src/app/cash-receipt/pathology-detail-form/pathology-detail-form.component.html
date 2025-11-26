@@ -334,14 +334,14 @@
       <button type="button" class="pay-invoice-btn edit-mode-btn" (click)="payInvoice()"
               [disabled]="isSubmitting || !isPayInvoiceEnabled() || paymentCompleted"
               *ngIf="!paymentCompleted && isEditMode">
-        ✏️ Update & Adjust — {{ adjustmentDelta === 0 ? '₹0' : ((adjustmentDelta > 0 ? '+ ₹' : '- ₹') + (adjustmentAbs | number:'1.0-0')) }}
+        <i class="fa-solid fa-pen-to-square"></i> Update & Adjust — {{ adjustmentDelta === 0 ? '₹0' : ((adjustmentDelta > 0 ? '+ ₹' : '- ₹') + (adjustmentAbs | number:'1.0-0')) }}
       </button>
 
       <!-- Normal Mode Button -->
       <button type="button" class="pay-invoice-btn" (click)="payInvoice()"
               [disabled]="isSubmitting || !isPayInvoiceEnabled() || paymentCompleted"
               *ngIf="!paymentCompleted && !isEditMode">
-        💳 Pay Invoice - ₹{{ netPayableAmount | number:'1.0-0' }}
+        <i class="fa-solid fa-credit-card"></i> Pay Invoice - ₹{{ netPayableAmount | number:'1.0-0' }}
       </button>
 
       <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
