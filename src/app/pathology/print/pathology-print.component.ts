@@ -83,8 +83,8 @@ export class PathologyPrintComponent implements OnInit {
     style.id = id;
     style.media = 'print';
     style.textContent = `
-      @page { size: A4 landscape; margin: 8mm; }
-      html, body { width: 297mm; height: 210mm; margin: 0 !important; padding: 0 !important; }
+      @page { size: A4; margin: 0; }
+      html, body { width: 210mm; height: 297mm; margin: 0 !important; padding: 0 !important; }
     `;
     document.head.appendChild(style);
   }

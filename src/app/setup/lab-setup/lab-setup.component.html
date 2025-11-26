@@ -4,7 +4,6 @@
   <div class="subnav">
     <a href="#basic">Basic</a>
     <a href="#branding">Branding</a>
-    <a href="#template">Report Template</a>
     <a href="#numbering">Numbering</a>
     <a href="#notes">Notes</a>
     <a href="#layout">Layout</a>
@@ -49,77 +48,6 @@
           <label>Authorized Sign</label>
           <input type="file" accept="image/*" (change)="onFileChange($event, 'signatureDataUrl')" />
         </div>
-      </div>
-
-      <h2 id="template">Report Template</h2>
-      <p class="section-description">Choose a template design for your pathology reports. The selected template will be used for all report prints and PDFs.</p>
-
-      <div class="template-selector">
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'classic'">
-          <input type="radio" formControlName="reportTemplate" value="classic" (change)="updatePreview()" />
-          <div class="template-preview classic-preview">
-            <div class="template-header">
-              <div class="template-logo">🏥</div>
-              <div class="template-info">
-                <div class="template-title">Classic Template</div>
-                <div class="template-subtitle">Traditional Medical Report</div>
-              </div>
-            </div>
-            <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
-            </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-medical"></i> Classic
-          </div>
-          <div class="template-description">Traditional layout with header, patient info, and test results in table format</div>
-        </label>
-
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'modern'">
-          <input type="radio" formControlName="reportTemplate" value="modern" (change)="updatePreview()" />
-          <div class="template-preview modern-preview">
-            <div class="template-header modern">
-              <div class="template-logo">🔬</div>
-              <div class="template-info">
-                <div class="template-title">Modern Template</div>
-                <div class="template-subtitle">Clean & Minimal Design</div>
-              </div>
-            </div>
-            <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
-            </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-lines"></i> Modern
-          </div>
-          <div class="template-description">Clean, minimal design with card-based layout and modern typography</div>
-        </label>
-
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'professional'">
-          <input type="radio" formControlName="reportTemplate" value="professional" (change)="updatePreview()" />
-          <div class="template-preview professional-preview">
-            <div class="template-header professional">
-              <div class="template-logo">⚕️</div>
-              <div class="template-info">
-                <div class="template-title">Professional Template</div>
-                <div class="template-subtitle">Corporate Style</div>
-              </div>
-            </div>
-            <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
-            </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-contract"></i> Professional
-          </div>
-          <div class="template-description">Corporate style with borders, professional colors, and structured layout</div>
-        </label>
       </div>
 
       <h2 id="numbering">Print & Numbering</h2>

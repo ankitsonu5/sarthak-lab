@@ -1,5 +1,5 @@
 <div class="lab-setup-container">
-  <h1>Report Template</h1>
+  <h1>Template Setup</h1>
   <p class="muted">Choose your preferred report template design. Changes will apply to all future reports.</p>
 
   <div class="form-section">
@@ -25,9 +25,9 @@
             </div>
           </div>
           <div class="template-name">
-            <i class="fa-solid fa-file-medical"></i> Classic
+            <i class="fa-solid fa-file-medical"></i> Classic (Logo Left)
           </div>
-          <div class="template-description">Traditional layout with header, patient info, and test results in table format</div>
+          <div class="template-description">Logo left • Details centered • Clean, traditional report layout</div>
         </label>
 
         <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'modern'">
@@ -47,9 +47,9 @@
             </div>
           </div>
           <div class="template-name">
-            <i class="fa-solid fa-file-lines"></i> Modern
+            <i class="fa-solid fa-file-lines"></i> Modern (Logo Right)
           </div>
-          <div class="template-description">Contemporary design with card-based layout and modern typography</div>
+          <div class="template-description">Logo right • Details centered • Minimal, contemporary styling</div>
         </label>
 
         <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'professional'">
@@ -69,9 +69,9 @@
             </div>
           </div>
           <div class="template-name">
-            <i class="fa-solid fa-file-contract"></i> Professional
+            <i class="fa-solid fa-file-contract"></i> Professional (Logo Center)
           </div>
-          <div class="template-description">Corporate style with borders, professional colors, and structured layout</div>
+          <div class="template-description">Logo centered • Details centered • Premium corporate styling</div>
         </label>
       </div>
 

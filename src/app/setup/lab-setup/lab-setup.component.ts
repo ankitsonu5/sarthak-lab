@@ -33,7 +33,6 @@ export class LabSetupComponent implements OnInit {
       phone: [''], altPhone: [''], email: [''], website: [''],
       logoDataUrl: [''], sideLogoDataUrl: [''], signatureDataUrl: [''],
       headerNote: [''], footerNote: [''], reportDisclaimer: [''],
-      reportTemplate: ['classic'], // NEW: Report template selection
       prefixes: this.fb.group({ receipt: [''], report: [''], labYearlyPrefix: [''], labDailyPrefix: [''] }),
       numbering: this.fb.group({ receiptStart: [1], reportStart: [1], resetRule: ['yearly'] }),
       printLayout: this.fb.group({ template: ['classic'], showHeader: [true], showFooter: [true], showQr: [false], showRefDoctor: [true], showAmount: [true] })
@@ -50,17 +49,7 @@ export class LabSetupComponent implements OnInit {
       error: () => { this.cdr.markForCheck(); }
     });
 
-    // Handle query params for auto-scroll to section
-    this.route.queryParams.subscribe(params => {
-      if (params['section'] === 'template') {
-        setTimeout(() => {
-          const templateSection = document.getElementById('template');
-          if (templateSection) {
-            templateSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 300);
-      }
-    });
+
   }
 
   onFileChange(ev: Event, controlName: 'logoDataUrl' | 'sideLogoDataUrl' | 'signatureDataUrl') {

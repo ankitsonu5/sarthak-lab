@@ -117,6 +117,33 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
+/* Header layout variants driven by Template Setup */
+.pathology-report-print.hdr-logo-right .logo-cell { display: none; }
+.pathology-report-print.hdr-logo-center .logo-cell,
+.pathology-report-print.hdr-logo-center .right-logo-cell { display: none; }
+
+/* Right-aligned main logo */
+.main-logo-right {
+  height: 64px;
+  object-fit: contain;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px;
+  background: #fff;
+}
+
+/* Centered main logo */
+.center-logo {
+  height: 72px;
+  object-fit: contain;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 4px;
+  background: #fff;
+  display: block;
+  margin: 0 auto 8px;
+}
+
 @media print {
   .report-header-block {
     display: block !important;

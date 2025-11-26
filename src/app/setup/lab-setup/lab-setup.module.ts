@@ -5,7 +5,7 @@ import { ReportTemplateComponent } from './report-template.component';
 
 const routes: Routes = [
   { path: '', component: LabSetupComponent },
-  { path: 'report-template', component: ReportTemplateComponent }
+  { path: 'template-setup', component: ReportTemplateComponent }
 ];
 
 @NgModule({

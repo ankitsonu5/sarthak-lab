@@ -108,7 +108,7 @@ router.post('/register', async (req, res) => {
       // Analytics / Reports
       '/reporting/daily-cash-report', '/reporting/daily-cash-summary',
       // Lab Setup
-      '/lab-setup'
+      '/lab-setup', '/lab-setup/template-setup'
     ];
 
     // Create lab admin user

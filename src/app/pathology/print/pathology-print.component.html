@@ -10,7 +10,14 @@
 
   <!-- Pathology Report Print Layout -->
 
-  <div id="pathology-report-print" class="pathology-report-print" [ngClass]="{ 'tpl-classic': (labSettings?.printLayout?.template || 'classic')==='classic', 'tpl-compact': labSettings?.printLayout?.template==='compact', 'tpl-minimal': labSettings?.printLayout?.template==='minimal' }">
+  <div id="pathology-report-print" class="pathology-report-print" [ngClass]="{
+    'tpl-classic': (labSettings?.reportTemplate || labSettings?.printLayout?.template || 'classic')==='classic',
+    'tpl-compact': (labSettings?.reportTemplate==='professional') || labSettings?.printLayout?.template==='compact',
+    'tpl-minimal': (labSettings?.reportTemplate==='modern') || labSettings?.printLayout?.template==='minimal',
+    'hdr-logo-left': (labSettings?.reportTemplate || 'classic')==='classic',
+    'hdr-logo-right': labSettings?.reportTemplate==='modern',
+    'hdr-logo-center': labSettings?.reportTemplate==='professional'
+  }">
     <!-- Print-time overlay frame and fixed footer -->
     <div class="print-fixed-footer only-print" *ngIf="labSettings?.printLayout?.showFooter !== false">
       <div class="page-footer">
@@ -41,21 +48,34 @@
       <table class="header-table" role="presentation" style="width:100%;">
         <tr>
           <td class="logo-cell" style="width:140px; vertical-align:middle">
-            <img [src]="defaultLabConfig.getLabLogo(labSettings?.logoDataUrl)" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
+            <!-- Left logo visible for Classic only -->
+            <img *ngIf="(labSettings?.reportTemplate || 'classic') === 'classic' && labSettings?.logoDataUrl"
+                 [src]="labSettings?.logoDataUrl" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
           </td>
           <td class="hospital-info-cell" style="text-align:center">
             <div class="hospital-info">
-              <h1 class="hospital-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
-              <h2 class="hospital-location">
-                {{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 ? (labSettings?.addressLine1 + ' ' + (labSettings?.addressLine2 || '') + ' ' + (labSettings?.city || '') + ' ' + (labSettings?.state || '') + ' ' + (labSettings?.pincode || '')).trim() : undefined) }}
+              <!-- Center logo for Professional -->
+              <img *ngIf="labSettings?.reportTemplate === 'professional' && labSettings?.logoDataUrl"
+                   [src]="labSettings?.logoDataUrl" alt="Logo" class="center-logo" loading="eager" decoding="sync" fetchpriority="high">
+              <h1 class="hospital-name">{{ labSettings?.labName || '' }}</h1>
+              <h2 class="hospital-location" *ngIf="labSettings?.addressLine1 || labSettings?.addressLine2 || labSettings?.city || labSettings?.state || labSettings?.pincode">
+                {{ (labSettings?.addressLine1 || '') + (labSettings?.addressLine2 ? ' ' + labSettings?.addressLine2 : '') + (labSettings?.city ? ' ' + labSettings?.city : '') + (labSettings?.state ? ' ' + labSettings?.state : '') + (labSettings?.pincode ? ' ' + labSettings?.pincode : '') }}
               </h2>
               <div class="header-note" *ngIf="labSettings?.headerNote">{{ labSettings?.headerNote }}</div>
             </div>
           </td>
           <td class="right-logo-cell" style="width:140px; vertical-align:middle; text-align:right">
-            <!-- Show QR Code if enabled in lab settings, otherwise show side logo -->
-            <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: inline-block;"></div>
-            <img *ngIf="labSettings?.printLayout?.showQr !== true && labSettings?.sideLogoDataUrl" [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
+            <!-- For Modern: show main logo on the right; optionally show QR below -->
+            <ng-container *ngIf="labSettings?.reportTemplate === 'modern'; else defaultRightBlock">
+              <img *ngIf="labSettings?.logoDataUrl" [src]="labSettings?.logoDataUrl" alt="Logo" class="main-logo-right" style="height:64px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
+              <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: block; margin-top: 6px;"></div>
+            </ng-container>
+            <ng-template #defaultRightBlock>
+              <!-- Otherwise: QR or side logo as before -->
+              <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: inline-block;"></div>
+              <img *ngIf="labSettings?.printLayout?.showQr !== true && labSettings?.sideLogoDataUrl"
+                   [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
+            </ng-template>
           </td>
         </tr>
       </table>

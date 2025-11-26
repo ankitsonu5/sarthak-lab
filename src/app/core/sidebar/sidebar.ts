@@ -210,7 +210,7 @@ export class Sidebar implements OnInit, OnDestroy {
         title: 'Lab Settings',
         children: [
           { label: 'Lab Setup', route: '/lab-setup' },
-          { label: 'Report Template', route: '/lab-setup/report-template' }
+          { label: 'Template Setup', route: '/lab-setup/template-setup' }
         ]
       },
       {
@@ -290,7 +290,11 @@ export class Sidebar implements OnInit, OnDestroy {
       const allowedSet = new Set(allowed);
       return sections.map(s => ({
         ...s,
-        children: (s.children || []).filter((c: any) => allowedSet.has(c.route))
+        children: (s.children || []).filter((c: any) => {
+          // If /lab-setup is allowed, also allow its child Template Setup route
+          if (c.route === '/lab-setup/template-setup' && allowedSet.has('/lab-setup')) return true;
+          return allowedSet.has(c.route);
+        })
       }));
     };
 
