@@ -13,6 +13,8 @@ interface TestParameter {
   unit: string;
   normalRange: string;
   status: 'Normal' | 'High' | 'Low' | 'Abnormal';
+  result?: string;
+  referenceRange?: string;
 }
 
 interface DisplayRow {
@@ -107,6 +109,40 @@ export class PathologyPrintComponent implements OnInit {
     private labService: LabSettingsService,
     public defaultLabConfig: DefaultLabConfigService
   ) { }
+
+
+  // Normalize/defensively map lab settings coming from storage/API
+  private normalizeLabSettings(input: any): LabSettings {
+    const lab: any = input || {};
+    const labName = lab.labName || lab.name || lab.hospitalName || lab.clinicName || lab.title || '';
+    const reportTemplate = lab.reportTemplate || lab.template || undefined;
+    const printLayout = lab.printLayout || {};
+    return { ...lab, labName, reportTemplate, printLayout } as LabSettings;
+  }
+  // Wait for lab settings to load (lab name/logo/address) with a small timeout
+  private waitForLabSettings(timeoutMs: number = 500): Promise<void> {
+    return new Promise<void>((resolve) => {
+      // If already loaded, resolve immediately
+      if (this.labSettings && (this.labSettings.labName || this.labSettings.logoDataUrl || this.labSettings.addressLine1)) {
+        resolve();
+        return;
+      }
+      const start = Date.now();
+      const check = () => {
+        if (this.labSettings && (this.labSettings.labName || this.labSettings.logoDataUrl || this.labSettings.addressLine1)) {
+          resolve();
+          return;
+        }
+        if (Date.now() - start > timeoutMs) {
+          resolve();
+          return;
+        }
+        setTimeout(check, 30);
+      };
+      check();
+    });
+  }
+
 
 
   // Fetch complete report data from server using registration number
@@ -221,11 +257,17 @@ export class PathologyPrintComponent implements OnInit {
     // Load Lab Settings (cache + refresh)
     try {
       const cached = localStorage.getItem('labSettings');
-      if (cached) this.labSettings = JSON.parse(cached);
+      if (cached) this.labSettings = this.normalizeLabSettings(JSON.parse(cached));
     } catch {}
     try {
       this.labService.getMyLab().subscribe({
-        next: (res) => { this.labSettings = res.lab || this.labSettings; try { this.cdr.detectChanges(); } catch {} },
+        next: (res) => {
+          const lab = res?.lab || null;
+          if (lab) {
+            this.labSettings = this.normalizeLabSettings(lab);
+          }
+          try { this.cdr.detectChanges(); } catch {}
+        },
         error: () => {}
       });
     } catch {}
@@ -247,12 +289,20 @@ export class PathologyPrintComponent implements OnInit {
     const triggerAutoPrint: boolean = !!(state && (state as any).triggerAutoPrint);
     const navigateAfterPrint: { path?: string; queryParams?: any } | null = (state && (state as any).navigateAfterPrint) ? (state as any).navigateAfterPrint : null;
 
+    // Handle both data formats:
+    // 1. From test-report: state.reportData.testResults (nested)
+    // 2. From all-reports: state.testResults (direct)
+    const hasReportData = state && state.reportData;
+    const hasDirectData = state && (state.testResults || state.receiptNo);
 
-    if (state && state.reportData) {
-      console.log('📄 Received report data for printing:', state.reportData);
+    console.log('📄 State received:', { hasReportData, hasDirectData, state });
+
+    if (hasReportData || hasDirectData) {
+      // Normalize: use reportData if available, otherwise use state directly
+      const reportData = hasReportData ? state.reportData : state;
+      console.log('📄 Using report data for printing:', reportData);
 
       // Use data from router state
-      const reportData = state.reportData;
       this.patientData = reportData.patientData || null;
       this.testResults = (reportData.testResults && Array.isArray(reportData.testResults)) ? reportData.testResults : [];
       // Respect exclude flags coming from edit page
@@ -294,10 +344,28 @@ export class PathologyPrintComponent implements OnInit {
 
       // Build structured rows preserving group sections (e.g., Physical, Chemical, Microscopy)
       // Also honor groupBy and outerGroup coming from Test Report (panel/included tests)
+      console.log('📦 Raw testResults before mapping:', JSON.stringify(this.testResults, null, 2));
+
       this.testResults = (this.testResults || []).map((t: any) => {
+        console.log('🧪 Processing test:', t.testName || t.name, 'Parameters:', t.parameters?.length || 0);
         let rows: DisplayRow[] = [];
 
-        const params = Array.isArray(t.parameters) ? t.parameters.filter((p: any) => !p?.excludeFromPrint) : [];
+        // Get all parameters (not just non-excluded ones for building - filter later)
+        const allParams = Array.isArray(t.parameters) ? t.parameters : [];
+        const params = allParams.filter((p: any) => !p?.excludeFromPrint);
+        console.log('  📋 All params:', allParams.length, 'Filtered params:', params.length);
+
+        // Log first 3 params to see their structure
+        if (allParams.length > 0) {
+          console.log('  📋 Sample params (first 3):', allParams.slice(0, 3).map((p: any) => ({
+            name: p.name,
+            value: p.value,
+            result: p.result,
+            unit: p.unit,
+            normalRange: p.normalRange,
+            hasSubParams: Array.isArray(p.subParameters) ? p.subParameters.length : 0
+          })));
+        }
         const hasGroupMeta = params.some((p: any) => !!(p && (p.groupBy || p.outerGroup)));
 
         if (hasGroupMeta) {
@@ -385,6 +453,8 @@ export class PathologyPrintComponent implements OnInit {
             const hasChildren = Array.isArray(node.parameters) || Array.isArray(node.subParameters);
             const isGroup = hasChildren && !('value' in node) && !('result' in node);
 
+            console.log(`    📌 pushItem: name="${node.name}", hasChildren=${hasChildren}, isGroup=${isGroup}, value="${node.value}", result="${node.result}"`);
+
             if (isGroup) {
               walkRows.push({ kind: 'group', name: node.name || node.groupName || '', level });
             } else {
@@ -413,6 +483,7 @@ export class PathologyPrintComponent implements OnInit {
           };
 
           const roots = [ ...(t.parameters || []), ...(t.subParameters || []) ];
+          console.log(`  🌳 Walking ${roots.length} root parameters for test "${t.testName}"`);
           roots.forEach(n => pushItem(n, 0));
 
           rows = walkRows;
@@ -455,6 +526,21 @@ export class PathologyPrintComponent implements OnInit {
           }
         }
 
+        // If rows is still empty but we have original parameters, create displayRows directly
+        if (rows.length === 0 && params.length > 0) {
+          console.log('  ⚠️ No rows generated from walk, creating directly from params');
+          rows = params.map((p: any) => ({
+            kind: 'param' as const,
+            name: p.name || p.parameterName || '',
+            value: p.value ?? p.result ?? '',
+            unit: p.unit || '',
+            normalRange: p.normalRange || p.referenceRange || p.textValue || '',
+            status: (p.status || this.deriveStatus(p.value ?? p.result ?? '', p.normalRange || p.referenceRange || '')) as any,
+            level: 0
+          }));
+          console.log('  ✅ Created', rows.length, 'rows directly from params');
+        }
+
         // Fallback flat parameters for compatibility
         const flatParams = rows.filter(r => r.kind === 'param').map(r => ({
           name: r.name,
@@ -464,10 +550,20 @@ export class PathologyPrintComponent implements OnInit {
           status: (r.status || '') as any
         }));
 
+        // Also keep original parameters as backup
+        const originalParams = params.map((p: any) => ({
+          name: p.name || p.parameterName || '',
+          value: p.value ?? p.result ?? '',
+          unit: p.unit || '',
+          normalRange: p.normalRange || p.referenceRange || '',
+          status: (p.status || '') as any,
+          result: p.result
+        }));
+
         return {
           testName: t.testName || t.name || '',
           category: t.category || '',
-          parameters: flatParams,
+          parameters: flatParams.length > 0 ? flatParams : originalParams,
           displayRows: rows
         } as TestResult;
       });
@@ -521,10 +617,19 @@ export class PathologyPrintComponent implements OnInit {
 	    // Build groups after inputs are normalized
 	    this.buildCategoryGroups();
 
-    // Generate barcode and QR code automatically on component load
+    // Force change detection after building category groups
+    try { this.cdr.detectChanges(); } catch {}
+
+    // Debug: Log test results and category groups
+    console.log('🧪 Test Results:', this.testResults);
+    console.log('📊 Category Groups:', this.categoryGroups);
+    console.log('📋 testResults count:', this.testResults?.length || 0);
+    console.log('📋 categoryGroups count:', this.categoryGroups?.length || 0);
+
+    // Generate barcode and QR code automatically on component load (reduced delay)
     setTimeout(() => {
       this.generateBarcodeAndQR();
-    }, 500);
+    }, 100);
 
     // Auto print and navigate back if requested via router state
     if (triggerAutoPrint) {
@@ -552,7 +657,7 @@ export class PathologyPrintComponent implements OnInit {
           }
         } catch {}
 
-        // Wait for the header logo image in DOM if present
+        // Wait for the header logo image in DOM if present (reduced timeout)
         await new Promise<void>((resolve) => {
           try {
             const imgEl = document.querySelector('.govt-logo') as HTMLImageElement | null;
@@ -564,16 +669,19 @@ export class PathologyPrintComponent implements OnInit {
             if (imgEl) {
               imgEl.addEventListener('load', done, { once: true });
               imgEl.addEventListener('error', done, { once: true });
-              // Fallback timeout
-              setTimeout(done, 800);
+              // Fallback timeout - reduced from 800ms to 300ms
+              setTimeout(done, 300);
             } else {
               // No hardcoded fallback - use lab settings logo
-              setTimeout(resolve, 800);
+              setTimeout(resolve, 200);
             }
           } catch {
             resolve();
           }
         });
+
+        // Also wait briefly for Lab Settings to load (reduced timeout)
+        try { await this.waitForLabSettings(500); } catch {}
 
         // Give the layout a tick
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -593,12 +701,6 @@ export class PathologyPrintComponent implements OnInit {
   // Generate QR code automatically when component loads (in header)
   private generateBarcodeAndQR(): void {
     const anyWin: any = window as any;
-
-    // Check if QR code should be shown (default: false, only show if explicitly enabled)
-    if (this.labSettings?.printLayout?.showQr !== true) {
-      console.log('ℹ️ QR code disabled in lab settings');
-      return;
-    }
 
     // Build URL for QR code that opens the report directly
     const regNo = this.registrationNo || this.receiptNo || this.labYearlyNo || this.labDailyNo || '';
@@ -625,8 +727,8 @@ export class PathologyPrintComponent implements OnInit {
           qrContainer.innerHTML = ''; // Clear existing
           new anyWin.QRCode(qrContainer, {
             text: qrValue,
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             colorDark: '#000000',
             colorLight: '#ffffff',
             correctLevel: anyWin.QRCode?.CorrectLevel?.H || 2
@@ -735,7 +837,22 @@ export class PathologyPrintComponent implements OnInit {
   }
   private buildCategoryGroups(): void {
     try {
-      const filtered = (this.testResults || []).filter(t => this.hasAnyValueInTest(t));
+      console.log('🔨 Building category groups from testResults:', this.testResults);
+      console.log('🔨 testResults length:', this.testResults?.length || 0);
+
+      // Include ALL tests that have a name - be very lenient
+      const filtered = (this.testResults || []).filter(t => {
+        const testName = (t as any).testName || (t as any).name || '';
+        const hasParams = Array.isArray((t as any).parameters) && (t as any).parameters.length > 0;
+        const hasRows = Array.isArray((t as any).displayRows) && (t as any).displayRows.length > 0;
+        const hasName = !!testName.trim();
+        console.log(`  Test "${testName}": hasParams=${hasParams}, hasRows=${hasRows}, hasName=${hasName}`);
+        // Include if has name AND (has params OR has rows)
+        return hasName && (hasParams || hasRows);
+      });
+
+      console.log('🔨 Filtered tests:', filtered.length);
+
       const map = new Map<string, { norm: string; category: string; tests: TestResult[] }>();
       for (const t of filtered) {
         const norm = this.normalizeCategory((t as any).category);
@@ -754,7 +871,9 @@ export class PathologyPrintComponent implements OnInit {
         return a.category.localeCompare(b.category);
       });
       this.categoryGroups = arr;
-    } catch {
+      console.log('🔨 Final categoryGroups:', this.categoryGroups);
+    } catch (e) {
+      console.error('❌ Error building category groups:', e);
       this.categoryGroups = [];
     }
   }
@@ -799,6 +918,8 @@ export class PathologyPrintComponent implements OnInit {
           setTimeout(done, 800);
         }));
       }
+      // Always wait briefly for lab settings to ensure lab name/logo are present in print
+      waitPromises.push(this.waitForLabSettings(2000));
       if (waitPromises.length) {
         Promise.all(waitPromises).then(() => setTimeout(doPrint, 0));
       } else {
@@ -1074,12 +1195,22 @@ export class PathologyPrintComponent implements OnInit {
   }
 
   // Show a test block if it contains at least one parameter with a RESULT (non-empty) OR any remark row
-  public hasAnyValueInTest(test: { displayRows?: Array<{ kind: string; value?: any; normalRange?: any; remarkText?: any }> } | null | undefined): boolean {
+  public hasAnyValueInTest(test: { displayRows?: Array<{ kind: string; value?: any; normalRange?: any; remarkText?: any }>; parameters?: Array<{ value?: any; result?: any }> } | null | undefined): boolean {
+    // Check displayRows first
     const rows = (test?.displayRows || []) as Array<{ kind: string; value?: any; normalRange?: any; remarkText?: any }>;
-    return rows.some(r =>
+    const hasDisplayRowValue = rows.some(r =>
       (r && r.kind === 'param' && this.hasRowValue(r)) ||
       (r && r.kind === 'remark' && !!(r.remarkText ?? '').toString().trim())
     );
+    if (hasDisplayRowValue) return true;
+
+    // Fallback: check parameters array
+    const params = (test as any)?.parameters || [];
+    const hasParamValue = params.some((p: any) => {
+      const val = (p?.value ?? p?.result ?? '').toString().trim();
+      return val !== '';
+    });
+    return hasParamValue;
   }
 
   // For a given group row index, check if there exists at least one parameter

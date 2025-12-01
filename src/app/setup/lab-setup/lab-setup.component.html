@@ -81,16 +81,9 @@
       <div class="row"><label>Footer Note</label><input formControlName="footerNote" (input)="updatePreview()"/></div>
       <div class="row"><label>Report Disclaimer</label><textarea formControlName="reportDisclaimer" rows="2" (input)="updatePreview()"></textarea></div>
 
-      <h2 id="layout">Layout</h2>
+      <h2 id="layout">Layout Options</h2>
+      <p class="muted" style="font-size:12px; margin-top:-4px;">To change report template style, go to <a routerLink="/setup/lab-template" style="color:#2563eb;">Lab Template</a> page.</p>
       <div formGroupName="printLayout">
-        <div class="row">
-          <label>Template</label>
-          <select formControlName="template" (change)="updatePreview()">
-            <option value="classic">Classic (Default)</option>
-            <option value="compact">Compact</option>
-            <option value="minimal">Minimal</option>
-          </select>
-        </div>
         <div class="row toggles">
           <label class="switch">
             <input type="checkbox" formControlName="showHeader" (change)="updatePreview()"/>
@@ -110,6 +103,24 @@
       <div class="actions">
         <button class="btn primary" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Save & Preview' }}</button>
         <div class="status" *ngIf="statusMessage" [class.error]="statusError">{{ statusMessage }}</div>
+      </div>
+
+      <!-- Self-Registration Link & QR - INSIDE form, below actions -->
+      <div class="self-reg-section" *ngIf="labCode">
+        <h2>Public Self-Registration</h2>
+        <div class="self-reg-content">
+          <div class="self-reg-info">
+            <div class="muted">Share this link with patients for self-registration</div>
+            <div class="self-reg-link">{{ selfRegLink }}</div>
+            <div class="self-reg-buttons">
+              <button class="btn" type="button" (click)="copySelfRegLink()">{{ copyDone ? 'Copied!' : 'Copy link' }}</button>
+              <button class="btn" type="button" (click)="printSelfRegQR()">Print QR</button>
+            </div>
+          </div>
+          <div class="self-reg-qr">
+            <img [src]="selfRegQrUrl" alt="Self-Register QR" width="140" height="140"/>
+          </div>
+        </div>
       </div>
     </form>
 

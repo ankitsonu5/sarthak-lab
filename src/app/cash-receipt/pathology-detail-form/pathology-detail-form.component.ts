@@ -153,9 +153,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
   }
 
 
-  // Fallback test data
-  fallbackTestData: { [key: string]: any[] } = {};
-
   // Department and doctor management
   departments: any[] = [];
   filteredDoctors: any[] = [];
@@ -261,7 +258,7 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
       serviceCategories: this.serviceCategories
     });
     this.seedServiceHeadsData();
-    this.loadFallbackData(); // Add immediate fallback data
+    /* removed fallback data: using dynamic tests only */
 
     // Load Lab Settings (cache + refresh) for branding/logo
     try {
@@ -1227,47 +1224,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     });
   }
 
-  private loadFallbackData(): void {
-    console.log('📋 Loading immediate fallback data...');
-    // Immediate fallback data for testing
-    this.fallbackTestData = {
-      'PATHOLOGY': [
-        { _id: 'p1', name: 'Complete Blood Count (CBC)', cost: 300, category: 'PATHOLOGY' },
-        { _id: 'p2', name: 'Hemoglobin (HB)', cost: 100, category: 'PATHOLOGY' },
-        { _id: 'p3', name: 'ESR', cost: 100, category: 'PATHOLOGY' },
-        { _id: 'p4', name: 'Blood Sugar (F/PP)', cost: 80, category: 'PATHOLOGY' },
-        { _id: 'p5', name: 'Lipid Profile', cost: 450, category: 'PATHOLOGY' }
-      ],
-      'X-RAY': [
-        { _id: 'x1', name: 'X-Ray Chest PA View', cost: 300, category: 'X-RAY' },
-        { _id: 'x2', name: 'X-Ray Abdomen', cost: 400, category: 'X-RAY' },
-        { _id: 'x3', name: 'X-Ray Skull', cost: 350, category: 'X-RAY' }
-      ],
-      'ECG': [
-        { _id: 'e1', name: '12 Lead ECG', cost: 200, category: 'ECG' },
-        { _id: 'e2', name: 'Stress ECG (TMT)', cost: 700, category: 'ECG' }
-      ]
-    };
-  }
-
-  private loadFallbackTestsForCategory(categoryOrId: string): void {
-    console.log('⚡ Loading fallback tests for:', categoryOrId);
-    // Map ObjectId to category name if needed
-    let key = (categoryOrId || '').toString();
-    const catObj = this.serviceCategories.find(c => (c as any)._id === key || (c as any).categoryId === key);
-    if (catObj?.categoryName) {
-      key = (catObj.categoryName || '').toUpperCase();
-    } else {
-      key = key.toUpperCase();
-    }
-
-    const fallbackTests = this.fallbackTestData[key] || [];
-    if (fallbackTests.length > 0) {
-      this.availableTests = [...fallbackTests];
-      this.filteredTests = [...fallbackTests];
-      console.log('✅ Fallback tests loaded:', fallbackTests.length);
-    }
-  }
 
   private seedServiceHeadsData(): void {
     console.log('🌱 Seeding service heads data...');
@@ -1693,9 +1649,7 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         this.currentSelectedCategoryObject = first;
         try { this.pathologyForm.patchValue({ serviceCategory: this.selectedServiceCategory }); } catch {}
         if (this.selectedServiceCategory) {
-          // Preload tests so user sees options immediately
-          this.loadFallbackTestsForCategory(this.selectedServiceCategory);
-          this.loadAvailableTests(this.selectedServiceCategory);
+          // Load tests dynamically from Service Heads only (no hardcoded)
           this.loadAvailableTestsFromAPI(this.selectedServiceCategory);
         }
       }
@@ -1871,11 +1825,7 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
 
     if (selectedCategory) {
       console.log('📡 Loading tests from API for category:', selectedCategory);
-      // Pehle fallback data load karte hain immediately
-      this.loadFallbackTestsForCategory(selectedCategory);
-      // Phir local data load karte hain
-      this.loadAvailableTests(selectedCategory);
-      // Phir API se try karte hain
+      // Load tests dynamically from Service Heads only (no hardcoded fallback/local)
       this.loadAvailableTestsFromAPI(selectedCategory);
     } else {
       console.log('❌ No category selected, clearing tests');
@@ -1964,20 +1914,12 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
           console.warn('⚠️ No service heads received from API');
           this.availableTests = [];
           this.filteredTests = [];
-          // Fallback to local data (use category name mapping)
-          this.loadAvailableTests(categoryOrId);
         }
       },
       error: (error) => {
         console.error('❌ Error loading service heads (byId):', error);
         this.availableTests = [];
         this.filteredTests = [];
-
-
-        // Fallback to local data if API fails
-
-        console.log('🔄 Falling back to local data...');
-        this.loadAvailableTests(categoryOrId);
       }
     });
   }
@@ -2498,69 +2440,6 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
     return enabled;
   }
 
-  private loadAvailableTests(categoryOrId: string): void {
-    // Real pathology test data based on category (fallback/local)
-    // Map ObjectId to category name if needed
-    let key = (categoryOrId || '').toString();
-    const catObj = this.serviceCategories.find(c => (c as any)._id === key || (c as any).categoryId === key);
-    if (catObj?.categoryName) {
-      key = (catObj.categoryName || '').toUpperCase();
-    } else {
-      key = key.toUpperCase();
-    }
-
-    const testData: { [key: string]: any[] } = {
-      'PATHOLOGY': [
-        { _id: '1', name: 'Complete Blood Count (CBC)', cost: 300, category: 'PATHOLOGY' },
-        { _id: '2', name: 'Hemoglobin (HB)', cost: 50, category: 'PATHOLOGY' },
-        { _id: '3', name: 'ESR', cost: 40, category: 'PATHOLOGY' },
-        { _id: '4', name: 'Blood Sugar (F/PP)', cost: 120, category: 'PATHOLOGY' },
-        { _id: '5', name: 'Lipid Profile', cost: 400, category: 'PATHOLOGY' },
-        { _id: '6', name: 'LFT', cost: 500, category: 'PATHOLOGY' },
-        { _id: '7', name: 'KFT', cost: 450, category: 'PATHOLOGY' },
-        { _id: '8', name: 'Urine Routine & Microscopy', cost: 100, category: 'PATHOLOGY' },
-        { _id: '9', name: 'RA Factor', cost: 200, category: 'PATHOLOGY' },
-        { _id: '10', name: 'CRP', cost: 250, category: 'PATHOLOGY' }
-      ],
-      'X-RAY': [
-        { _id: '11', name: 'X-Ray Chest PA View', cost: 200, category: 'X-RAY' },
-        { _id: '12', name: 'X-Ray Left Arm AP View', cost: 180, category: 'X-RAY' },
-        { _id: '13', name: 'X-Ray Right Leg LAT View', cost: 180, category: 'X-RAY' },
-        { _id: '14', name: 'X-Ray Abdomen', cost: 250, category: 'X-RAY' },
-        { _id: '15', name: 'X-Ray Skull', cost: 300, category: 'X-RAY' },
-        { _id: '16', name: 'X-Ray Cervical Spine', cost: 350, category: 'X-RAY' },
-        { _id: '17', name: 'X-Ray Pelvis', cost: 280, category: 'X-RAY' },
-        { _id: '18', name: 'X-Ray Knee Joint', cost: 220, category: 'X-RAY' }
-      ],
-      'ECG': [
-        { _id: '19', name: '12 Lead ECG', cost: 150, category: 'ECG' },
-        { _id: '20', name: 'Stress ECG (TMT)', cost: 800, category: 'ECG' },
-        { _id: '21', name: 'Holter Monitoring', cost: 1500, category: 'ECG' }
-      ],
-      'SHALAKYA': [
-        { _id: '22', name: 'Eye Pressure Checkup', cost: 300, category: 'SHALAKYA' },
-        { _id: '23', name: 'Nasal Endoscopy', cost: 500, category: 'SHALAKYA' },
-        { _id: '24', name: 'Ear Syringing', cost: 200, category: 'SHALAKYA' },
-        { _id: '25', name: 'Vision Testing', cost: 250, category: 'SHALAKYA' }
-      ],
-      'SHALYA': [
-        { _id: '26', name: 'Pre-Operative Fitness', cost: 600, category: 'SHALYA' },
-        { _id: '27', name: 'Post-Operative Dressing', cost: 300, category: 'SHALYA' },
-        { _id: '28', name: 'Wound Debridement', cost: 400, category: 'SHALYA' },
-        { _id: '29', name: 'Minor OT Procedure', cost: 1000, category: 'SHALYA' }
-      ],
-      'PANCHKARMA': [
-        { _id: '30', name: 'Abhyangam', cost: 800, category: 'PANCHKARMA' },
-        { _id: '31', name: 'Shirodhara', cost: 1000, category: 'PANCHKARMA' },
-        { _id: '32', name: 'Basti', cost: 1200, category: 'PANCHKARMA' },
-        { _id: '33', name: 'Nasya', cost: 400, category: 'PANCHKARMA' },
-        { _id: '34', name: 'Vaman', cost: 1500, category: 'PANCHKARMA' }
-      ]
-    };
-
-    this.availableTests = testData[key] || [];
-    this.filteredTests = [...this.availableTests];
-  }
 
   rebuildTestParameters(): void {
     this.clearTestParameters();

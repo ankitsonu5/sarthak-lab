@@ -1,75 +1,29 @@
-<mat-toolbar color="primary" class="shadow-md">
-  <div class="flex items-center justify-between w-full">
-    <!-- Logo and Title -->
-    <div class="flex items-center space-x-3">
-      <button mat-icon-button (click)="toggleSidenav()" class="lg:hidden">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <mat-icon class="text-2xl">local_hospital</mat-icon>
-      <span class="text-xl font-semibold">HMS</span>
-    </div>
-
-    <!-- Search Bar (Hidden on mobile) -->
-    <div class="hidden md:flex flex-1 max-w-md mx-8">
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Search patients, doctors...</mat-label>
-        <input matInput placeholder="Type to search">
-        <mat-icon matSuffix>search</mat-icon>
-      </mat-form-field>
-    </div>
-
-    <!-- User Menu -->
-    <div class="flex items-center space-x-2">
-      <!-- Notifications -->
-      <button mat-icon-button [matMenuTriggerFor]="notificationMenu">
-        <mat-icon matBadge="3" matBadgeColor="warn">notifications</mat-icon>
-      </button>
-
-      <!-- User Profile -->
-      <button mat-icon-button [matMenuTriggerFor]="userMenu" class="ml-2">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-    </div>
+<!-- Fixed Notification Bell - Golden Bell with Animation -->
+<div class="fixed-notification-wrapper">
+  <div class="notification-bell-container" [class.has-notifications]="unreadCount > 0" [matMenuTriggerFor]="notificationMenu" (menuOpened)="onNotificationMenuOpened()">
+    <span class="bell-emoji" [class.ringing]="unreadCount > 0">🔔</span>
+    <span class="notification-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
   </div>
-</mat-toolbar>
+</div>
 
 <!-- Notification Menu -->
 <mat-menu #notificationMenu="matMenu">
-  <button mat-menu-item>
-    <mat-icon>schedule</mat-icon>
-    <span>New appointment scheduled</span>
-  </button>
-  <button mat-menu-item>
-    <mat-icon>person_add</mat-icon>
-    <span>New patient registered</span>
-  </button>
-  <button mat-menu-item>
-    <mat-icon>medical_services</mat-icon>
-    <span>Lab results available</span>
-  </button>
-  <mat-divider></mat-divider>
-  <button mat-menu-item>
-    <span>View all notifications</span>
-  </button>
+  <ng-container *ngIf="notifications?.length; else noNotifs">
+    <button mat-menu-item *ngFor="let n of notifications | slice:0:7" (click)="openNotification(n)">
+      <mat-icon>{{ getNotificationIcon(n) }}</mat-icon>
+      <div class="ml-2" style="display:flex;flex-direction:column;">
+        <span class="font-medium">{{ n.title }}</span>
+        <span class="text-xs text-gray-600" *ngIf="n.message">{{ n.message }}</span>
+      </div>
+      <span class="ml-auto text-primary" *ngIf="!n.read">•</span>
+    </button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="clearNotifications()">
+      <span>Clear all</span>
+    </button>
+  </ng-container>
+  <ng-template #noNotifs>
+    <button mat-menu-item disabled>No notifications</button>
+  </ng-template>
 </mat-menu>
 
-<!-- User Menu -->
-<mat-menu #userMenu="matMenu">
-  <div class="px-4 py-2 border-b">
-    <p class="font-medium">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</p>
-    <p class="text-sm text-gray-600">{{ currentUser?.role }}</p>
-  </div>
-  <button mat-menu-item routerLink="/profile">
-    <mat-icon>person</mat-icon>
-    <span>Profile</span>
-  </button>
-  <button mat-menu-item routerLink="/settings">
-    <mat-icon>settings</mat-icon>
-    <span>Settings</span>
-  </button>
-  <mat-divider></mat-divider>
-  <button mat-menu-item (click)="logout()">
-    <i class="fa-solid fa-right-from-bracket"></i>
-    <span>Logout</span>
-  </button>
-</mat-menu>

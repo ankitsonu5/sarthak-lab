@@ -4,8 +4,10 @@ import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { PatientService } from '../patient.service';
 import { PatientViewModalComponent } from '../patient-view-modal/patient-view-modal.component';
-import { Subject, Subscription } from 'rxjs';
+import { Subject, Subscription, forkJoin } from 'rxjs';
 import { filter, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { SelfRegistrationService } from '../../shared/services/self-registration.service';
+import { Auth } from '../../core/services/auth';
 
 @Component({
   selector: 'app-search-patient',
@@ -19,6 +21,10 @@ export class SearchPatient implements OnInit, OnDestroy {
   searchTerm: string = '';
 
   uhidSearchTerm: string = '';
+
+  // Patient Source Filter (All, Self, Lab)
+  selectedSourceFilter: string = 'all';
+  selfRegisteredPatients: any[] = [];
 
   // Enhanced filter properties
   selectedDateFilter: string = 'all';
@@ -66,7 +72,9 @@ export class SearchPatient implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private dialog: MatDialog,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private selfRegService: SelfRegistrationService,
+    private authService: Auth
   ) {
     // Set up debounced search handler to avoid API calls on every keypress
     this.searchSub = this.searchInput$
@@ -87,6 +95,7 @@ export class SearchPatient implements OnInit, OnDestroy {
   ngOnInit(): void {
     console.log('🔄 SEARCH PATIENT: Component initialized - loading patients...');
     this.loadAllPatients();
+    this.loadSelfRegisteredPatients(); // Load self-registered patients
 
     // DISABLED: BehaviorSubject subscription to prevent infinite loops
     console.log('🚫 DEPARTMENT STYLE: BehaviorSubject subscription disabled to prevent loops');
@@ -402,9 +411,81 @@ export class SearchPatient implements OnInit, OnDestroy {
     this.selectedDateFilter = 'all';
     this.selectedAgeFilter = 'all';
     this.selectedGenderFilter = 'all';
+    this.selectedSourceFilter = 'all';
     this.customDate = '';
     this.currentPage = 1;
     this.loadAllPatients(); // Reload without filters
+  }
+
+  // Source filter change handler
+  onSourceFilterChange(): void {
+    this.currentPage = 1;
+    this.applySourceFilter();
+  }
+
+  // Load self-registered patients
+  loadSelfRegisteredPatients(): void {
+    const labCode = this.getCurrentLabCode();
+    if (!labCode) {
+      console.log('⚠️ No lab code available for self-registration fetch');
+      this.selfRegisteredPatients = [];
+      return;
+    }
+
+    this.selfRegService.listRecentByCode(labCode).subscribe({
+      next: (res) => {
+        const items = res?.items || [];
+        // Transform self-registration items to patient-like objects
+        this.selfRegisteredPatients = items.map((sr: any) => ({
+          _id: sr.id,
+          firstName: sr.firstName || '',
+          lastName: sr.lastName || '',
+          phone: sr.phone || '',
+          gender: sr.gender || '',
+          age: sr.age || '',
+          address: sr.address ? { city: sr.city, street: sr.address } : { city: sr.city },
+          createdAt: sr.createdAt,
+          preferredDate: sr.preferredDate,
+          preferredTime: sr.preferredTime,
+          testsNote: sr.testsNote,
+          homeCollection: sr.homeCollection,
+          source: 'self', // Mark as self-registered
+          registrationNumber: '-'
+        }));
+        console.log(`📱 Loaded ${this.selfRegisteredPatients.length} self-registered patients`);
+        this.applySourceFilter();
+      },
+      error: (err) => {
+        console.error('❌ Error loading self-registered patients:', err);
+        this.selfRegisteredPatients = [];
+      }
+    });
+  }
+
+  // Apply source filter to combine or filter patients
+  applySourceFilter(): void {
+    const labPatients = this.patients.map(p => ({ ...p, source: 'lab' }));
+
+    if (this.selectedSourceFilter === 'self') {
+      this.filteredPatients = [...this.selfRegisteredPatients];
+      this.totalPatients = this.selfRegisteredPatients.length;
+    } else if (this.selectedSourceFilter === 'lab') {
+      this.filteredPatients = [...labPatients];
+      this.totalPatients = labPatients.length;
+    } else {
+      // 'all' - combine both
+      this.filteredPatients = [...this.selfRegisteredPatients, ...labPatients];
+      this.totalPatients = this.filteredPatients.length;
+    }
+
+    // Apply UHID filter if any
+    this.applyUhidFilterIfAny();
+    this.cdr.detectChanges();
+  }
+
+  // Get patient source badge
+  getPatientSourceBadge(patient: any): string {
+    return patient?.source === 'self' ? '🏠 Self' : '🏥 Lab';
   }
 
   refreshPatients(): void {
@@ -556,6 +637,7 @@ export class SearchPatient implements OnInit, OnDestroy {
            this.selectedDateFilter !== 'all' ||
            this.selectedAgeFilter !== 'all' ||
            this.selectedGenderFilter !== 'all' ||
+           this.selectedSourceFilter !== 'all' ||
            this.customDate !== '';
   }
 
@@ -638,6 +720,26 @@ export class SearchPatient implements OnInit, OnDestroy {
   // Delete Success Methods
   onDeleteSuccessClosed(): void {
     this.showDeleteSuccess = false;
+  }
+
+  // Register self-registered patient as lab patient
+  registerSelfPatient(patient: any): void {
+    console.log('📝 Registering self-patient as lab patient:', patient);
+    // Navigate to patient registration with pre-filled data
+    this.router.navigate(['/reception/patient-registration'], {
+      state: {
+        prefillData: {
+          firstName: patient.firstName || '',
+          lastName: patient.lastName || '',
+          phone: patient.phone || '',
+          gender: patient.gender || '',
+          age: patient.age || '',
+          address: patient.address?.street || patient.address || '',
+          city: patient.address?.city || ''
+        },
+        fromSelfRegistration: true
+      }
+    });
   }
 
   // Navigation methods for tabs
@@ -758,5 +860,19 @@ export class SearchPatient implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  // Helper to get current lab code
+  private getCurrentLabCode(): string | null {
+    try {
+      const u: any = this.authService.getCurrentUser();
+      if (u?.lab?.['labCode']) return String(u.lab['labCode']);
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        if (parsed?.lab?.['labCode']) return String(parsed.lab['labCode']);
+      }
+    } catch {}
+    return null;
   }
 }

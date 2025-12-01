@@ -3,10 +3,40 @@
   <div class="dashboard-header">
     <div class="header-content">
       <div class="header-left">
-        <h1 class="dashboard-title">{{ labName }} Dashboard</h1>
+        <h1 class="dashboard-title">Dashboard</h1>
         <p class="dashboard-subtitle">Welcome back! Here's your hospital overview</p>
       </div>
       <div class="header-right">
+        <!-- Notification Bell -->
+        <div class="notification-bell" (click)="toggleNotifications()">
+          <span class="bell-icon">🔔</span>
+          <span class="notification-badge" *ngIf="selfRegistrations.length > 0">{{ selfRegistrations.length }}</span>
+
+          <!-- Notification Dropdown -->
+          <div class="notification-dropdown" *ngIf="showNotifications">
+            <div class="notification-header">
+              <h4>🩺 Home Collection Requests</h4>
+              <span class="close-btn" (click)="showNotifications = false; $event.stopPropagation()">✕</span>
+            </div>
+            <div class="notification-list">
+              <div class="notification-item" *ngFor="let sr of selfRegistrations | slice:0:5">
+                <div class="notif-icon">🏠</div>
+                <div class="notif-content">
+                  <div class="notif-title">{{ (sr.firstName || '') + ' ' + (sr.lastName || '') }}</div>
+                  <div class="notif-detail">📞 {{ sr.phone || 'N/A' }}</div>
+                  <div class="notif-detail" *ngIf="sr.preferredDate">📅 {{ sr.preferredDate | date:'dd MMM' }} {{ sr.preferredTime || '' }}</div>
+                  <div class="notif-detail" *ngIf="sr.address">📍 {{ sr.address }}</div>
+                </div>
+                <span class="notif-badge home" *ngIf="sr.homeCollection">HOME</span>
+                <span class="notif-badge lab" *ngIf="!sr.homeCollection">LAB</span>
+              </div>
+              <div class="no-notifications" *ngIf="selfRegistrations.length === 0">
+                <span>No pending requests</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="weather-info" *ngIf="weatherData">
           <div class="weather-temp">{{ weatherData.temperature }}°C {{ weatherData.icon }}</div>
           <div class="weather-condition">{{ weatherData.condition }}</div>
@@ -15,13 +45,6 @@
           <div class="current-date">{{ currentDateTime.date }}</div>
           <div class="current-time">{{ currentDateTime.time }}</div>
           <div class="greeting">{{ currentDateTime.greeting }}</div>
-        </div>
-        <div class="user-info">
-          <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
-          <span class="user-role">{{ currentUser?.role }}</span>
-          <span class="system-admin" *ngIf="currentUser?.role === 'Admin'">System Administration</span>
-          <!-- Profile icon near Super Admin text -->
-          <a routerLink="/profile" class="profile-icon" title="View Profile">👤</a>
         </div>
       </div>
     </div>
@@ -302,7 +325,44 @@
         </div>
       </div>
 
-
+      <!-- New Self-Registrations / Home Collection Requests -->
+      <div class="activity-card self-reg-card">
+        <div class="activity-header">
+          <h3>🏠 Home Collection Requests <span class="live-indicator pulse">●</span></h3>
+          <span class="activity-count home-count">{{ selfRegistrations.length }}</span>
+        </div>
+        <div class="self-reg-list">
+          <div class="self-reg-item" *ngFor="let sr of selfRegistrations | slice:0:5; let i = index" [class.new-entry]="i < 2">
+            <div class="patient-avatar">
+              <span>{{ (sr.firstName?.charAt(0) || 'P') | uppercase }}</span>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">{{ (sr.firstName || '') + ' ' + (sr.lastName || '') }}</div>
+              <div class="patient-details">
+                <span class="detail-item">📞 {{ sr.phone || 'N/A' }}</span>
+                <span class="detail-item" *ngIf="sr.age">🎂 {{ sr.age }} yrs</span>
+                <span class="detail-item" *ngIf="sr.gender">{{ sr.gender === 'M' ? '👨' : sr.gender === 'F' ? '👩' : '🧑' }}</span>
+              </div>
+              <div class="patient-address" *ngIf="sr.address || sr.city">
+                📍 {{ sr.address || '' }} {{ sr.city ? ', ' + sr.city : '' }}
+              </div>
+              <div class="preferred-time" *ngIf="sr.preferredDate || sr.preferredTime">
+                📅 {{ sr.preferredDate | date:'dd MMM yyyy' }} {{ sr.preferredTime || '' }}
+              </div>
+            </div>
+            <div class="item-badges">
+              <span class="collection-badge home" *ngIf="sr.homeCollection">🏠 HOME</span>
+              <span class="collection-badge lab" *ngIf="!sr.homeCollection">🏥 LAB</span>
+              <span class="time-badge">{{ (sr.createdAt | date:'h:mm a') || '' }}</span>
+              <span class="new-badge" *ngIf="i < 2">NEW</span>
+            </div>
+          </div>
+          <div class="no-data" *ngIf="selfRegistrations.length === 0">
+            <span class="empty-icon">📭</span>
+            <span>No pending home collection requests</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Revenue Summary - Hidden until actual billing data is available -->
       <!--

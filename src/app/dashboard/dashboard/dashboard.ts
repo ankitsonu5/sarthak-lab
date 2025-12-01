@@ -11,6 +11,7 @@ import { DataRefreshService } from '../../core/services/data-refresh.service';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { interval, Subscription } from 'rxjs';
 import { LabNameService } from '../../core/services/lab-name.service';
+import { SelfRegistrationService } from '../../shared/services/self-registration.service';
 
 interface DashboardStats {
   totalPatients: number;
@@ -85,7 +86,11 @@ export class Dashboard implements OnInit, OnDestroy {
   // Recent Activity Data
   recentPatients: any[] = [];
   recentActivities: any[] = [];
+  selfRegistrations: any[] = [];
   cashReceiptPatients: any[] = [];
+
+  // Notification dropdown state
+  showNotifications = false;
 
   constructor(
     private authService: Auth,
@@ -98,7 +103,8 @@ export class Dashboard implements OnInit, OnDestroy {
     private dataRefresh: DataRefreshService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private labNameService: LabNameService
+    private labNameService: LabNameService,
+    private selfRegService: SelfRegistrationService
   ) {
     // Register Chart.js components
     Chart.register(...registerables);
@@ -144,6 +150,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.loadRecentActivities();
     this.loadCashReceiptPatients();
     this.loadPatientTrends();
+    this.loadSelfRegistrations();
 
     // Setup auto refresh for real-time updates
     // Listen for real-time receipt/bookings to update Today's Receipts instantly
@@ -189,27 +196,79 @@ export class Dashboard implements OnInit, OnDestroy {
     console.log('📊 DASHBOARD: Loading dashboard stats...');
     console.log('📊 DASHBOARD: Current stats before API call:', this.stats);
 
-    this.dashboardService.getDashboardStats().subscribe({
-      next: (data) => {
+    this.dashboardService.getDashboardStats().subscribe(
+      (data) => {
         console.log('✅ DASHBOARD: Dashboard stats loaded from API:', data);
         console.log('✅ DASHBOARD: Updating stats from:', this.stats, 'to:', data);
         this.stats = { ...data }; // Spread to ensure reactivity
         this.isStatsLoading = false;
         console.log('✅ DASHBOARD: Stats updated successfully:', this.stats);
-
         // Force Angular change detection
         this.cdr.detectChanges();
         console.log('✅ DASHBOARD: Change detection triggered!');
-
         this.checkAllDataLoaded();
       },
-      error: (error) => {
+      (error) => {
         console.error('❌ DASHBOARD: Error loading dashboard stats:', error);
         console.log('❌ DASHBOARD: Keeping current stats:', this.stats);
         this.isStatsLoading = false;
         this.checkAllDataLoaded();
       }
-    });
+    );
+  }
+
+  private getCurrentLabCode(): string | null {
+    try {
+      const u: any = this.authService.getCurrentUser();
+      if (u?.lab?.['labCode']) return String(u.lab['labCode']);
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        if (parsed?.lab?.['labCode']) return String(parsed.lab['labCode']);
+      }
+    } catch {}
+    return null;
+  }
+
+  private getCurrentLabId(): string | null {
+    try {
+      const u: any = this.authService.getCurrentUser();
+      if (u?.lab?.['_id']) return String(u.lab['_id']);
+      if (u?.labId) return String(u.labId);
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        if (parsed?.lab?.['_id']) return String(parsed.lab['_id']);
+        if (parsed?.labId) return String(parsed.labId);
+      }
+    } catch {}
+    return null;
+  }
+
+  private loadSelfRegistrations(): void {
+    try {
+      const labCode = this.getCurrentLabCode();
+      const labId = this.getCurrentLabId();
+      if (labCode) {
+        this.selfRegService.listRecentByCode(labCode).subscribe({
+          next: (res) => {
+            const items: any[] = (res as any)?.items || [];
+            this.selfRegistrations = items.slice(0, 5);
+            try { this.cdr.detectChanges(); } catch {}
+          },
+          error: () => { this.selfRegistrations = []; }
+        });
+      } else if (labId) {
+        this.selfRegService.listRecent(labId).subscribe({
+          next: (res) => {
+            const items: any[] = (res as any)?.items || [];
+            this.selfRegistrations = items.slice(0, 5);
+            try { this.cdr.detectChanges(); } catch {}
+          },
+          error: () => { this.selfRegistrations = []; }
+        });
+      }
+    } catch { this.selfRegistrations = []; }
   }
 
   private loadDateTime(): void {
@@ -630,5 +689,9 @@ export class Dashboard implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/auth/login']);
+  }
+
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
   }
 }

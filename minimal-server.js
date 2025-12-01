@@ -118,6 +118,8 @@ const prefixRoutes = require('./back-end/routes/prefixes');
 const inventoryRoutes = require('./back-end/routes/inventory');
 const auditLogRoutes = require('./back-end/routes/auditLogs');
 
+const selfRegistrationRoutes = require('./back-end/routes/selfRegistration');
+
 // Multi-Tenant SaaS Routes
 const labManagementRoutes = require('./back-end/routes/labManagement');
 
@@ -174,6 +176,8 @@ app.use('/api/dashboard', dashboardRoutes);
 
 app.use('/api/settings', require('./back-end/routes/smtp-settings'));
 app.use('/api/settings', require('./back-end/routes/lab-settings'));
+app.use('/api/self-registration', selfRegistrationRoutes);
+
 app.use('/api/counter-management', require('./back-end/routes/counter-management'));
 
 // Multi-Tenant SaaS Routes

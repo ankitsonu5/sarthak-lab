@@ -58,6 +58,7 @@ router.post('/me/lab', requireAuth, async (req, res) => {
       headerNote: String(incoming.headerNote || ''),
       footerNote: String(incoming.footerNote || ''),
       reportDisclaimer: String(incoming.reportDisclaimer || ''),
+      reportTemplate: ['classic','modern','professional'].includes(String(incoming?.reportTemplate)) ? String(incoming.reportTemplate) : 'classic',
       prefixes: {
         receipt: String(incoming?.prefixes?.receipt || ''),
         report: String(incoming?.prefixes?.report || ''),

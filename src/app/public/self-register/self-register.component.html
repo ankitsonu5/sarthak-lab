@@ -1,0 +1,148 @@
+<!-- Beautiful Self-Registration Page -->
+<div class="self-reg-page">
+  <!-- Animated Background Elements -->
+  <div class="bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="self-reg-card" *ngIf="labCode; else badLink">
+    <!-- Header Section -->
+    <div class="card-header">
+      <div class="header-icon">
+        <mat-icon>person_add</mat-icon>
+      </div>
+      <h1 class="title">Patient Self-Registration</h1>
+      <p class="subtitle">Fill your details to request home sample collection or lab visit</p>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-box" *ngIf="submitSuccess">
+      <mat-icon>check_circle</mat-icon>
+      <span>Thank you! We have received your request.</span>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-box" *ngIf="errorMsg">
+      <mat-icon>error</mat-icon>
+      <span>{{ errorMsg }}</span>
+    </div>
+
+    <!-- Registration Form -->
+    <form [formGroup]="form" (ngSubmit)="submit()" class="reg-form" *ngIf="!submitSuccess">
+      <!-- Personal Details Section -->
+      <div class="section-title">
+        <mat-icon>person</mat-icon>
+        <span>Personal Details</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name <span class="required">*</span></label>
+          <input type="text" class="form-input" formControlName="firstName" placeholder="Enter first name">
+          <span class="input-error" *ngIf="f['firstName'].touched && f['firstName'].invalid">First name is required</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" formControlName="lastName" placeholder="Enter last name">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone <span class="required">*</span></label>
+          <input type="tel" class="form-input" formControlName="phone" placeholder="Enter phone number">
+          <span class="input-error" *ngIf="f['phone'].touched && f['phone'].invalid">Phone is required</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          <select class="form-input" formControlName="gender">
+            <option value="">Select gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Age</label>
+          <input type="number" class="form-input" formControlName="age" placeholder="Enter age">
+        </div>
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" formControlName="city" placeholder="Enter city">
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" class="form-input" formControlName="address" placeholder="Enter full address">
+        </div>
+      </div>
+
+      <!-- Appointment Section -->
+      <div class="section-title">
+        <mat-icon>event</mat-icon>
+        <span>Appointment Preference</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Preferred Date</label>
+          <input type="date" class="form-input" formControlName="preferredDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Preferred Time</label>
+          <input type="time" class="form-input" formControlName="preferredTime">
+        </div>
+      </div>
+
+      <div class="form-row full-width">
+        <div class="form-group">
+          <label class="form-label">Requested Tests / Notes</label>
+          <textarea class="form-input textarea" formControlName="testsNote" rows="3" placeholder="Enter test names or any special notes..."></textarea>
+        </div>
+      </div>
+
+      <!-- Home Collection Checkbox -->
+      <div class="checkbox-row">
+        <label class="custom-checkbox">
+          <input type="checkbox" formControlName="homeCollection">
+          <span class="checkmark"></span>
+          <span class="checkbox-label">
+            <mat-icon>home</mat-icon>
+            Home sample collection
+          </span>
+        </label>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn" [disabled]="submitting">
+        <mat-icon *ngIf="!submitting">send</mat-icon>
+        <mat-spinner *ngIf="submitting" diameter="20"></mat-spinner>
+        <span>{{ submitting ? 'Submitting...' : 'Submit Registration' }}</span>
+      </button>
+    </form>
+
+    <!-- Reset Button after success -->
+    <button type="button" class="reset-btn" *ngIf="submitSuccess" (click)="submitSuccess = false">
+      <mat-icon>refresh</mat-icon>
+      <span>Register Another Patient</span>
+    </button>
+  </div>
+
+  <!-- Bad Link Template -->
+  <ng-template #badLink>
+    <div class="error-card">
+      <mat-icon>link_off</mat-icon>
+      <h2>Invalid Link</h2>
+      <p>The registration link is invalid or lab code is missing.</p>
+    </div>
+  </ng-template>
+</div>
+

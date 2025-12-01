@@ -1,0 +1,77 @@
+.brand-logo{
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: #fff;
+  padding: 2px;
+}
+.brand-name{ white-space: nowrap; }
+
+/* Fixed Notification Wrapper */
+.fixed-notification-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 12px 24px;
+}
+
+/* Golden Bell Container */
+.notification-bell-container {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  transition: transform 0.2s ease;
+}
+
+.notification-bell-container:hover {
+  transform: scale(1.1);
+}
+
+/* Bell Emoji - Golden Style */
+.bell-emoji {
+  font-size: 36px;
+  display: block;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: transform 0.1s ease;
+}
+
+/* Ringing Animation */
+@keyframes ring {
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-15deg); }
+  30% { transform: rotate(12deg); }
+  40% { transform: rotate(-12deg); }
+  50% { transform: rotate(8deg); }
+  60% { transform: rotate(-8deg); }
+  70% { transform: rotate(4deg); }
+  80% { transform: rotate(-4deg); }
+  90% { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.bell-emoji.ringing {
+  animation: ring 1s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+
+/* Notification Count Badge */
+.notification-count {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
+  border: 2px solid white;
+}

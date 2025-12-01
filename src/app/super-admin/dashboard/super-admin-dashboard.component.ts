@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -71,21 +71,28 @@ export class SuperAdminDashboardComponent implements OnInit {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to query params to handle filter changes from sidebar
+    // Load data immediately when component initializes
+    this.loadDashboardData();
+
+    // Also reload when query params change (e.g., from sidebar filter clicks)
     this.route.queryParams.subscribe(params => {
       const filter = params['filter'];
-      if (filter === 'all') {
-        this.filterStatus = 'all';
-      } else if (filter === 'pending') {
-        this.filterStatus = 'pending';
-      } else if (filter === 'active') {
-        this.filterStatus = 'approved';
+      if (filter) {
+        // Only re-apply filter and reload if filter param exists
+        if (filter === 'all') {
+          this.filterStatus = 'all';
+        } else if (filter === 'pending') {
+          this.filterStatus = 'pending';
+        } else if (filter === 'active') {
+          this.filterStatus = 'approved';
+        }
+        this.loadDashboardData();
       }
-      this.loadDashboardData();
     });
   }
 
@@ -104,10 +111,12 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.calculateStats();
         this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges(); // Force UI update
       },
       error: (error) => {
         this.error = error.error?.message || error.message || 'Failed to load labs';
         this.loading = false;
+        this.cdr.detectChanges(); // Force UI update
       }
     });
   }

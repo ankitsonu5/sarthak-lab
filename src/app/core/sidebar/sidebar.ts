@@ -116,7 +116,7 @@ export class Sidebar implements OnInit, OnDestroy {
       const cached = localStorage.getItem('labSettings');
       if (cached) {
         this.labSettings = JSON.parse(cached);
-        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl);
+        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl || this.labSettings?.sideLogoDataUrl);
         this.cdr.markForCheck();
       }
     } catch {}
@@ -125,7 +125,7 @@ export class Sidebar implements OnInit, OnDestroy {
     this.labService.getMyLab().subscribe({
       next: (res) => {
         this.labSettings = res.lab || this.labSettings;
-        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl);
+        this.labLogoUrl = this.defaultLabConfig.getLabLogo(this.labSettings?.logoDataUrl || this.labSettings?.sideLogoDataUrl);
         this.cdr.markForCheck();
       },
       error: () => {

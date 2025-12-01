@@ -50,29 +50,9 @@
                 readonly>
             </div>
 
-            <div class="field-group">
-              <label class="field-label">Lab Yearly No.</label>
-              <input
-                type="number"
-                class="form-input"
-                formControlName="yearlyNumber"
-                [disabled]="!labEditMode"
-                [readonly]="!labEditMode"
-                inputmode="numeric"
-                pattern="[0-9]*">
-            </div>
 
-            <div class="field-group">
-              <label class="field-label">Lab Daily No.</label>
-              <input
-                type="number"
-                class="form-input"
-                formControlName="dailyNumber"
-                [disabled]="!labEditMode"
-                [readonly]="!labEditMode"
-                inputmode="numeric"
-                pattern="[0-9]*">
-            </div>
+
+
 
             <div class="field-group">
               <label class="field-label">Search Date</label>
@@ -301,17 +281,7 @@
             </div>
           </div>
 
-          <!-- Lab numbers edit mode actions -->
-          <div class="action-section" *ngIf="labEditMode">
-            <div class="action-buttons-inline">
-              <button type="button" class="save-proceed-btn" (click)="updateLabNumbers()" [disabled]="!receiptFound">
-                <i class="icon">✏️</i> Update Lab Nos
-              </button>
-              <button type="button" class="save-only-btn" (click)="cancelLabEdit()">
-                <i class="icon">✖️</i> Cancel
-              </button>
-            </div>
-          </div>
+
         </div>
       </div>
 

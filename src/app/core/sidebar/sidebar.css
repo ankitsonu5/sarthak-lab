@@ -8,9 +8,9 @@
 /* Sidebar Container - Ultra Performance */
 .sidebar-container {
   height: 100%;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
-  border-right: 1px solid #1a252f;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(180deg, #1a1f2e 0%, #252b3d 100%);
+  border-right: 1px solid #0d1117;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
   transform: translateZ(0); /* Force hardware acceleration */
@@ -22,8 +22,8 @@
 /* Sidebar Header */
 .sidebar-header {
   padding: 1.5rem 1rem;
-  border-bottom: 1px solid #1a252f;
-  background: rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid #0d1117;
+  background: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;

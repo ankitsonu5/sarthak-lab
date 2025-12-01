@@ -16,6 +16,8 @@ export class ReportTemplateComponent implements OnInit {
   saving = false;
   statusMessage: string | null = null;
   statusError = false;
+  lab: LabSettings | null = null;
+
 
   constructor(
     private fb: FormBuilder,
@@ -31,8 +33,11 @@ export class ReportTemplateComponent implements OnInit {
     // Load existing settings
     this.api.getMyLab().subscribe({
       next: (res) => {
-        if (res.lab && res.lab.reportTemplate) {
-          this.form.patchValue({ reportTemplate: res.lab.reportTemplate });
+        if (res.lab) {
+          this.lab = res.lab as LabSettings;
+          if (res.lab.reportTemplate) {
+            this.form.patchValue({ reportTemplate: res.lab.reportTemplate });
+          }
         }
         this.cdr.markForCheck();
       },
@@ -46,12 +51,17 @@ export class ReportTemplateComponent implements OnInit {
     this.statusError = false;
     this.cdr.markForCheck();
 
-    const payload = { reportTemplate: this.form.value.reportTemplate } as Partial<LabSettings>;
-    
-    this.api.saveMyLab(payload as LabSettings).subscribe({
+    // Merge new template with existing lab data to preserve all other settings
+    const payload: LabSettings = {
+      ...(this.lab || {}),  // Keep all existing lab data (name, logo, address, etc.)
+      reportTemplate: this.form.value.reportTemplate  // Only update template
+    } as LabSettings;
+
+    this.api.saveMyLab(payload).subscribe({
       next: (res) => {
         this.saving = false;
         if (res?.lab) {
+          this.lab = res.lab as LabSettings;
           this.form.patchValue({ reportTemplate: res.lab.reportTemplate });
         }
         this.statusMessage = 'Template saved successfully!';

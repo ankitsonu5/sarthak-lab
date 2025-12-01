@@ -677,3 +677,154 @@ background: linear-gradient(90deg, rgba(112, 84, 214, 1) 0%, rgba(87, 158, 199, 
     justify-content: center;
   }
 }
+
+/* Source Filter Section */
+.source-filter-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.source-filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.source-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.source-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  background: white;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.source-toggle-btn:hover {
+  border-color: #7054d6;
+  color: #7054d6;
+}
+
+.source-toggle-btn.active {
+  background: linear-gradient(135deg, #7054d6, #579ec7);
+  border-color: #7054d6;
+  color: white;
+}
+
+.source-toggle-btn.self.active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: #10b981;
+}
+
+.source-toggle-btn.lab.active {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: #3b82f6;
+}
+
+.source-count {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Source Badge in Table */
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.source-badge.self {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #047857;
+  border: 1px solid #10b981;
+}
+
+.source-badge.lab {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1d4ed8;
+  border: 1px solid #3b82f6;
+}
+
+/* Self-registered row highlight */
+.self-registered-row {
+  background: linear-gradient(90deg, #f0fdf4, #ffffff) !important;
+}
+
+.self-registered-row:hover {
+  background: linear-gradient(90deg, #dcfce7, #f0fdf4) !important;
+}
+
+/* Home Collection Tag */
+.home-collection-tag {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+/* Preferred Date styling */
+.preferred-date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.preferred-date small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+/* Register button for self-registered patients */
+.btn-register {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+}
+
+.btn-register:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: scale(1.05);
+}
+
+/* Responsive adjustments for source filter */
+@media (max-width: 768px) {
+  .source-filter-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .source-toggle-group {
+    flex-wrap: wrap;
+  }
+
+  .source-toggle-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

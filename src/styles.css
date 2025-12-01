@@ -38,6 +38,7 @@ input, textarea, select {
 @media print {
   /* Hide all navigation and layout elements */
   app-sidebar,
+  app-header,
   .sidebar,
   .sidebar-container,
   .navbar,
@@ -46,7 +47,11 @@ input, textarea, select {
   .menu,
   .header,
   .footer,
-  .protected-layout app-sidebar {
+  mat-toolbar,
+  .mat-toolbar,
+  .mat-mdc-toolbar,
+  .protected-layout app-sidebar,
+  .protected-layout app-header {
     display: none !important;
   }
 
@@ -77,7 +82,10 @@ input, textarea, select {
   .overlay,
   .modal,
   .popup,
-  .cdk-overlay-container {
+  .cdk-overlay-container,
+  .mat-icon,
+  .mat-badge,
+  button[mat-icon-button] {
     display: none !important;
   }
 }

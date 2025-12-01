@@ -121,6 +121,10 @@ const routes: Routes = [
     ]
   },
   {
+    path: 'public/self-register/:labCode',
+    loadComponent: () => import('./public/self-register/self-register.component').then(m => m.SelfRegisterComponent)
+  },
+  {
     path: 'unauthorized',
     component: UnauthorizedComponent
   },

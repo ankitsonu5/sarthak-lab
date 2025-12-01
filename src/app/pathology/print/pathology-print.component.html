@@ -1,210 +1,176 @@
-<!-- Print Layout Container -->
-<div class="print-container">
+<!-- Professional Diagnostic Report Layout -->
+<div class="report-page">
 
-  <!-- Print Button (Only visible on screen, not in print) -->
+  <!-- Print Controls (hidden in print) -->
   <div class="print-controls no-print">
-    <button type="button" class="print-btn" (click)="printReport()">
-      🖨️ Print Report
-    </button>
+    <button type="button" class="print-btn" (click)="printReport()">🖨️ Print Report</button>
   </div>
 
-  <!-- Pathology Report Print Layout -->
+  <!-- Main Report Container -->
+  <div class="report-container" id="pathology-report-print">
 
-  <div id="pathology-report-print" class="pathology-report-print" [ngClass]="{
-    'tpl-classic': (labSettings?.reportTemplate || labSettings?.printLayout?.template || 'classic')==='classic',
-    'tpl-compact': (labSettings?.reportTemplate==='professional') || labSettings?.printLayout?.template==='compact',
-    'tpl-minimal': (labSettings?.reportTemplate==='modern') || labSettings?.printLayout?.template==='minimal',
-    'hdr-logo-left': (labSettings?.reportTemplate || 'classic')==='classic',
-    'hdr-logo-right': labSettings?.reportTemplate==='modern',
-    'hdr-logo-center': labSettings?.reportTemplate==='professional'
-  }">
-    <!-- Print-time overlay frame and fixed footer -->
-    <div class="print-fixed-footer only-print" *ngIf="labSettings?.printLayout?.showFooter !== false">
-      <div class="page-footer">
-        <div class="footer-row tri">
-          <div class="sign-col">
-            <span class="signature-label">Technician</span>
-            <div class="signature-line"></div>
-          </div>
-          <div class="sign-col">
-            <span class="signature-label">Pathologist 1</span>
-            <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" style="height:28px; display:block; margin:4px auto;">
-            <div class="signature-line"></div>
-          </div>
-          <div class="sign-col">
-            <span class="signature-label">Pathologist 2</span>
-            <div class="signature-line"></div>
-          </div>
+    <!-- Header Section -->
+    <header class="report-header" *ngIf="labSettings?.printLayout?.showHeader !== false">
+      <div class="header-left">
+        <img *ngIf="labSettings?.logoDataUrl" [src]="labSettings?.logoDataUrl" alt="Lab Logo" class="lab-logo">
+      </div>
+      <div class="header-center">
+        <h1 class="lab-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
+        <p class="lab-address" *ngIf="labSettings?.addressLine1 || labSettings?.city">
+          {{ labSettings?.addressLine1 }}{{ labSettings?.addressLine2 ? ', ' + labSettings?.addressLine2 : '' }}{{ labSettings?.city ? ', ' + labSettings?.city : '' }}{{ labSettings?.state ? ', ' + labSettings?.state : '' }}{{ labSettings?.pincode ? ' - ' + labSettings?.pincode : '' }}
+        </p>
+        <p class="lab-contact" *ngIf="labSettings?.phone || labSettings?.email">
+          {{ labSettings?.phone ? 'Ph: ' + labSettings?.phone : '' }}{{ labSettings?.email ? ' | ' + labSettings?.email : '' }}
+        </p>
+      </div>
+      <div class="header-right">
+        <div id="headerQRCode" class="header-qr"></div>
+      </div>
+    </header>
+
+    <!-- Decorative Line -->
+    <div class="header-line"></div>
+
+    <!-- Patient Details Section -->
+    <section class="patient-section">
+      <div class="patient-grid">
+        <div class="patient-row">
+          <span class="label">ID</span>
+          <span class="value">{{ registrationNo || '-' }}</span>
         </div>
-        <div class="footer-note">
-          <p>{{ labSettings?.footerNote || 'Not Valid for MedicoLegal Purpose.' }}</p>
-          <p>{{ labSettings?.reportDisclaimer || 'Please Correlate Clinically.' }}</p>
+        <div class="patient-row">
+          <span class="label">Collection Date</span>
+          <span class="value">{{ formatReportDate(pathologyRegDate) }}</span>
+        </div>
+        <div class="patient-row">
+          <span class="label">Name</span>
+          <span class="value patient-name">{{ formatName(patientName || patientData?.fullName || '') }}</span>
+        </div>
+        <div class="patient-row">
+          <span class="label">Reporting Date</span>
+          <span class="value">{{ formatReportDate(reportDate) }}</span>
+        </div>
+        <div class="patient-row">
+          <span class="label">Age/Sex</span>
+          <span class="value">{{ formatAgeWithUnit((age || patientData?.age), (reportData?.ageIn || patientData?.ageIn)) }} / {{ formatGender(gender || patientData?.gender) }}</span>
+        </div>
+        <div class="patient-row">
+          <span class="label">Lab No.</span>
+          <span class="value">{{ labYearlyNo || '' }}{{ labDailyNo ? '/' + labDailyNo : '' }}</span>
+        </div>
+        <div class="patient-row">
+          <span class="label">Ref. By</span>
+          <span class="value">{{ doctorName || 'Self' }}</span>
+        </div>
+        <div class="patient-row"></div>
+      </div>
+    </section>
+
+    <!-- Test Results Section -->
+    <section class="results-section">
+      <!-- Debug: Always show data summary at top (remove after debugging) -->
+      <div style="padding: 10px; background: #fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; font-size: 11px;">
+        <strong>DEBUG:</strong> testResults={{ testResults.length }}, categoryGroups={{ categoryGroups.length }}
+        <span *ngIf="testResults.length > 0">
+          | First: {{ $any(testResults[0]).testName }} (params={{ $any(testResults[0]).parameters?.length || 0 }}, rows={{ $any(testResults[0]).displayRows?.length || 0 }})
+        </span>
+        <div *ngIf="testResults.length > 0" style="margin-top: 5px; padding: 5px; background: #fff; border: 1px dashed #ccc;">
+          <strong>First Test Raw Data:</strong><br>
+          <pre style="font-size: 9px; max-height: 150px; overflow: auto; white-space: pre-wrap;">{{ $any(testResults[0]) | json }}</pre>
         </div>
       </div>
-    </div>
 
-    <!-- Hospital Header (first page only) -->
-    <div class="report-header-block" *ngIf="labSettings?.printLayout?.showHeader !== false">
-      <table class="header-table" role="presentation" style="width:100%;">
-        <tr>
-          <td class="logo-cell" style="width:140px; vertical-align:middle">
-            <!-- Left logo visible for Classic only -->
-            <img *ngIf="(labSettings?.reportTemplate || 'classic') === 'classic' && labSettings?.logoDataUrl"
-                 [src]="labSettings?.logoDataUrl" alt="Logo" class="govt-logo" loading="eager" decoding="sync" fetchpriority="high">
-          </td>
-          <td class="hospital-info-cell" style="text-align:center">
-            <div class="hospital-info">
-              <!-- Center logo for Professional -->
-              <img *ngIf="labSettings?.reportTemplate === 'professional' && labSettings?.logoDataUrl"
-                   [src]="labSettings?.logoDataUrl" alt="Logo" class="center-logo" loading="eager" decoding="sync" fetchpriority="high">
-              <h1 class="hospital-name">{{ labSettings?.labName || '' }}</h1>
-              <h2 class="hospital-location" *ngIf="labSettings?.addressLine1 || labSettings?.addressLine2 || labSettings?.city || labSettings?.state || labSettings?.pincode">
-                {{ (labSettings?.addressLine1 || '') + (labSettings?.addressLine2 ? ' ' + labSettings?.addressLine2 : '') + (labSettings?.city ? ' ' + labSettings?.city : '') + (labSettings?.state ? ' ' + labSettings?.state : '') + (labSettings?.pincode ? ' ' + labSettings?.pincode : '') }}
-              </h2>
-              <div class="header-note" *ngIf="labSettings?.headerNote">{{ labSettings?.headerNote }}</div>
-            </div>
-          </td>
-          <td class="right-logo-cell" style="width:140px; vertical-align:middle; text-align:right">
-            <!-- For Modern: show main logo on the right; optionally show QR below -->
-            <ng-container *ngIf="labSettings?.reportTemplate === 'modern'; else defaultRightBlock">
-              <img *ngIf="labSettings?.logoDataUrl" [src]="labSettings?.logoDataUrl" alt="Logo" class="main-logo-right" style="height:64px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
-              <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: block; margin-top: 6px;"></div>
-            </ng-container>
-            <ng-template #defaultRightBlock>
-              <!-- Otherwise: QR or side logo as before -->
-              <div *ngIf="labSettings?.printLayout?.showQr === true" id="headerQRCode" style="display: inline-block;"></div>
-              <img *ngIf="labSettings?.printLayout?.showQr !== true && labSettings?.sideLogoDataUrl"
-                   [src]="labSettings?.sideLogoDataUrl" alt="Side Logo" class="right-logo" style="height:48px; object-fit:contain;" loading="eager" decoding="sync" fetchpriority="high">
-            </ng-template>
-          </td>
-        </tr>
-      </table>
-    </div>
+      <!-- Show if no data -->
+      <div class="no-data-msg" *ngIf="!categoryGroups || categoryGroups.length === 0" style="padding: 20px; text-align: center; color: #666; background: #f9f9f9; border-radius: 8px; margin: 10px 0;">
+        <p style="margin: 0;">No test results to display</p>
+        <small style="color: #999;">testResults: {{ testResults.length }} | categoryGroups: {{ categoryGroups.length }}</small>
+      </div>
 
-    <table class="report-table">
-      <thead>
-        <!-- Top spacer for header on every printed page -->
-        <tr class="top-spacer only-print">
-          <th colspan="3"></th>
-        </tr>
-        <!-- Patient Info Box (repeats on every page) -->
-        <tr class="patient-info-row">
-          <th colspan="3" class="patient-cell">
-            <div class="patient-info-section">
-              <div class="patient-row first-row">
-                <div class="patient-field-medium no-wrap">
-                  <span class="field-label">Patient Name :</span>
-                  <span class="field-value inline-value">{{ formatName(patientName || patientData?.fullName ||
-                    patientData?.firstName + ' ' + patientData?.lastName || '') }}</span>
-                </div>
-                <div class="patient-field-small no-wrap">
-                  <span class="field-label">Reg. No. :</span>
-                  <span class="field-value">{{ registrationNo || '' }}</span>
-                </div>
-                <div class="patient-field-small no-wrap">
-                  <span class="field-label date-label">Date :</span>
-                  <span class="field-value date-nowrap">{{ formatReportDate(pathologyRegDate) }}</span>
-                </div>
-              </div>
-              <div class="patient-row">
-                <div class="patient-field-medium no-wrap">
-                  <span class="field-label">Referred By :</span>
-                  <span class="field-value">{{ doctorName }}</span>
-                </div>
-                <div class="patient-field-small no-wrap">
-                  <span class="field-label">Age :</span>
-                  <span class="field-value">{{ formatAgeWithUnit((age || patientData?.age), (reportData?.ageIn ||
-                    reportData?.ageUnit || patientData?.ageIn || patientData?.ageUnit)) }}</span>
-                </div>
-                <div class="patient-field-small no-wrap">
-                  <span class="field-label">Gender :</span>
-                  <span class="field-value">{{ formatGender(gender || patientData?.gender) }}</span>
-                </div>
-              </div>
-              <div class="patient-row">
-                <div class="patient-field-medium no-wrap">
-                  <span class="field-label">Lab Sr.No. :</span>
-                  <span class="field-value">{{ (labYearlyNo || '') }}/{{ (labDailyNo || '') }}</span>
-                </div>
-                <div class="patient-field-small"></div>
-                <div class="patient-field-small"></div>
-              </div>
-            </div>
-          </th>
-        </tr>
-        <!-- Column headers (repeat on every page) -->
-        <tr class="columns-header">
-          <th class="test-column">TEST</th>
-          <th class="result-column">RESULT</th>
-          <th class="normal-column">NORMAL VALUE</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Group tests by category and print once per category -->
-        <ng-container *ngFor="let group of categoryGroups">
-          <tr class="category-row">
-            <td colspan="3" style="text-align: left; padding-left: 10px;"><strong>{{ group.category }}</strong></td>
-          </tr>
-          <ng-container *ngFor="let testResult of group.tests">
-            <tr class="testname-row">
-              <td colspan="3">{{ testResult.testName }}</td>
-            </tr>
-            <ng-container *ngFor="let row of (testResult.displayRows || []); let i = index">
-              <tr class="group-row" *ngIf="row.kind === 'group' && hasGroupAnyValue((testResult.displayRows || []), i)">
-                <td colspan="3" class="group-title">{{ row.name }}</td>
+      <ng-container *ngFor="let group of categoryGroups">
+        <!-- Category Header -->
+        <div class="category-header">{{ group.category }}</div>
+
+        <ng-container *ngFor="let testResult of group.tests">
+          <!-- Test Name Row -->
+          <div class="test-header">{{ testResult.testName }}</div>
+
+          <!-- Results Table -->
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th class="col-test">Test Name</th>
+                <th class="col-result">Result</th>
+                <th class="col-unit">Unit</th>
+                <th class="col-range">Normal Value</th>
               </tr>
-              <tr class="param-row"
-                *ngIf="row.kind === 'param' && paramShouldPrint((testResult.displayRows || []), i, row)"
-                [ngClass]="getRowStatusClass(row.status || '')">
-                <td class="test-name" [style.padding-left.px]="10 + (row.level || 0) * 12">{{ row.name }}</td>
-                <td class="test-result" [ngClass]="getStatusClass(row.status || '')">
-                  {{ row.value }} <span class="unit" *ngIf="row.unit">{{ row.unit }}</span>
-                </td>
-                <td class="test-range" style="text-align:center;">
-                  <ng-container *ngFor="let ln of splitRange(row.normalRange)">
-                    <div>{{ ln }}</div>
-                  </ng-container>
-                </td>
-              </tr>
-              <!-- Remark row following a parameter -->
-              <tr class="remark-row" *ngIf="row.kind === 'remark'">
-                <td class="remark-cell" colspan="3" [style.padding-left.px]="10 + (row.level || 0) * 12">
-                  {{ row.remarkText }}
-                </td>
-              </tr>
-            </ng-container>
-          </ng-container>
+            </thead>
+            <tbody>
+              <!-- Use displayRows if available -->
+              <ng-container *ngIf="testResult.displayRows && testResult.displayRows.length > 0">
+                <ng-container *ngFor="let row of testResult.displayRows; let i = index">
+                  <!-- Group Row -->
+                  <tr class="group-row" *ngIf="row.kind === 'group' && hasGroupAnyValue(testResult.displayRows, i)">
+                    <td colspan="4" class="group-name">{{ row.name }}</td>
+                  </tr>
+                  <!-- Parameter Row -->
+                  <tr class="param-row" *ngIf="row.kind === 'param'"
+                      [class.abnormal]="row.status === 'High' || row.status === 'Low' || row.status === 'Abnormal'">
+                    <td class="col-test" [style.padding-left.px]="8 + (row.level || 0) * 16">{{ row.name }}</td>
+                    <td class="col-result" [class.high]="row.status === 'High'" [class.low]="row.status === 'Low'">
+                      {{ row.value }}
+                    </td>
+                    <td class="col-unit">{{ row.unit || '' }}</td>
+                    <td class="col-range">
+                      <ng-container *ngFor="let ln of splitRange(row.normalRange)">{{ ln }}<br></ng-container>
+                    </td>
+                  </tr>
+                  <!-- Remark Row -->
+                  <tr class="remark-row" *ngIf="row.kind === 'remark' && row.remarkText">
+                    <td colspan="4" class="remark-text" [style.padding-left.px]="8 + (row.level || 0) * 16">{{ row.remarkText }}</td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+              <!-- Fallback to parameters if displayRows is empty -->
+              <ng-container *ngIf="!testResult.displayRows || testResult.displayRows.length === 0">
+                <ng-container *ngFor="let param of (testResult.parameters || [])">
+                  <tr class="param-row"
+                      [class.abnormal]="$any(param).status === 'High' || $any(param).status === 'Low' || $any(param).status === 'Abnormal'">
+                    <td class="col-test">{{ $any(param).name }}</td>
+                    <td class="col-result" [class.high]="$any(param).status === 'High'" [class.low]="$any(param).status === 'Low'">
+                      {{ $any(param).value || $any(param).result || '-' }}
+                    </td>
+                    <td class="col-unit">{{ $any(param).unit || '' }}</td>
+                    <td class="col-range">
+                      <ng-container *ngFor="let ln of splitRange($any(param).normalRange || $any(param).referenceRange)">{{ ln }}<br></ng-container>
+                    </td>
+                  </tr>
+                </ng-container>
+              </ng-container>
+            </tbody>
+          </table>
         </ng-container>
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="3">
-            <!-- Screen preview footer (visible on screen, hidden in print by CSS) -->
-            <div class="page-footer" *ngIf="labSettings?.printLayout?.showFooter !== false">
-              <div class="footer-row tri">
-                <div class="sign-col">
-                  <span class="signature-label">Technician</span>
-                  <div class="signature-line"></div>
-                </div>
-                <div class="sign-col">
-                  <span class="signature-label">Pathologist 1</span>
-                  <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" style="height:28px; display:block; margin:4px auto;">
-                  <div class="signature-line"></div>
-                </div>
-                <div class="sign-col">
-                  <span class="signature-label">Pathologist 2</span>
-                  <div class="signature-line"></div>
-                </div>
-              </div>
-              <div class="footer-note">
-                <p>{{ labSettings?.footerNote || 'Not Valid for MedicoLegal Purpose.' }}</p>
-                <p>{{ labSettings?.reportDisclaimer || 'Please Correlate Clinically.' }}</p>
-              </div>
-            </div>
-          </td>
-        </tr>
+      </ng-container>
+    </section>
 
-      </tfoot>
-    </table>
+    <!-- Footer Section -->
+    <footer class="report-footer" *ngIf="labSettings?.printLayout?.showFooter !== false">
+      <div class="footer-left">
+        <!-- Empty or can add lab info -->
+      </div>
+      <div class="footer-right">
+        <div class="signature-block">
+          <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" class="signature-img">
+          <div class="signature-line"></div>
+          <span class="signatory-name">Authorized Signatory</span>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer" *ngIf="labSettings?.footerNote || labSettings?.reportDisclaimer">
+      <p *ngIf="labSettings?.footerNote">{{ labSettings?.footerNote }}</p>
+      <p *ngIf="labSettings?.reportDisclaimer">{{ labSettings?.reportDisclaimer }}</p>
+    </div>
+
   </div>
 </div>

@@ -19,6 +19,13 @@ export class LabSetupComponent implements OnInit {
   statusMessage: string | null = null;
   statusError = false;
 
+  // Self-registration link & QR
+  appOrigin = typeof window !== 'undefined' && (window as any).location ? (window as any).location.origin : '';
+  labCode: string = '';
+  selfRegLink: string = '';
+  selfRegQrUrl: string = '';
+  copyDone = false;
+
   constructor(
     private fb: FormBuilder,
     private api: LabSettingsService,
@@ -44,6 +51,15 @@ export class LabSetupComponent implements OnInit {
           this.form.patchValue(res.lab);
           this.updatePreview();
         }
+        // Try to pick labCode from current user
+        try {
+          const userStr = localStorage.getItem('user');
+          if (userStr) {
+            const u = JSON.parse(userStr);
+            this.labCode = (u?.lab?.labCode || u?.labCode || '').toString();
+          }
+        } catch {}
+        this.recomputeSelfReg();
         this.cdr.markForCheck();
       },
       error: () => { this.cdr.markForCheck(); }
@@ -64,6 +80,49 @@ export class LabSetupComponent implements OnInit {
   updatePreview() {
     this.preview = this.form.value as LabSettings;
     this.cdr.markForCheck();
+  }
+
+  private recomputeSelfReg() {
+    if (!this.labCode) {
+      this.selfRegLink = '';
+      this.selfRegQrUrl = '';
+      return;
+    }
+    this.selfRegLink = `${this.appOrigin}/public/self-register/${encodeURIComponent(this.labCode)}`;
+    this.selfRegQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(this.selfRegLink)}`;
+  }
+
+  copySelfRegLink() {
+    if (!this.selfRegLink) return;
+    try {
+      navigator.clipboard.writeText(this.selfRegLink).then(() => {
+        this.copyDone = true;
+        setTimeout(() => { this.copyDone = false; this.cdr.markForCheck(); }, 1500);
+        this.cdr.markForCheck();
+      });
+    } catch {}
+  }
+
+  printSelfRegQR() {
+    if (!this.selfRegLink) return;
+    const w = window.open('', '_blank', 'width=420,height=600');
+    if (!w) return;
+    const html = `<!doctype html><html><head><title>Print QR</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 16px; text-align: center; }
+        .link { margin-top: 12px; word-break: break-all; font-size: 13px; }
+        img { margin-top: 8px; }
+        .lab { font-weight: 600; margin-bottom: 8px; font-size: 16px; }
+      </style>
+    </head><body>
+      <div class="lab">Self-Registration QR</div>
+      <img src="${this.selfRegQrUrl}" width="220" height="220" alt="Self-Register QR"/>
+      <div class="link">${this.selfRegLink}</div>
+      <script>window.onload = function(){ setTimeout(()=>window.print(), 200); };</script>
+    </body></html>`;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
   }
 
   saveAndPreview() {

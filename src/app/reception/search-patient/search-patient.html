@@ -122,6 +122,32 @@
         </button>
       </div>
     </div>
+
+    <!-- Source Filter Toggle Buttons -->
+    <div class="source-filter-section">
+      <span class="source-filter-label">Patient Source:</span>
+      <div class="source-toggle-group">
+        <button
+          class="source-toggle-btn"
+          [class.active]="selectedSourceFilter === 'all'"
+          (click)="selectedSourceFilter = 'all'; onSourceFilterChange()">
+          <i class="fas fa-users"></i> All
+        </button>
+        <button
+          class="source-toggle-btn self"
+          [class.active]="selectedSourceFilter === 'self'"
+          (click)="selectedSourceFilter = 'self'; onSourceFilterChange()">
+          <i class="fas fa-mobile-alt"></i> Self Registered
+          <span class="source-count" *ngIf="selfRegisteredPatients.length > 0">{{ selfRegisteredPatients.length }}</span>
+        </button>
+        <button
+          class="source-toggle-btn lab"
+          [class.active]="selectedSourceFilter === 'lab'"
+          (click)="selectedSourceFilter = 'lab'; onSourceFilterChange()">
+          <i class="fas fa-hospital"></i> Lab Registered
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Loading Spinner (only for first-ever load with no data) -->
@@ -144,6 +170,7 @@
         <thead>
           <tr>
             <th class="col-serial">S.No</th>
+            <th>Source</th>
             <th>Reg. No.</th>
             <th>Patient Name</th>
             <th>Age/Gender</th>
@@ -154,8 +181,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let patient of getPaginatedPatients(); let i = index; trackBy: trackByPatientId" class="patient-row">
+          <tr *ngFor="let patient of getPaginatedPatients(); let i = index; trackBy: trackByPatientId" class="patient-row" [class.self-registered-row]="patient.source === 'self'">
             <td class="text-center">{{ getStartIndex() + i }}</td>
+            <td>
+              <span class="source-badge" [class.self]="patient.source === 'self'" [class.lab]="patient.source !== 'self'">
+                <i class="fas" [class.fa-mobile-alt]="patient.source === 'self'" [class.fa-hospital]="patient.source !== 'self'"></i>
+                {{ patient.source === 'self' ? 'Self' : 'Lab' }}
+              </span>
+            </td>
             <td>
               <span class="uhid" [title]="(patient.patientId || patient.uhid) ? ('UHID: ' + (patient.patientId || patient.uhid)) : ''">{{ displayRegNo(patient) }}</span>
             </td>
@@ -163,16 +196,23 @@
               <div class="patient-name">
                 <strong>{{ patient.firstName }} {{ patient.lastName || '' }}</strong>
                 <small *ngIf="patient.fatherName">S/O {{ patient.fatherName }}</small>
+                <small *ngIf="patient.source === 'self' && patient.homeCollection" class="home-collection-tag">🏠 Home Collection</small>
               </div>
             </td>
-            <td>{{ patient.age }}/{{ patient.gender }}</td>
+            <td>{{ patient.age }}/{{ patient.gender || '-' }}</td>
             <td>
               <div class="contact">{{ patient.phone || patient.mobile || (patient.emergencyContact?.phone) || '-' }}</div>
             </td>
             <td>
               <div class="address" [title]="getFormattedAddress(patient)">{{ getFormattedAddress(patient) }}</div>
             </td>
-            <td>{{ patient.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span *ngIf="patient.source !== 'self'">{{ patient.createdAt | date:'dd/MM/yyyy' }}</span>
+              <span *ngIf="patient.source === 'self'" class="preferred-date">
+                {{ patient.preferredDate || (patient.createdAt | date:'dd/MM/yyyy') }}
+                <small *ngIf="patient.preferredTime">{{ patient.preferredTime }}</small>
+              </span>
+            </td>
             <td>
               <div class="action-buttons">
                 <button
@@ -186,16 +226,18 @@
                   class="btn btn-sm btn-edit"
                   (click)="editPatient(patient)"
                   title="Edit Patient"
+                  *ngIf="patient.source !== 'self'"
                 >
                   <i class="fas fa-edit"></i>
                 </button>
-                <!-- <button
-                  class="btn btn-sm btn-delete"
-                  (click)="deletePatient(patient)"
-                  title="Delete Patient"
+                <button
+                  class="btn btn-sm btn-register"
+                  (click)="registerSelfPatient(patient)"
+                  title="Register as Lab Patient"
+                  *ngIf="patient.source === 'self'"
                 >
-                  <i class="fas fa-trash"></i>
-                </button> -->
+                  <i class="fas fa-user-plus"></i>
+                </button>
               </div>
             </td>
           </tr>

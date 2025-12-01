@@ -12,16 +12,28 @@
           <input type="radio" formControlName="reportTemplate" value="classic" />
           <div class="template-preview classic-preview">
             <div class="template-header">
-              <div class="template-logo">🏥</div>
+              <div class="template-logo">
+                <img *ngIf="lab?.logoDataUrl; else fallbackClassic" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                <ng-template #fallbackClassic>🏥</ng-template>
+              </div>
               <div class="template-info">
-                <div class="template-title">Classic Template</div>
-                <div class="template-subtitle">Traditional Medical Report</div>
+                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                <div class="template-subtitle">
+                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+                </div>
               </div>
             </div>
             <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
+              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>WBC</span><span><strong>7,500</strong> /µL</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px;">
+                <span>Platelet</span><span><strong>2.1</strong> x10^5/µL</span>
+              </div>
             </div>
           </div>
           <div class="template-name">
@@ -34,16 +46,28 @@
           <input type="radio" formControlName="reportTemplate" value="modern" />
           <div class="template-preview modern-preview">
             <div class="template-header modern">
-              <div class="template-logo">🔬</div>
+              <div class="template-logo">
+                <img *ngIf="lab?.logoDataUrl; else fallbackModern" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                <ng-template #fallbackModern>🔬</ng-template>
+              </div>
               <div class="template-info">
-                <div class="template-title">Modern Template</div>
-                <div class="template-subtitle">Clean & Minimal Design</div>
+                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                <div class="template-subtitle">
+                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+                </div>
               </div>
             </div>
             <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
+              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>WBC</span><span><strong>7,500</strong> /\u00b5L</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px;">
+                <span>Platelet</span><span><strong>2.1</strong> x10^5/\u00b5L</span>
+              </div>
             </div>
           </div>
           <div class="template-name">
@@ -56,16 +80,28 @@
           <input type="radio" formControlName="reportTemplate" value="professional" />
           <div class="template-preview professional-preview">
             <div class="template-header professional">
-              <div class="template-logo">⚕️</div>
+              <div class="template-logo">
+                <img *ngIf="lab?.logoDataUrl; else fallbackProfessional" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                <ng-template #fallbackProfessional>⚕️</ng-template>
+              </div>
               <div class="template-info">
-                <div class="template-title">Professional Template</div>
-                <div class="template-subtitle">Corporate Style</div>
+                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                <div class="template-subtitle">
+                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+                </div>
               </div>
             </div>
             <div class="template-body">
-              <div class="template-line"></div>
-              <div class="template-line short"></div>
-              <div class="template-line"></div>
+              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                <span>WBC</span><span><strong>7,500</strong> /\u00b5L</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11px;">
+                <span>Platelet</span><span><strong>2.1</strong> x10^5/\u00b5L</span>
+              </div>
             </div>
           </div>
           <div class="template-name">

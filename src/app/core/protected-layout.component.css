@@ -21,14 +21,27 @@ app-sidebar {
   flex-direction: column;
   padding: 24px;
   padding-bottom: 0!important;
+  padding-top: 0 !important;
   background: #f8fafc;
   min-height: 100vh;
   overflow-y: auto;
+  position: relative;
+}
+
+/* Fixed Header with Notification Icon */
+app-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 280px;
+  z-index: 100;
+  background: transparent;
 }
 
 .content-wrapper {
   flex: 1;
   min-height: calc(100vh - 120px);
+  margin-top: 56px; /* Space for fixed header */
 }
 
 /* Print Styles */
@@ -58,8 +71,13 @@ app-sidebar {
     max-width: 260px;
   }
 
+  app-header {
+    left: 260px;
+  }
+
   .protected-content {
     padding: 16px;
+    padding-top: 0 !important;
   }
 }
 
@@ -76,7 +94,18 @@ app-sidebar {
     position: relative;
   }
 
+  app-header {
+    left: 0;
+    top: auto;
+    position: sticky;
+  }
+
   .protected-content {
     padding: 12px;
+    padding-top: 0 !important;
+  }
+
+  .content-wrapper {
+    margin-top: 0;
   }
 }

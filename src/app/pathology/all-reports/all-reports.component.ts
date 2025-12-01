@@ -797,15 +797,26 @@ export class AllReportsComponent implements OnInit {
     });
   }
 
-  // ✅ PRINT REPORT
+  // ✅ PRINT REPORT - Navigate directly to print page
   printReport(report: PathologyReport): void {
     console.log('🖨️ Printing report:', report.reportId);
-    // Navigate to test-report component in print mode
-    this.router.navigate(['/pathology-module/test-report'], {
-      queryParams: {
+    // Navigate directly to print component with report data
+    this.router.navigate(['/pathology-module/print'], {
+      state: {
         reportId: report._id,
         receiptNo: report.receiptNo,
-        mode: 'print'
+        registrationNo: report.registrationNo,
+        labYearlyNo: report.labYearlyNo,
+        labDailyNo: report.labDailyNo,
+        patientName: report.patientData?.fullName || '',
+        age: report.patientData?.age || '',
+        gender: report.patientData?.gender || '',
+        doctorName: report.doctor || '',
+        department: report.department || '',
+        reportDate: report.registrationDate || report.reportDate,
+        testResults: report.testResults || [],
+        triggerAutoPrint: true,
+        navigateAfterPrint: { path: '/pathology-module/all-reports' }
       }
     });
   }
