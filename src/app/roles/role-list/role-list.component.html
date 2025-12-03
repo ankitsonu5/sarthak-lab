@@ -10,6 +10,14 @@
       </div>
       <div class="header-right">
         <p class="header-subtitle">Total: {{ users.length }} users | Showing: {{ filtered.length }}</p>
+        <button
+          *ngIf="canAdd"
+          type="button"
+          class="add-user-btn"
+          [routerLink]="['/roles/add']">
+          <i class="fa-solid fa-plus"></i>
+          Add User
+        </button>
       </div>
     </div>
   </div>

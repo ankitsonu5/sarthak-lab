@@ -3,6 +3,7 @@ import { RouterModule, Routes, PreloadAllModules } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleDashboardGuard } from './core/guards/role-dashboard.guard';
 import { RoleGuard } from './core/guards/role.guard';
+import { SubscriptionGuard } from './core/guards/subscription.guard';
 import { UnauthorizedComponent } from './shared/components/unauthorized.component';
 import { ProtectedLayoutComponent } from './core/protected-layout.component';
 import { PathologyDashboardComponent } from './pathology/pathology-dashboard/pathology-dashboard.component';
@@ -16,106 +17,106 @@ const routes: Routes = [
     path: 'auth',
     loadChildren: () => import('./auth/auth-module').then(m => m.AuthModule)
   },
-  // Direct access routes for testing
-  {
-    path: 'test-setup',
-    loadChildren: () => import('./setup/setup.module').then(m => m.SetupModule)
-  },
+  // All protected routes - requires login
   {
     path: '',
     component: ProtectedLayoutComponent,
+    canActivate: [AuthGuard], // 🔐 AUTH GUARD - Login required for ALL protected routes
     children: [
       {
         path: 'dashboard',
         children: [
           {
             path: '',
-            // canActivate: [RoleDashboardGuard],
-            children: [] // Empty component to prevent rendering before redirect
+            canActivate: [RoleDashboardGuard],
+            children: [] // Redirect based on role
           },
           {
             path: 'admin',
             loadChildren: () => import('./dashboard/dashboard-module').then(m => m.DashboardModule),
-            // canActivate: [RoleDashboardGuard],
+	            canActivate: [RoleDashboardGuard, SubscriptionGuard],
             data: { expectedRole: 'Admin' }
           },
           {
             path: 'pathology',
             component: PathologyDashboardComponent,
-            // canActivate: [RoleDashboardGuard],
+	            canActivate: [RoleDashboardGuard, SubscriptionGuard],
             data: { expectedRole: 'Pathology' }
           },
 
         ]
       },
 
-      {
-        path: 'appointments',
-        loadChildren: () => import('./appointments/appointments-module').then(m => m.AppointmentsModule),
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'billing',
-        loadChildren: () => import('./billing/billing-module').then(m => m.BillingModule),
-        canActivate: [AuthGuard]
-      },
-      {
-        path: 'reception',
-        loadChildren: () => import('./reception/reception.module').then(m => m.ReceptionModule),
-        // canActivate: [AuthGuard]
-      },
+	      {
+	        path: 'appointments',
+	        loadChildren: () => import('./appointments/appointments-module').then(m => m.AppointmentsModule),
+	        canActivate: [SubscriptionGuard]
+	      },
+	      {
+	        path: 'billing',
+	        loadChildren: () => import('./billing/billing-module').then(m => m.BillingModule),
+	        canActivate: [SubscriptionGuard]
+	      },
+	      {
+	        path: 'reception',
+	        loadChildren: () => import('./reception/reception.module').then(m => m.ReceptionModule),
+	        canActivate: [SubscriptionGuard]
+	      },
       {
         path: 'setup',
         loadChildren: () => import('./setup/setup.module').then(m => m.SetupModule),
-        canActivate: [AuthGuard, RoleGuard],
+	        canActivate: [RoleGuard, SubscriptionGuard],
         data: { roles: ['Admin', 'LabAdmin'] }
       },
 
-	      {
-	        path: 'lab-setup',
-	        loadChildren: () => import('./setup/lab-setup/lab-setup.module').then(m => m.LabSetupModule),
-	        canActivate: [AuthGuard, RoleGuard],
-	        data: { roles: ['Admin', 'LabAdmin'] }
-	      },
-
+      {
+        path: 'lab-setup',
+        loadChildren: () => import('./setup/lab-setup/lab-setup.module').then(m => m.LabSetupModule),
+	        canActivate: [RoleGuard, SubscriptionGuard],
+        data: { roles: ['Admin', 'LabAdmin'] }
+      },
       {
         path: 'cash-receipt',
         loadChildren: () => import('./cash-receipt/cash-receipt.module').then(m => m.CashReceiptModule),
-        canActivate: [AuthGuard, RoleGuard],
+	        canActivate: [RoleGuard, SubscriptionGuard],
         data: { roles: ['Admin', 'SuperAdmin', 'Pathology', 'LabAdmin', 'Receptionist'] }
       },
       {
         path: 'pathology-module',
         loadChildren: () => import('./pathology/pathology.module').then(m => m.PathologyModule),
-        canActivate: [AuthGuard, RoleGuard],
+	        canActivate: [RoleGuard, SubscriptionGuard],
         data: { roles: ['Pathology', 'Admin', 'LabAdmin', 'Technician', 'Receptionist'] }
       },
       {
         path: 'pathology',
         loadChildren: () => import('./pathology/pathology.module').then(m => m.PathologyModule),
-        canActivate: [AuthGuard, RoleGuard],
+	        canActivate: [RoleGuard, SubscriptionGuard],
         data: { roles: ['Pathology', 'Admin', 'LabAdmin', 'Technician', 'Receptionist'] }
       },
       {
         path: 'reporting',
-        loadChildren: () => import('./reporting/reporting.module').then(m => m.ReportingModule),
-        canActivate: [AuthGuard]
+	        loadChildren: () => import('./reporting/reporting.module').then(m => m.ReportingModule),
+	        canActivate: [SubscriptionGuard]
       },
       {
         path: 'inventory',
-        loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule),
-        canActivate: [AuthGuard]
+	        loadChildren: () => import('./inventory/inventory.module').then(m => m.InventoryModule),
+	        canActivate: [SubscriptionGuard]
       },
-
       {
         path: 'profile',
-        component: UserProfileComponent,
-        canActivate: [AuthGuard]
+        component: UserProfileComponent
       },
+		      {
+		        path: 'roles',
+		        loadChildren: () => import('./roles/roles.module').then(m => m.RolesModule),
+		        canActivate: [RoleGuard, SubscriptionGuard],
+		        data: { roles: ['SuperAdmin', 'LabAdmin', 'Admin'] }
+		      },
       {
         path: 'super-admin',
         loadChildren: () => import('./super-admin/super-admin.module').then(m => m.SuperAdminModule),
-        canActivate: [AuthGuard, RoleGuard],
+        canActivate: [RoleGuard],
         data: { roles: ['SuperAdmin'] }
       }
     ]

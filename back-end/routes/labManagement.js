@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Patient = require('../models/Patient');
 const PathologyRegistration = require('../models/PathologyRegistration');
 const { authenticateToken } = require('../middlewares/auth');
+const { sendEmail } = require('../utils/mailer');
 
 /**
  * @route   POST /api/lab-management/register
@@ -60,9 +61,9 @@ router.post('/register', async (req, res) => {
     // Generate unique lab code
     const labCode = await Lab.generateLabCode();
 
-    // Calculate trial end date (30 days / 1 month from now)
+    // Calculate trial end date (10 days from now)
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 10);
 
     // Calculate subscription end date (same as trial for now)
     const subscriptionEndsAt = new Date(trialEndsAt);
@@ -108,7 +109,9 @@ router.post('/register', async (req, res) => {
       // Analytics / Reports
       '/reporting/daily-cash-report', '/reporting/daily-cash-summary',
       // Lab Setup
-      '/lab-setup', '/lab-setup/template-setup'
+      '/lab-setup', '/lab-setup/template-setup',
+      // Subscription
+      '/pathology/my-subscription'
     ];
 
     // Create lab admin user
@@ -128,11 +131,11 @@ router.post('/register', async (req, res) => {
     await adminUser.save();
 
     console.log('✅ Lab registered successfully:', labCode);
-    console.log('🎉 Auto-approved with 30-day free trial');
+    console.log('🎉 Auto-approved with 10-day free trial');
 
     res.status(201).json({
       success: true,
-      message: 'Lab registered successfully! Your 30-day free trial has started. You can login now.',
+      message: 'Lab registered successfully! Your 10-day free trial has started. You can login now.',
       lab: {
         id: lab._id,
         labCode: lab.labCode,
@@ -150,9 +153,9 @@ router.post('/register', async (req, res) => {
         role: adminUser.role
       },
       trial: {
-        duration: '30 days',
+        duration: '10 days',
         endsAt: lab.trialEndsAt,
-        daysRemaining: 30
+        daysRemaining: 10
       }
     });
 
@@ -173,7 +176,6 @@ router.post('/register', async (req, res) => {
  */
 router.get('/labs', authenticateToken, async (req, res) => {
   try {
-    console.log('🔍 Fetching labs for SuperAdmin...');
     const user = req.user;
 
     if (user.role !== 'SuperAdmin') {
@@ -183,7 +185,7 @@ router.get('/labs', authenticateToken, async (req, res) => {
       });
     }
 
-    const { status, plan, page = 1, limit = 50 } = req.query;
+    const { status, plan, page = 1, limit = 100 } = req.query;
     const skip = (page - 1) * limit;
 
     let filter = { deletedAt: null };
@@ -196,51 +198,44 @@ router.get('/labs', authenticateToken, async (req, res) => {
       filter.subscriptionPlan = plan;
     }
 
-    // Get total count
-    console.log('📊 Counting labs with filter:', filter);
-    const total = await Lab.countDocuments(filter);
-    console.log('📊 Total labs found:', total);
+    // Get total count and labs in parallel for speed
+    const [total, labs] = await Promise.all([
+      Lab.countDocuments(filter),
+      Lab.find(filter)
+        .select('labCode labName email phone city state subscriptionPlan subscriptionStatus approvalStatus trialEndsAt subscriptionEndsAt trialNotificationSent totalUsers totalPatients totalReports createdAt')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean()
+    ]);
 
-    // Get labs with pagination
-    console.log('🔍 Fetching labs from database...');
-    const labs = await Lab.find(filter)
-      .select('-settings -deletedAt')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
+    // Get all lab IDs
+    const labIds = labs.map(lab => lab._id);
 
-    console.log('✅ Labs fetched:', labs.length);
+    // Fetch all admin users in ONE query (optimized)
+    const adminUsers = await User.find({
+      labId: { $in: labIds },
+      role: 'LabAdmin'
+    }).select('labId firstName lastName email profilePicture').lean();
 
-    // Fetch admin user for each lab
-    console.log('👤 Fetching admin users for labs...');
-    const labsWithAdmin = await Promise.all(labs.map(async (lab) => {
-      const labObj = lab.toObject();
+    // Create a map for quick lookup
+    const adminMap = {};
+    adminUsers.forEach(admin => {
+      adminMap[admin.labId.toString()] = {
+        _id: admin._id,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        profilePicture: admin.profilePicture
+      };
+    });
 
-      try {
-        // Find the lab admin user
-        const adminUser = await User.findOne({
-          labId: lab._id,
-          role: 'LabAdmin'
-        }).select('firstName lastName email profilePicture').lean();
-
-        if (adminUser) {
-          labObj.adminUser = {
-            _id: adminUser._id,
-            firstName: adminUser.firstName,
-            lastName: adminUser.lastName,
-            email: adminUser.email,
-            profilePicture: adminUser.profilePicture
-          };
-        }
-      } catch (err) {
-        console.error(`⚠️ Error fetching admin for lab ${lab._id}:`, err.message);
-        // Continue without admin user data
-      }
-
-      return labObj;
+    // Attach admin to each lab
+    const labsWithAdmin = labs.map(lab => ({
+      ...lab,
+      adminUser: adminMap[lab._id.toString()] || null
     }));
 
-    console.log('✅ Admin users fetched. Sending response...');
     res.json({
       success: true,
       labs: labsWithAdmin,
@@ -251,7 +246,6 @@ router.get('/labs', authenticateToken, async (req, res) => {
         pages: Math.ceil(total / limit)
       }
     });
-    console.log('✅ Response sent successfully!');
 
   } catch (error) {
     console.error('❌ Error fetching labs:', error);
@@ -518,6 +512,470 @@ router.get('/labs/:id/users', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   POST /api/lab-management/labs/:id/send-trial-notification
+ * @desc    Send trial ending notification to lab admin (Super Admin only)
+ * @access  Private (SuperAdmin)
+ */
+router.post('/labs/:id/send-trial-notification', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 'SuperAdmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+      });
+    }
+
+    const labId = req.params.id;
+    const lab = await Lab.findById(labId);
+
+    if (!lab) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lab not found'
+      });
+    }
+
+    // Find lab admin user to get email
+    const labAdmin = await User.findOne({ labId: lab._id, role: 'LabAdmin' });
+    const adminEmail = labAdmin?.email || lab.email;
+
+    // Calculate days left
+    const daysLeft = lab.trialEndsAt
+      ? Math.ceil((new Date(lab.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24))
+      : 0;
+
+    // Generate email content with pricing
+    const emailSubject = daysLeft <= 0
+      ? `🚨 Your Trial Has Expired - ${lab.labName}`
+      : `⚠️ Your Trial Period is Ending Soon - ${lab.labName}`;
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0;">🔬 Lab Book Pathology</h1>
+        </div>
+
+        <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0;">
+          <h2 style="color: #1e3a5f; margin-top: 0;">Hello ${labAdmin?.firstName || 'Admin'},</h2>
+
+          <p style="color: #4a5568; font-size: 16px; line-height: 1.6;">
+            Your <strong>10-day free trial</strong> for <strong>${lab.labName}</strong>
+            ${daysLeft <= 0
+              ? '<strong style="color: #e53e3e;">has expired!</strong> Please subscribe to continue using our services.'
+              : `is ending in <strong style="color: #dd6b20;">${daysLeft} day(s)</strong>.`}
+          </p>
+
+          <div style="background: ${daysLeft <= 0 ? '#f8d7da' : '#fff3cd'}; border: 1px solid ${daysLeft <= 0 ? '#f5c6cb' : '#ffc107'}; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: ${daysLeft <= 0 ? '#721c24' : '#856404'};">
+              <strong>⏰ Trial ${daysLeft <= 0 ? 'Expired' : 'Expiry'}:</strong> ${lab.trialEndsAt ? new Date(lab.trialEndsAt).toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }) : 'N/A'}
+            </p>
+          </div>
+
+          <h3 style="color: #1e3a5f; text-align: center;">💰 Our Affordable Plans</h3>
+          <div style="display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px; background: white; border: 2px solid #007bff; border-radius: 10px; padding: 20px; text-align: center;">
+              <h4 style="margin: 0 0 10px 0; color: #007bff;">Basic Plan</h4>
+              <div style="font-size: 28px; font-weight: bold; color: #1e3a5f;">₹2,000<span style="font-size: 14px; color: #666;">/month</span></div>
+              <ul style="text-align: left; padding-left: 20px; margin: 15px 0; color: #555; font-size: 14px;">
+                <li>Unlimited Reports</li>
+                <li>Email Support</li>
+                <li>All Core Features</li>
+              </ul>
+            </div>
+            <div style="flex: 1; min-width: 200px; background: linear-gradient(135deg, #fff9e6 0%, #fff 100%); border: 2px solid #f5af19; border-radius: 10px; padding: 20px; text-align: center;">
+              <h4 style="margin: 0 0 10px 0; color: #d69e00;">Premium Plan ⭐</h4>
+              <div style="font-size: 28px; font-weight: bold; color: #1e3a5f;">₹5,000<span style="font-size: 14px; color: #666;">/month</span></div>
+              <ul style="text-align: left; padding-left: 20px; margin: 15px 0; color: #555; font-size: 14px;">
+                <li>Everything in Basic</li>
+                <li>Priority Support</li>
+                <li>Advanced Analytics</li>
+                <li>Custom Branding</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 style="color: #1e3a5f;">Why Upgrade?</h3>
+          <ul style="color: #4a5568; line-height: 1.8;">
+            <li>✅ Unlimited patient registrations</li>
+            <li>✅ Unlimited pathology reports</li>
+            <li>✅ Custom branding & templates</li>
+            <li>✅ Priority customer support</li>
+            <li>✅ Data backup & security</li>
+          </ul>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:4200'}/subscription"
+               style="background: #28a745; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-size: 18px; font-weight: bold; display: inline-block;">
+              💳 Subscribe Now - Just ₹2000/month
+            </a>
+          </div>
+
+          <p style="color: #718096; font-size: 14px; text-align: center;">
+            ${daysLeft <= 0
+              ? 'Your access has been limited. Subscribe now to unlock all features!'
+              : 'After trial expires, you won\'t be able to create new reports or access premium features.'}
+            <br>Your existing data will remain safe.
+          </p>
+        </div>
+
+        <div style="background: #1e3a5f; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px;">
+          <p style="margin: 0; font-size: 12px;">
+            Need help? Contact us at support@labbookpathology.com<br>
+            © ${new Date().getFullYear()} Lab Book Pathology. All rights reserved.
+          </p>
+        </div>
+      </div>
+    `;
+
+    // Send email
+    const emailSent = await sendEmail({
+      to: adminEmail,
+      subject: emailSubject,
+      html: emailHtml,
+      text: `Your trial for ${lab.labName} is ${daysLeft <= 0 ? 'expired' : `ending in ${daysLeft} day(s)`}. Please upgrade to continue using our services.`
+    });
+
+    // Update lab to mark notification sent
+    await Lab.findByIdAndUpdate(labId, {
+      trialNotificationSent: true,
+      trialNotificationSentAt: new Date()
+    });
+
+    console.log(`📧 Trial notification sent to ${adminEmail} for lab ${lab.labCode}`);
+
+    res.json({
+      success: true,
+      message: `Trial notification sent to ${adminEmail}`,
+      emailSent
+    });
+
+  } catch (error) {
+    console.error('❌ Error sending trial notification:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send notification',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   PUT /api/lab-management/labs/:id/extend-trial
+ * @desc    Extend lab trial period (Super Admin only)
+ * @access  Private (SuperAdmin)
+ */
+router.put('/labs/:id/extend-trial', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 'SuperAdmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+      });
+    }
+
+    const labId = req.params.id;
+    const { days } = req.body;
+
+    if (!days || isNaN(days) || days < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide valid number of days (minimum 1)'
+      });
+    }
+
+    const lab = await Lab.findById(labId);
+
+    if (!lab) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lab not found'
+      });
+    }
+
+    // Calculate new trial end date
+    const currentEndDate = lab.trialEndsAt ? new Date(lab.trialEndsAt) : new Date();
+    const newEndDate = new Date(currentEndDate);
+    newEndDate.setDate(newEndDate.getDate() + parseInt(days));
+
+    // Update lab
+    const updatedLab = await Lab.findByIdAndUpdate(
+      labId,
+      {
+        trialEndsAt: newEndDate,
+        subscriptionEndsAt: newEndDate,
+        subscriptionStatus: 'active',
+        trialNotificationSent: false // Reset notification flag
+      },
+      { new: true }
+    );
+
+    console.log(`✅ Trial extended for ${lab.labCode} by ${days} days until ${newEndDate}`);
+
+    res.json({
+      success: true,
+      message: `Trial extended by ${days} days`,
+      lab: {
+        id: updatedLab._id,
+        labCode: updatedLab.labCode,
+        labName: updatedLab.labName,
+        trialEndsAt: updatedLab.trialEndsAt
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error extending trial:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to extend trial',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   PUT /api/lab-management/labs/:id/upgrade-plan
+ * @desc    Upgrade lab to paid plan (Super Admin only)
+ * @access  Private (SuperAdmin)
+ */
+router.put('/labs/:id/upgrade-plan', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 'SuperAdmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+      });
+    }
+
+    const labId = req.params.id;
+    const { plan, durationMonths } = req.body;
+
+    if (!plan || !['basic', 'premium'].includes(plan)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide valid plan (basic or premium)'
+      });
+    }
+
+    const months = parseInt(durationMonths) || 12; // Default 1 year
+
+    const lab = await Lab.findById(labId);
+
+    if (!lab) {
+      return res.status(404).json({
+        success: false,
+        message: 'Lab not found'
+      });
+    }
+
+    // Calculate subscription end date
+    const subscriptionEndsAt = new Date();
+    subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + months);
+
+    // Update lab
+    const updatedLab = await Lab.findByIdAndUpdate(
+      labId,
+      {
+        subscriptionPlan: plan,
+        subscriptionStatus: 'active',
+        subscriptionEndsAt,
+        trialNotificationSent: false
+      },
+      { new: true }
+    );
+
+    // Send confirmation email
+    const labAdmin = await User.findOne({ labId: lab._id, role: 'LabAdmin' });
+    const adminEmail = labAdmin?.email || lab.email;
+
+    await sendEmail({
+      to: adminEmail,
+      subject: `🎉 Subscription Upgraded - ${lab.labName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #28a745;">🎉 Congratulations!</h2>
+          <p>Your lab <strong>${lab.labName}</strong> has been upgraded to the <strong>${plan.toUpperCase()}</strong> plan.</p>
+          <p><strong>Subscription Valid Until:</strong> ${subscriptionEndsAt.toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}</p>
+          <p>Thank you for choosing Lab Book Pathology!</p>
+        </div>
+      `,
+      text: `Your lab ${lab.labName} has been upgraded to ${plan} plan. Valid until: ${subscriptionEndsAt.toLocaleDateString()}`
+    });
+
+    console.log(`✅ Lab ${lab.labCode} upgraded to ${plan} plan`);
+
+    res.json({
+      success: true,
+      message: `Lab upgraded to ${plan} plan for ${months} months`,
+      lab: {
+        id: updatedLab._id,
+        labCode: updatedLab.labCode,
+        labName: updatedLab.labName,
+        subscriptionPlan: updatedLab.subscriptionPlan,
+        subscriptionEndsAt: updatedLab.subscriptionEndsAt
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error upgrading plan:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upgrade plan',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   GET /api/lab-management/expiring-trials
+ * @desc    Get all labs with expiring trials (for cron job/scheduler)
+ * @access  Private (SuperAdmin)
+ */
+router.get('/expiring-trials', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 'SuperAdmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+      });
+    }
+
+    const { daysThreshold = 3 } = req.query;
+
+    // Find labs with trial ending within threshold days
+    const thresholdDate = new Date();
+    thresholdDate.setDate(thresholdDate.getDate() + parseInt(daysThreshold));
+
+    const expiringLabs = await Lab.find({
+      subscriptionPlan: 'trial',
+      subscriptionStatus: 'active',
+      trialEndsAt: { $lte: thresholdDate },
+      deletedAt: null
+    }).select('labCode labName email trialEndsAt trialNotificationSent');
+
+    res.json({
+      success: true,
+      count: expiringLabs.length,
+      labs: expiringLabs
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching expiring trials:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch expiring trials',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * @route   POST /api/lab-management/send-bulk-notifications
+ * @desc    Send trial notifications to all expiring labs (for cron job)
+ * @access  Private (SuperAdmin)
+ */
+router.post('/send-bulk-notifications', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user;
+
+    if (user.role !== 'SuperAdmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Super Admin only.'
+      });
+    }
+
+    const { daysThreshold = 3 } = req.body;
+
+    // Find labs with trial ending within threshold days that haven't been notified
+    const thresholdDate = new Date();
+    thresholdDate.setDate(thresholdDate.getDate() + parseInt(daysThreshold));
+
+    const expiringLabs = await Lab.find({
+      subscriptionPlan: 'trial',
+      subscriptionStatus: 'active',
+      trialEndsAt: { $lte: thresholdDate },
+      trialNotificationSent: { $ne: true },
+      deletedAt: null
+    });
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    for (const lab of expiringLabs) {
+      try {
+        const labAdmin = await User.findOne({ labId: lab._id, role: 'LabAdmin' });
+        const adminEmail = labAdmin?.email || lab.email;
+        const daysLeft = Math.ceil((new Date(lab.trialEndsAt) - new Date()) / (1000 * 60 * 60 * 24));
+
+        await sendEmail({
+          to: adminEmail,
+          subject: `⚠️ Your Trial is Ending Soon - ${lab.labName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px;">
+              <h2>Hello ${labAdmin?.firstName || 'Admin'},</h2>
+              <p>Your trial for <strong>${lab.labName}</strong> is ending in <strong>${daysLeft} day(s)</strong>.</p>
+              <p>Please upgrade to continue using our services.</p>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:4200'}/subscription"
+                 style="background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Upgrade Now
+              </a>
+            </div>
+          `,
+          text: `Your trial for ${lab.labName} is ending in ${daysLeft} day(s). Please upgrade.`
+        });
+
+        await Lab.findByIdAndUpdate(lab._id, {
+          trialNotificationSent: true,
+          trialNotificationSentAt: new Date()
+        });
+
+        sentCount++;
+      } catch (err) {
+        console.error(`Failed to notify lab ${lab.labCode}:`, err.message);
+        failedCount++;
+      }
+    }
+
+    console.log(`📧 Bulk notifications sent: ${sentCount} success, ${failedCount} failed`);
+
+    res.json({
+      success: true,
+      message: `Notifications sent to ${sentCount} labs`,
+      stats: {
+        total: expiringLabs.length,
+        sent: sentCount,
+        failed: failedCount
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error sending bulk notifications:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send bulk notifications',
       error: error.message
     });
   }

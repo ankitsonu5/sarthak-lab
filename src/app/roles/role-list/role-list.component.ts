@@ -23,7 +23,8 @@ export class RoleListComponent implements OnInit {
   filtered: AppUser[] = [];
   q = '';
   loading = false;
-  canToggle = false;
+	  canToggle = false;
+	  canAdd = false;
   updatingId: string | null = null;
 
   // Delete modal state
@@ -44,6 +45,7 @@ export class RoleListComponent implements OnInit {
   ngOnInit(): void {
     const me = this.auth.getCurrentUser();
     this.canToggle = me?.role === 'SuperAdmin';
+	    this.canAdd = !!me && ['SuperAdmin', 'Admin', 'LabAdmin'].includes(me.role as string);
     this.fetch();
   }
 

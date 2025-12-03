@@ -2,9 +2,11 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy, NgZone } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PatientService } from '../patient.service';
 import { PatientViewModalComponent } from '../patient-view-modal/patient-view-modal.component';
 import { Subject, Subscription, forkJoin } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { filter, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { SelfRegistrationService } from '../../shared/services/self-registration.service';
 import { Auth } from '../../core/services/auth';
@@ -75,6 +77,8 @@ export class SearchPatient implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private selfRegService: SelfRegistrationService,
     private authService: Auth
+    ,
+    private snackBar: MatSnackBar
   ) {
     // Set up debounced search handler to avoid API calls on every keypress
     this.searchSub = this.searchInput$
@@ -433,33 +437,105 @@ export class SearchPatient implements OnInit, OnDestroy {
     }
 
     this.selfRegService.listRecentByCode(labCode).subscribe({
-      next: (res) => {
-        const items = res?.items || [];
-        // Transform self-registration items to patient-like objects
-        this.selfRegisteredPatients = items.map((sr: any) => ({
-          _id: sr.id,
-          firstName: sr.firstName || '',
-          lastName: sr.lastName || '',
-          phone: sr.phone || '',
-          gender: sr.gender || '',
-          age: sr.age || '',
-          address: sr.address ? { city: sr.city, street: sr.address } : { city: sr.city },
-          createdAt: sr.createdAt,
-          preferredDate: sr.preferredDate,
-          preferredTime: sr.preferredTime,
-          testsNote: sr.testsNote,
-          homeCollection: sr.homeCollection,
-          source: 'self', // Mark as self-registered
-          registrationNumber: '-'
-        }));
-        console.log(`📱 Loaded ${this.selfRegisteredPatients.length} self-registered patients`);
-        this.applySourceFilter();
+      next: async (res) => {
+        try {
+          const items = res?.items || [];
+
+          // Assign server-backed registration numbers where possible (async)
+          const assigned = await Promise.all(items.map(async (sr: any) => {
+            // Try to get server-assigned SR number; if it fails, fall back to local mapping
+            let reg = '-';
+            try {
+              reg = await this.assignServerNumberFor(sr, 'self');
+            } catch (e) {
+              console.warn('⚠️ assignServerNumberFor failed, falling back to local generation:', (e as any)?.message || e);
+              reg = this.generateLocalRegistration(sr, 'self');
+            }
+
+            return {
+              _id: sr.id,
+              firstName: sr.firstName || '',
+              lastName: sr.lastName || '',
+              phone: sr.phone || '',
+              gender: sr.gender || '',
+              age: sr.age || '',
+              address: sr.address ? { city: sr.city, street: sr.address } : { city: sr.city },
+              createdAt: sr.createdAt,
+              preferredDate: sr.preferredDate,
+              preferredTime: sr.preferredTime,
+              testsNote: sr.testsNote,
+              homeCollection: sr.homeCollection,
+              source: 'self', // Mark as self-registered
+              registrationNumber: reg,
+              patientId: sr.patientId || sr.id || undefined
+            };
+          }));
+
+          this.selfRegisteredPatients = assigned;
+          console.log(`📱 Loaded ${this.selfRegisteredPatients.length} self-registered patients`);
+          this.applySourceFilter();
+        } catch (errInner) {
+          console.error('❌ Error processing self-registered patients:', errInner);
+          this.selfRegisteredPatients = [];
+        }
       },
       error: (err) => {
         console.error('❌ Error loading self-registered patients:', err);
         this.selfRegisteredPatients = [];
       }
     });
+  }
+
+  // Try to get or reserve a server-side registration number for a self/lab registration.
+  // Returns formatted id like 'SR-0001' or 'LAB-0001'. Throws on failure.
+  private async assignServerNumberFor(sr: any, kind: 'self' | 'lab' = 'self'): Promise<string> {
+    const lab = this.getCurrentLabCode() || 'global';
+    const mapKey = `${kind}RegMap:${lab}`;
+    const idKey = sr.id || sr._id || sr.patientId || String(Date.now());
+
+    // Check existing mapping first
+    try {
+      const raw = localStorage.getItem(mapKey);
+      if (raw) {
+        const map = JSON.parse(raw) || {};
+        if (map[idKey]) return String(map[idKey]);
+      }
+    } catch {}
+
+    // Reserve on server
+    const counterName = kind === 'self' ? `self_registration_${lab}` : `lab_registration_${lab}`;
+    const format = kind === 'self' ? 'SR-' : 'LAB-';
+    const padding = 4;
+    const url = `${environment.apiUrl}/counter-management/next/${encodeURIComponent(counterName)}`;
+    const token = this.authService.getToken();
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ format, padding })
+    });
+
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => '');
+      throw new Error(`Server returned ${resp.status}: ${txt}`);
+    }
+
+    const payload = await resp.json();
+    const formatted = payload?.data?.formattedId || payload?.data?.formatted || payload?.data;
+    if (!formatted) throw new Error('No formatted id from counter service');
+
+    // Persist mapping locally
+    try {
+      const raw = localStorage.getItem(mapKey);
+      const map = raw ? (JSON.parse(raw) || {}) : {};
+      map[idKey] = String(formatted);
+      localStorage.setItem(mapKey, JSON.stringify(map));
+    } catch {}
+
+    return String(formatted);
   }
 
   // Apply source filter to combine or filter patients
@@ -470,11 +546,46 @@ export class SearchPatient implements OnInit, OnDestroy {
       this.filteredPatients = [...this.selfRegisteredPatients];
       this.totalPatients = this.selfRegisteredPatients.length;
     } else if (this.selectedSourceFilter === 'lab') {
-      this.filteredPatients = [...labPatients];
-      this.totalPatients = labPatients.length;
+      // Ensure lab patients have a display registration number; create a local LAB-<n> if missing,
+      // and try to reserve a server LAB number asynchronously.
+      const assigned = labPatients.map(p => ({ ...p }));
+      assigned.forEach(p => {
+        if (!p.registrationNumber || String(p.registrationNumber).trim() === '' || String(p.registrationNumber) === '-') {
+          p.registrationNumber = this.generateLocalRegistration(p, 'lab');
+          // Fire-and-forget server reservation to make numbering authoritative
+          (async () => {
+            try {
+              const formatted = await this.assignServerNumberFor(p, 'lab');
+              p.registrationNumber = formatted;
+              try { this.cdr.detectChanges(); } catch {}
+            } catch (e) {
+              // ignore
+            }
+          })();
+        }
+      });
+
+      this.filteredPatients = assigned;
+      this.totalPatients = assigned.length;
     } else {
       // 'all' - combine both
-      this.filteredPatients = [...this.selfRegisteredPatients, ...labPatients];
+      const assignedLab = labPatients.map(p => ({ ...p }));
+      assignedLab.forEach(p => {
+        if (!p.registrationNumber || String(p.registrationNumber).trim() === '' || String(p.registrationNumber) === '-') {
+          p.registrationNumber = this.generateLocalRegistration(p, 'lab');
+          (async () => {
+            try {
+              const formatted = await this.assignServerNumberFor(p, 'lab');
+              p.registrationNumber = formatted;
+              try { this.cdr.detectChanges(); } catch {}
+            } catch (e) {
+              // ignore
+            }
+          })();
+        }
+      });
+
+      this.filteredPatients = [...this.selfRegisteredPatients, ...assignedLab];
       this.totalPatients = this.filteredPatients.length;
     }
 
@@ -519,6 +630,40 @@ export class SearchPatient implements OnInit, OnDestroy {
     if (!raw) return '';
     const d = parseInt(raw.replace('PAT', '').replace(/^0+/, ''), 10);
     return isNaN(d) ? '' : String(d);
+  }
+
+  // Local fallback generator for registration numbers when server reservation fails or is unavailable.
+  // Produces stable per-lab, per-kind numbers stored in localStorage: e.g., SR-0001 or LAB-0001
+  private generateLocalRegistration(sr: any, kind: 'self' | 'lab' = 'self'): string {
+    try {
+      const lab = this.getCurrentLabCode() || 'global';
+      const counterKey = `${kind}RegCounter:${lab}`;
+      const mapKey = `${kind}RegMap:${lab}`;
+
+      let map: { [key: string]: string } = {};
+      try {
+        const raw = localStorage.getItem(mapKey);
+        if (raw) map = JSON.parse(raw) || {};
+      } catch {}
+
+      const idKey = sr.id || sr._id || sr.patientId || String(Date.now());
+      if (map[idKey]) return String(map[idKey]);
+
+      let counter = 0;
+      try { counter = parseInt(localStorage.getItem(counterKey) || '0', 10) || 0; } catch {}
+      counter = counter + 1;
+      map[idKey] = (kind === 'self' ? 'SR-' : 'LAB-') + String(counter).padStart(4, '0');
+
+      try {
+        localStorage.setItem(counterKey, String(counter));
+        localStorage.setItem(mapKey, JSON.stringify(map));
+      } catch {}
+
+      return map[idKey];
+    } catch (e) {
+      const fallback = String(Date.now()).slice(-6);
+      return (kind === 'self' ? 'SR-' : 'LAB-') + fallback;
+    }
   }
 
 
@@ -874,5 +1019,33 @@ export class SearchPatient implements OnInit, OnDestroy {
       }
     } catch {}
     return null;
+  }
+
+  /**
+   * Mark sample as collected for a self-registered patient
+   */
+  markSampleCollected(patient: any): void {
+    console.log('🧪 MARK SAMPLE COLLECTED:', patient);
+    // TODO: Implement sample collection marking logic
+    // For now, just show a notification
+    this.snackBar.open('Sample collected for ' + (patient.fullName || patient.name), 'Close', {
+      duration: 3000
+    });
+  }
+
+  /**
+   * Create a pathology report for a self-registered patient
+   */
+  createReportForPatient(patient: any): void {
+    console.log('📋 CREATE REPORT FOR PATIENT:', patient);
+    // Navigate to pathology registration with patient data
+    this.router.navigate(['/pathology-module/pathology-entry'], {
+      queryParams: {
+        patientId: patient._id || patient.id,
+        uhid: patient.uhid,
+        name: patient.fullName || patient.name,
+        source: 'self-registration'
+      }
+    });
   }
 }

@@ -222,9 +222,29 @@
 
 
     <div class="quick-actions-grid">
+      <!-- Payment Methods Manager -->
+      <div class="quick-action-card payment-methods-card">
+        <div class="qa-header">
+          <h4>Payment Methods</h4>
+          <p class="qa-sub">Add or remove accepted payment methods</p>
+        </div>
+        <div class="qa-body">
+          <div class="pm-form">
+            <input placeholder="Code (eg: CASH, UPI)" [(ngModel)]="newPaymentMethod.code" />
+            <input placeholder="Display name (eg: Cash)" [(ngModel)]="newPaymentMethod.name" />
+            <button class="btn" (click)="addPaymentMethod()">Add</button>
+          </div>
 
-
-
+          <div class="pm-list">
+            <div *ngFor="let pm of paymentMethods" class="pm-item">
+              <span class="pm-code">{{ pm.code }}</span>
+              <span class="pm-name">{{ pm.name }}</span>
+              <button class="btn btn-link" (click)="removePaymentMethod(pm.code)">Remove</button>
+            </div>
+            <div *ngIf="!paymentMethods || paymentMethods.length === 0" class="no-pm">No payment methods configured</div>
+          </div>
+        </div>
+      </div>
 
 
 

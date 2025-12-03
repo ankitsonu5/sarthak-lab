@@ -128,8 +128,8 @@
           <img src="./assets/images/myupgov.png" alt="UP Gov" />
         </div>
         <div class="print-title">
-          <div class="hn">राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय</div>
-          <div class="hl">चौकाघाट, वाराणसी</div>
+          <div class="hn">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</div>
+          <div class="hl">{{ defaultLabConfig.getLabAddress(labSettings?.addressLine1 || labSettings?.city) }}</div>
           <div class="hr">Central OPD Report</div>
         </div>
       </div>

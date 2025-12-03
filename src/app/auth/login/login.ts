@@ -23,19 +23,23 @@ export class Login implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Clear any invalid auth data first
+    // Clear any invalid auth data first (ensure user must provide credentials)
     this.clearInvalidAuth();
 
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      rememberMe: [false]
     });
 
     // If redirected from Lab Register, prefill email from query param or localStorage
     const qpEmail = this.route.snapshot.queryParamMap.get('email');
-    const prefill = qpEmail || localStorage.getItem('prefillLoginEmail');
+    // Remembered email (set when user checked "Remember me")
+    const remembered = localStorage.getItem('rememberedEmail');
+    const prefill = qpEmail || remembered || localStorage.getItem('prefillLoginEmail');
     if (prefill) {
       this.loginForm.patchValue({ email: prefill });
+      if (remembered) { this.loginForm.patchValue({ rememberMe: true }); }
       if (qpEmail) { try { localStorage.removeItem('prefillLoginEmail'); } catch {} }
     }
 
@@ -101,10 +105,19 @@ export class Login implements OnInit {
 
       const emailNorm = String(this.loginForm.value.email || '').trim().toLowerCase();
       const credentials: LoginRequest = { email: emailNorm, password: this.loginForm.value.password };
-      console.log('🔄 Attempting login with:', credentials);
-
-      // Always use real authentication (no bypass)
-      this.authService.login(credentials).subscribe({
+	      console.log('🔄 Attempting login with:', credentials);
+	
+	      // Persist remembered email preference immediately so it works even if login fails
+	      try {
+	        if (this.loginForm.value.rememberMe) {
+	          localStorage.setItem('rememberedEmail', emailNorm);
+	        } else {
+	          localStorage.removeItem('rememberedEmail');
+	        }
+	      } catch {}
+	
+	      // Always use real authentication (no bypass)
+	      this.authService.login(credentials).subscribe({
         next: (response) => {
           console.log('✅ Login successful:', response);
           this.loading = false;
@@ -114,8 +127,8 @@ export class Login implements OnInit {
             console.log('🏢 Lab:', response.user.lab.labName, '(Code: ' + response.user.lab.labCode + ')');
           }
 
-          // Redirect based on role
-          this.redirectBasedOnRole();
+	          // Redirect based on role
+	          this.redirectBasedOnRole();
         },
         error: (error) => {
           console.error('❌ Login error:', error);

@@ -169,23 +169,26 @@ const pathologyBookingSchema = new mongoose.Schema({
   labInfo: {
     name: {
       type: String,
-      default: 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय'
+	      // Lab name should always come from tenant lab settings / front-end payload.
+	      // Use empty default so no hospital name is hardcoded.
+	      default: ''
     },
     address: {
       type: String,
-      default: 'चौकाघाट, वाराणसी'
+	      // Dynamic address from lab settings at booking time
+	      default: ''
     },
     phone: {
       type: String,
-      default: '+91-542-2307001'
+	      default: ''
     },
     email: {
       type: String,
-      default: 'info@ayurvedcollege.com'
+	      default: ''
     },
     license: {
       type: String,
-      default: 'LAB/2024/001'
+	      default: ''
     }
   },
   createdBy: {

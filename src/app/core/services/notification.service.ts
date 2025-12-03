@@ -21,6 +21,9 @@ export interface AppNotification {
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private readonly storageKey = 'appNotifications';
+    // Store self-registration entries that have already been checked/handled
+    private readonly selfRegHandledKey = 'appNotificationsSelfRegHandled';
+    private handledSelfRegIds: Set<string> = this.loadHandledSelfRegs();
   private notificationsSubject = new BehaviorSubject<AppNotification[]>(this.loadFromStorage());
   public notifications$ = this.notificationsSubject.asObservable();
   public unreadCount$: Observable<number> = this.notifications$.pipe(
@@ -44,14 +47,18 @@ export class NotificationService {
   }
 
   markAllRead(): void {
-    const list = this.notificationsSubject.value.map(n => ({ ...n, read: true }));
-    this.notificationsSubject.next(list);
-    this.saveToStorage(list);
+	    const list = this.notificationsSubject.value.map(n => ({ ...n, read: true }));
+	    // Once user has opened the notifications, treat all self-reg items as handled
+	    this.markSelfRegsHandledFromList(list);
+	    this.notificationsSubject.next(list);
+	    this.saveToStorage(list);
   }
 
   clear(): void {
-    this.notificationsSubject.next([]);
-    this.saveToStorage([]);
+	    // When clearing, remember all self-reg IDs so we don't notify again for same entries
+	    this.markSelfRegsHandledFromList(this.notificationsSubject.value);
+	    this.notificationsSubject.next([]);
+	    this.saveToStorage([]);
   }
 
   // --- Helpers ---
@@ -115,6 +122,50 @@ export class NotificationService {
     try { localStorage.setItem(this.storageKey, JSON.stringify(list)); } catch {}
   }
 
+	  // --- Self-registration handled IDs persistence ---
+	  private loadHandledSelfRegs(): Set<string> {
+	    try {
+	      const raw = localStorage.getItem(this.selfRegHandledKey);
+	      if (!raw) return new Set<string>();
+	      const parsed: any = JSON.parse(raw);
+	      if (!Array.isArray(parsed)) return new Set<string>();
+	      const ids = parsed
+	        .filter((x: any) => typeof x === 'string' && x)
+	        .map((x: any) => String(x));
+	      return new Set<string>(ids);
+	    } catch {
+	      return new Set<string>();
+	    }
+	  }
+
+	  private saveHandledSelfRegs(): void {
+	    try {
+	      const arr = Array.from(this.handledSelfRegIds);
+	      localStorage.setItem(this.selfRegHandledKey, JSON.stringify(arr));
+	    } catch {}
+	  }
+
+	  // Public helper: mark a specific self-registration entry as handled
+	  markSelfRegHandled(id: string | null | undefined): void {
+	    if (!id) return;
+	    this.handledSelfRegIds.add(String(id));
+	    this.saveHandledSelfRegs();
+	  }
+
+	  // Internal helper: mark all self-reg notifications in the given list as handled
+	  private markSelfRegsHandledFromList(list: AppNotification[]): void {
+	    if (!list || list.length === 0) return;
+	    for (const n of list) {
+	      try {
+	        const data = n?.data;
+	        if (data && data.source === 'selfReg' && data.id) {
+	          this.handledSelfRegIds.add(String(data.id));
+	        }
+	      } catch {}
+	    }
+	    this.saveHandledSelfRegs();
+	  }
+
   private uuid(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -159,61 +210,67 @@ export class NotificationService {
   }
 
 
-  private checkSelfRegistrations(): void {
-    try {
-      const labCode = this.getCurrentLabCode();
-      const labId = this.getCurrentLabId();
-      if (labCode) {
-        this.selfReg.listRecentByCode(labCode).subscribe({
-        next: (res) => {
-          const items: any[] = (res as any)?.items || [];
-          if (!Array.isArray(items) || items.length === 0) return;
-          const existing = this.notificationsSubject.value;
-          const existingIds = new Set(existing.filter(n => n?.data?.source === 'selfReg').map(n => n.data?.id));
-          const now = new Date().toISOString();
-          for (const it of items) {
-            if (it && it.id && !existingIds.has(it.id)) {
-              this.add({
-                id: this.uuid(),
-                type: 'system',
-                title: 'New self-registration',
-                message: `${(it.firstName||'') + ' ' + (it.lastName||'')} \u2022 ${it.phone || ''}`.trim(),
-                createdAt: now,
-                read: false,
-                data: { source: 'selfReg', id: it.id, payload: it }
-              });
-            }
-          }
-        },
-        error: () => {}
-      });
-      } else if (labId) {
-        this.selfReg.listRecent(labId).subscribe({
-          next: (res) => {
-            const items: any[] = (res as any)?.items || [];
-            if (!Array.isArray(items) || items.length === 0) return;
-            const existing = this.notificationsSubject.value;
-            const existingIds = new Set(existing.filter(n => n?.data?.source === 'selfReg').map(n => n.data?.id));
-            const now = new Date().toISOString();
-            for (const it of items) {
-              if (it && it.id && !existingIds.has(it.id)) {
-                this.add({
-                  id: this.uuid(),
-                  type: 'system',
-                  title: 'New self-registration',
-                  message: `${(it.firstName||'') + ' ' + (it.lastName||'')} \u2022 ${it.phone || ''}`.trim(),
-                  createdAt: now,
-                  read: false,
-                  data: { source: 'selfReg', id: it.id, payload: it }
-                });
-              }
-            }
-          },
-          error: () => {}
-        });
-      }
-    } catch {}
-  }
+	  private checkSelfRegistrations(): void {
+	    try {
+	      const labCode = this.getCurrentLabCode();
+	      const labId = this.getCurrentLabId();
+	      if (labCode) {
+	        this.selfReg.listRecentByCode(labCode).subscribe({
+	          next: (res) => {
+	            const items: any[] = (res as any)?.items || [];
+	            if (!Array.isArray(items) || items.length === 0) return;
+	            const existing = this.notificationsSubject.value;
+	            const existingIds = new Set(existing
+	              .filter(n => n?.data?.source === 'selfReg')
+	              .map(n => n.data?.id));
+	            const handledIds = this.handledSelfRegIds;
+	            const now = new Date().toISOString();
+	            for (const it of items) {
+	              if (it && it.id && !existingIds.has(it.id) && !handledIds.has(String(it.id))) {
+	                this.add({
+	                  id: this.uuid(),
+	                  type: 'system',
+	                  title: 'New self-registration',
+	                  message: `${(it.firstName || '') + ' ' + (it.lastName || '')} \u2022 ${it.phone || ''}`.trim(),
+	                  createdAt: now,
+	                  read: false,
+	                  data: { source: 'selfReg', id: it.id, payload: it }
+	                });
+	              }
+	            }
+	          },
+	          error: () => {}
+	        });
+	      } else if (labId) {
+	        this.selfReg.listRecent(labId).subscribe({
+	          next: (res) => {
+	            const items: any[] = (res as any)?.items || [];
+	            if (!Array.isArray(items) || items.length === 0) return;
+	            const existing = this.notificationsSubject.value;
+	            const existingIds = new Set(existing
+	              .filter(n => n?.data?.source === 'selfReg')
+	              .map(n => n.data?.id));
+	            const handledIds = this.handledSelfRegIds;
+	            const now = new Date().toISOString();
+	            for (const it of items) {
+	              if (it && it.id && !existingIds.has(it.id) && !handledIds.has(String(it.id))) {
+	                this.add({
+	                  id: this.uuid(),
+	                  type: 'system',
+	                  title: 'New self-registration',
+	                  message: `${(it.firstName || '') + ' ' + (it.lastName || '')} \u2022 ${it.phone || ''}`.trim(),
+	                  createdAt: now,
+	                  read: false,
+	                  data: { source: 'selfReg', id: it.id, payload: it }
+	                });
+	              }
+	            }
+	          },
+	          error: () => {}
+	        });
+	      }
+	    } catch {}
+	  }
 
 }
 

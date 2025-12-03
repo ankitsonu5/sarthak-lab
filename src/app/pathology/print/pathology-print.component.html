@@ -16,11 +16,12 @@
       </div>
       <div class="header-center">
         <h1 class="lab-name">{{ defaultLabConfig.getLabName(labSettings?.labName) }}</h1>
+        <p class="lab-tagline">Diagnostic & Pathology Services</p>
         <p class="lab-address" *ngIf="labSettings?.addressLine1 || labSettings?.city">
           {{ labSettings?.addressLine1 }}{{ labSettings?.addressLine2 ? ', ' + labSettings?.addressLine2 : '' }}{{ labSettings?.city ? ', ' + labSettings?.city : '' }}{{ labSettings?.state ? ', ' + labSettings?.state : '' }}{{ labSettings?.pincode ? ' - ' + labSettings?.pincode : '' }}
         </p>
         <p class="lab-contact" *ngIf="labSettings?.phone || labSettings?.email">
-          {{ labSettings?.phone ? 'Ph: ' + labSettings?.phone : '' }}{{ labSettings?.email ? ' | ' + labSettings?.email : '' }}
+          {{ labSettings?.phone ? '📞 ' + labSettings?.phone : '' }}{{ labSettings?.email ? ' | ✉ ' + labSettings?.email : '' }}
         </p>
       </div>
       <div class="header-right">
@@ -31,59 +32,51 @@
     <!-- Decorative Line -->
     <div class="header-line"></div>
 
+    <!-- Report Title -->
+    <div class="report-title-bar">
+      <span class="report-title">PATHOLOGY REPORT</span>
+    </div>
+
     <!-- Patient Details Section -->
     <section class="patient-section">
       <div class="patient-grid">
         <div class="patient-row">
-          <span class="label">ID</span>
+          <span class="label">Patient ID:</span>
           <span class="value">{{ registrationNo || '-' }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Collection Date</span>
+          <span class="label">Collection Date:</span>
           <span class="value">{{ formatReportDate(pathologyRegDate) }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Name</span>
+          <span class="label">Patient Name:</span>
           <span class="value patient-name">{{ formatName(patientName || patientData?.fullName || '') }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Reporting Date</span>
+          <span class="label">Report Date:</span>
           <span class="value">{{ formatReportDate(reportDate) }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Age/Sex</span>
+          <span class="label">Age / Gender:</span>
           <span class="value">{{ formatAgeWithUnit((age || patientData?.age), (reportData?.ageIn || patientData?.ageIn)) }} / {{ formatGender(gender || patientData?.gender) }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Lab No.</span>
+          <span class="label">Lab No.:</span>
           <span class="value">{{ labYearlyNo || '' }}{{ labDailyNo ? '/' + labDailyNo : '' }}</span>
         </div>
         <div class="patient-row">
-          <span class="label">Ref. By</span>
+          <span class="label">Referred By:</span>
           <span class="value">{{ doctorName || 'Self' }}</span>
         </div>
-        <div class="patient-row"></div>
+        <!-- removed empty row to avoid extra separator/spacing -->
       </div>
     </section>
 
     <!-- Test Results Section -->
     <section class="results-section">
-      <!-- Debug: Always show data summary at top (remove after debugging) -->
-      <div style="padding: 10px; background: #fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; font-size: 11px;">
-        <strong>DEBUG:</strong> testResults={{ testResults.length }}, categoryGroups={{ categoryGroups.length }}
-        <span *ngIf="testResults.length > 0">
-          | First: {{ $any(testResults[0]).testName }} (params={{ $any(testResults[0]).parameters?.length || 0 }}, rows={{ $any(testResults[0]).displayRows?.length || 0 }})
-        </span>
-        <div *ngIf="testResults.length > 0" style="margin-top: 5px; padding: 5px; background: #fff; border: 1px dashed #ccc;">
-          <strong>First Test Raw Data:</strong><br>
-          <pre style="font-size: 9px; max-height: 150px; overflow: auto; white-space: pre-wrap;">{{ $any(testResults[0]) | json }}</pre>
-        </div>
-      </div>
-
       <!-- Show if no data -->
       <div class="no-data-msg" *ngIf="!categoryGroups || categoryGroups.length === 0" style="padding: 20px; text-align: center; color: #666; background: #f9f9f9; border-radius: 8px; margin: 10px 0;">
         <p style="margin: 0;">No test results to display</p>
-        <small style="color: #999;">testResults: {{ testResults.length }} | categoryGroups: {{ categoryGroups.length }}</small>
       </div>
 
       <ng-container *ngFor="let group of categoryGroups">
@@ -152,25 +145,37 @@
       </ng-container>
     </section>
 
-    <!-- Footer Section -->
+    <!-- Spacer to push footer down -->
+    <div class="footer-spacer"></div>
+
+    <!-- Footer Section - Fixed at Bottom -->
     <footer class="report-footer" *ngIf="labSettings?.printLayout?.showFooter !== false">
-      <div class="footer-left">
-        <!-- Empty or can add lab info -->
-      </div>
-      <div class="footer-right">
-        <div class="signature-block">
-          <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" class="signature-img">
-          <div class="signature-line"></div>
-          <span class="signatory-name">Authorized Signatory</span>
+      <div class="footer-content">
+        <div class="footer-left">
+          <div class="verified-stamp">
+            <span class="stamp-text">✓ Electronically Verified</span>
+          </div>
+        </div>
+        <div class="footer-center">
+          <!-- Disclaimer moved here -->
+          <div class="disclaimer-inline" *ngIf="labSettings?.footerNote || labSettings?.reportDisclaimer">
+            <p *ngIf="labSettings?.footerNote">{{ labSettings?.footerNote }}</p>
+            <p *ngIf="labSettings?.reportDisclaimer">{{ labSettings?.reportDisclaimer }}</p>
+          </div>
+        </div>
+        <div class="footer-right">
+          <div class="signature-block">
+            <img *ngIf="labSettings?.signatureDataUrl" [src]="labSettings?.signatureDataUrl" alt="Signature" class="signature-img">
+            <div class="signature-line"></div>
+            <span class="signatory-name">Authorized Signatory</span>
+            <span class="signatory-title">Pathologist</span>
+          </div>
         </div>
       </div>
+      <div class="footer-bottom-bar">
+        <span>*** End of Report ***</span>
+      </div>
     </footer>
-
-    <!-- Disclaimer -->
-    <div class="disclaimer" *ngIf="labSettings?.footerNote || labSettings?.reportDisclaimer">
-      <p *ngIf="labSettings?.footerNote">{{ labSettings?.footerNote }}</p>
-      <p *ngIf="labSettings?.reportDisclaimer">{{ labSettings?.reportDisclaimer }}</p>
-    </div>
 
   </div>
 </div>

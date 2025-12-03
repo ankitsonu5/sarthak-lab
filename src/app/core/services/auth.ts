@@ -20,7 +20,14 @@ export interface User {
   lab?: {
     _id: string;
     labCode: string;
-    labName: string;
+	    labName: string;
+	    email?: string;
+	    phone?: string;
+	    subscriptionPlan?: 'trial' | 'basic' | 'premium';
+	    subscriptionStatus?: 'pending' | 'active' | 'expired' | 'cancelled';
+	    approvalStatus?: 'pending' | 'approved' | 'rejected';
+	    trialEndsAt?: string;
+	    subscriptionEndsAt?: string;
   };
   labSettings?: {
     labName?: string;
@@ -77,6 +84,12 @@ export class Auth {
     const userStr = localStorage.getItem('user');
 
     if (token && userStr) {
+      // Dev safety: reject mock tokens so dev helpers don't auto-login users in production-like flows
+      if (String(token).startsWith('mock_')) {
+        console.warn('🔒 Auth: Detected mock token, clearing to prevent auto-login');
+        this.logout();
+        return;
+      }
       try {
         const user = JSON.parse(userStr);
         this.currentUserSubject.next(user);

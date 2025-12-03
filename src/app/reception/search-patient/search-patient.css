@@ -342,6 +342,7 @@ background: linear-gradient(90deg, rgba(112, 84, 214, 1) 0%, rgba(87, 158, 199, 
   justify-content: center;
   align-items: center;
   padding: 4px 0;
+  flex-wrap: wrap; /* allow buttons to wrap to next line instead of overflowing */
 }
 
 .action-btn {
@@ -355,6 +356,9 @@ background: linear-gradient(90deg, rgba(112, 84, 214, 1) 0%, rgba(87, 158, 199, 
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 36px; /* ensure icon buttons remain visible */
+  height: 36px;
+  justify-content: center;
 }
 
 .btn-view {

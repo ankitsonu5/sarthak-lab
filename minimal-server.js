@@ -122,6 +122,7 @@ const selfRegistrationRoutes = require('./back-end/routes/selfRegistration');
 
 // Multi-Tenant SaaS Routes
 const labManagementRoutes = require('./back-end/routes/labManagement');
+const subscriptionPlansRoutes = require('./back-end/routes/subscriptionPlans');
 
 // 🏢 Multi-Tenant Middleware
 const { authenticateToken } = require('./back-end/middlewares/auth');
@@ -182,6 +183,8 @@ app.use('/api/counter-management', require('./back-end/routes/counter-management
 
 // Multi-Tenant SaaS Routes
 app.use('/api/lab-management', labManagementRoutes);
+app.use('/api/subscription-plans', subscriptionPlansRoutes);
+app.use('/api/payments', require('./back-end/routes/payments'));
 
 // All patient routes are handled by /api/patients routes
 

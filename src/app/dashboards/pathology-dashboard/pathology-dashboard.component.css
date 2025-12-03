@@ -6,6 +6,245 @@
   min-height: 100vh;
 }
 
+/* Trial Expiry Banner */
+.trial-banner {
+  background: linear-gradient(135deg, #ff9a00 0%, #ff6b00 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(255, 107, 0, 0.3);
+  animation: slideDown 0.4s ease-out;
+}
+
+.trial-banner.expired {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.trial-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.trial-icon { font-size: 24px; }
+
+.trial-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trial-message strong { font-size: 16px; }
+.trial-message span { font-size: 13px; opacity: 0.9; }
+
+.btn-subscribe {
+  background: white;
+  color: #ff6b00;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.trial-banner.expired .btn-subscribe { color: #dc3545; }
+
+.btn-subscribe:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-dismiss {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-dismiss:hover { background: rgba(255,255,255,0.3); }
+
+/* Plans Modal */
+.plans-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.plans-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.plans-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+}
+
+.plans-modal-header h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #1a365d;
+}
+
+.plans-modal-header .close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+}
+
+.plans-modal-body { padding: 25px; }
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.plans-modal .plan-card {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.plans-modal .plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.plans-modal .popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #f5af19, #f12711);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.plans-modal .offer-badge {
+  background: #28a745;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.plans-modal .plan-card h4 {
+  margin: 15px 0 10px;
+  font-size: 20px;
+  color: #333;
+}
+
+.plans-modal .plan-price {
+  font-size: 32px;
+  font-weight: bold;
+  color: #1a365d;
+  margin-bottom: 15px;
+}
+
+.plans-modal .plan-price span {
+  font-size: 14px;
+  font-weight: normal;
+  color: #666;
+}
+
+.plans-modal .plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  text-align: left;
+}
+
+.plans-modal .plan-features li {
+  padding: 8px 0;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.plans-modal .plan-features li i { color: #28a745; }
+
+.btn-choose-plan {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-choose-plan:hover { opacity: 0.9; }
+
+.contact-note {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.contact-note i { margin-right: 5px; color: #28a745; }
+
 .dashboard-header {
   margin-bottom: 30px;
 }

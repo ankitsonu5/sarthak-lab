@@ -1,5 +1,79 @@
 <!-- Pathology Dashboard Content -->
 <div class="pathology-dashboard">
+
+    <!-- Trial Expiry Notification Banner -->
+    @if (showTrialBanner) {
+      <div class="trial-banner" [class.expired]="isTrialExpired">
+        <div class="trial-banner-content">
+          <div class="trial-icon">
+            @if (isTrialExpired) {
+              <i class="fas fa-exclamation-circle"></i>
+            } @else {
+              <i class="fas fa-clock"></i>
+            }
+          </div>
+          <div class="trial-message">
+            @if (isTrialExpired) {
+              <strong>⚠️ Your trial has expired!</strong>
+              <span>Please subscribe to continue using all features.</span>
+            } @else {
+              <strong>⏰ Your trial ends in {{ trialDaysLeft }} day{{ trialDaysLeft > 1 ? 's' : '' }}!</strong>
+              <span>Subscribe now to continue enjoying all features.</span>
+            }
+          </div>
+          <button class="btn-subscribe" (click)="togglePlansModal()">
+            <i class="fas fa-crown"></i> View Plans & Subscribe
+          </button>
+          <button class="btn-dismiss" (click)="dismissTrialBanner()" title="Dismiss">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Subscription Plans Modal -->
+    @if (showPlansModal) {
+      <div class="plans-modal-overlay" (click)="togglePlansModal()">
+        <div class="plans-modal" (click)="$event.stopPropagation()">
+          <div class="plans-modal-header">
+            <h3>Choose Your Plan</h3>
+            <button class="close-btn" (click)="togglePlansModal()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="plans-modal-body">
+            <div class="plans-grid">
+              @for (plan of subscriptionPlans; track plan._id) {
+                <div class="plan-card" [style.borderColor]="plan.badgeColor">
+                  @if (plan.isPopular) {
+                    <div class="popular-badge">⭐ Most Popular</div>
+                  }
+                  @if (plan.offerText) {
+                    <div class="offer-badge">{{ plan.offerText }}</div>
+                  }
+                  <h4>{{ plan.displayName }}</h4>
+                  <div class="plan-price">
+                    ₹{{ plan.priceMonthly | number }}<span>/month</span>
+                  </div>
+                  <ul class="plan-features">
+                    @for (feature of plan.featureList; track feature) {
+                      <li><i class="fas fa-check"></i> {{ feature }}</li>
+                    }
+                  </ul>
+                  <button class="btn-choose-plan" [style.backgroundColor]="plan.badgeColor">
+                    Choose {{ plan.displayName }}
+                  </button>
+                </div>
+              }
+            </div>
+            <p class="contact-note">
+              <i class="fas fa-phone"></i> For payment and activation, contact us at <strong>+91 9876543210</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Header Section with Purple Gradient -->
     <div class="dashboard-header">
       <div class="header-content">

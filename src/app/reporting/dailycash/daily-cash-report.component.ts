@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { DefaultLabConfigService } from '../../core/services/default-lab-config.service';
+import { LabSettingsService, LabSettings } from '../../setup/lab-setup/lab-settings.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -31,10 +33,13 @@ export class DailyCashReportComponent implements OnInit {
   selectedMonth: string = 'all';
   selectedYear: string = '';
   isLoading = false;
+  labSettings: LabSettings | null = null;
 
   constructor(
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public defaultLabConfig: DefaultLabConfigService,
+    private labService: LabSettingsService
   ) {
     // Set default values
     const today = new Date();
@@ -60,6 +65,19 @@ export class DailyCashReportComponent implements OnInit {
 
 
   ngOnInit(): void {
+    // Load lab settings
+    try {
+      const cached = localStorage.getItem('labSettings');
+      if (cached) this.labSettings = JSON.parse(cached);
+    } catch {}
+    this.labService.getMyLab().subscribe({
+      next: (res) => {
+        this.labSettings = res.lab || this.labSettings;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+
     this.generateReport();
   }
 

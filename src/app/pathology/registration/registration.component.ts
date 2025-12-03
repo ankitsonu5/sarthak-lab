@@ -7,6 +7,7 @@ import { firstValueFrom, Subscription } from 'rxjs';
 import { PathologyInvoiceService } from '../../services/pathology-invoice.service';
 import { environment } from '../../../environments/environment';
 import { DataRefreshService } from '../../core/services/data-refresh.service';
+import { PatientService } from '../../reception/patient.service';
 import { LabNameService } from '../../core/services/lab-name.service';
 import { PathologyService as MasterPathologyService } from '../../setup/pathology/services/pathology.service';
 import { AlertService } from '../../shared/services/alert.service';
@@ -155,7 +156,8 @@ export class PathologyRegistrationComponent implements OnInit {
     private dataRefresh: DataRefreshService,
     private masterPathologyService: MasterPathologyService,
     private alertService: AlertService,
-    private labNameService: LabNameService
+    private labNameService: LabNameService,
+    private patientService: PatientService
   ) {}
 
   ngOnInit(): void {
@@ -192,6 +194,39 @@ export class PathologyRegistrationComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const mode = (params['mode'] || '').toString();
       const rn = params['receiptNo'] || params['receiptNumber'];
+      // If a patientId is provided (e.g., from self-registration flow), prefill patient details
+      const pid = params['patientId'] || params['patient_id'];
+      if (pid) {
+        const patientId = String(pid).trim();
+        try {
+          this.patientService.getPatientById(patientId).subscribe({
+            next: (p) => {
+              if (p) {
+                console.log('✅ Prefilling registration with patient data from patientId:', patientId, p);
+                this.patientData = p;
+                // Ensure form exists
+                try {
+                  this.registrationForm.patchValue({
+                    registrationNumber: p.registrationNumber || p.patientId || '',
+                    patientName: `${p.firstName || ''} ${p.lastName || ''}`.trim(),
+                    age: p.age || p.dateOfBirth || '',
+                    ageIn: (p.ageIn || ''),
+                    gender: p.gender || '',
+                    phone: p.phone || p.mobile || '',
+                    address: (p.address && (p.address.street || p.address.city)) ? [p.address.street, p.address.city].filter(Boolean).join(', ') : ''
+                  });
+                } catch (e) {}
+                try { this.cdr.detectChanges(); } catch {}
+              }
+            },
+            error: (err) => {
+              console.error('❌ Failed to load patient for patientId:', patientId, err);
+            }
+          });
+        } catch (e) {
+          console.error('❌ Error while attempting to prefill patient by id:', e);
+        }
+      }
       if (mode === 'edit-lab-numbers' && rn) {
         // Enter lab numbers edit mode: load existing registration and enable only lab number fields
         this.labEditMode = true;

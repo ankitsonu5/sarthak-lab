@@ -23,6 +23,7 @@
 .header-icon{font-size:2.5rem;background:rgba(255,255,255,0.2);padding:0.4rem;border-radius:50%;backdrop-filter:blur(10px)}
 .header-title{font-size:2rem;font-weight:700;margin:0;text-shadow:0 2px 4px rgba(0,0,0,0.3)}
 .header-subtitle{font-size:1rem;margin:0.25rem 0 0 0;opacity:0.9}
+.header-right{display:flex;align-items:center;gap:0.75rem}
 
 /* Search */
 .search-section{margin-bottom:18px}
@@ -33,6 +34,9 @@
 
 .refresh-btn{padding:0.75rem 1.25rem;background:#3b82f6;color:#fff;border:none;border-radius:0.5rem;font-weight:600;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;gap:.5rem;white-space:nowrap}
 .refresh-btn:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+
+.add-user-btn{padding:0.75rem 1.25rem;background:#22c55e;color:#fff;border:none;border-radius:0.5rem;font-weight:600;cursor:pointer;transition:all .2s ease;display:flex;align-items:center;gap:.5rem;white-space:nowrap}
+.add-user-btn:hover{background:#16a34a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(22,163,74,0.3)}
 
 /* Loading */
 .loading{padding:8px}

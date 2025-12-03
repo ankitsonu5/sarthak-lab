@@ -56,8 +56,11 @@ const ALL_SECTIONS: Array<{ title: string; children: Array<{ label: string; rout
     { label: 'Consolidated IPD Report', route: '/reporting/consolidated-ipd-report' },
     { label: 'Monthly IPD Report', route: '/reporting/monthly-ipd-report' },
     { label: 'Daily Cash Report', route: '/reporting/daily-cash-report' },
-    { label: 'Daily Cash Summary', route: '/reporting/daily-cash-summary' }
-  ]}
+	    { label: 'Daily Cash Summary', route: '/reporting/daily-cash-summary' }
+	  ]},
+	  { title: 'Subscription', children: [
+	    { label: 'My Subscription', route: '/pathology/my-subscription' }
+	  ]}
 ];
 
 
@@ -101,15 +104,15 @@ export class UserPermissionsComponent implements OnInit {
   private buildSectionsForRole(role: string) {
     // Only include sections relevant to this role
     if (role === 'SuperAdmin') {
-      // Hide only Pathology for SuperAdmin
-      const hide = new Set(['Pathology']);
+	      // Hide lab-only sections for SuperAdmin
+	      const hide = new Set(['Pathology', 'Subscription']);
       this.routeSections = ALL_SECTIONS.filter(s => !hide.has(s.title));
     } else if (role === 'Admin') {
       // Admin: show core sections + IPD
       this.routeSections = ALL_SECTIONS.filter(s => ['Setup','Reception','IPD','Cash Receipt','Reports'].includes(s.title));
     } else if (role === 'Pathology') {
-      // Pathology role: show Setup, Pathology and Data (lab reports lists)
-      this.routeSections = ALL_SECTIONS.filter(s => ['Setup','Pathology','Data'].includes(s.title));
+	      // Pathology role: show Setup, Pathology, Data and Subscription
+	      this.routeSections = ALL_SECTIONS.filter(s => ['Setup','Pathology','Data','Subscription'].includes(s.title));
     } else {
       this.routeSections = ALL_SECTIONS.slice();
     }

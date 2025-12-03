@@ -1,0 +1,353 @@
+.subscription-container {
+  padding: 20px;
+}
+
+.page-header {
+  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h2 {
+  margin: 0;
+  color: #1a365d;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 0;
+}
+
+.btn-manage-plans {
+  background: #6c757d;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.btn-manage-plans:hover {
+  background: #5a6268;
+}
+
+/* Pricing Plans */
+.pricing-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.plan-card {
+  position: relative;
+}
+
+.plan-popular {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #f5af19, #f12711);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.plan-offer-badge {
+  background: #28a745;
+  color: white;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.plans-loading {
+  text-align: center;
+  padding: 30px;
+  color: #666;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.plan-header h4 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.plan-price {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1a365d;
+}
+
+.plan-price span {
+  font-size: 14px;
+  font-weight: normal;
+  color: #666;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-features li {
+  padding: 8px 0;
+  font-size: 14px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-features li i {
+  color: #28a745;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 10px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stat-card.trial { border-left: 4px solid #17a2b8; }
+.stat-card.warning { border-left: 4px solid #ffc107; }
+.stat-card.danger { border-left: 4px solid #dc3545; }
+.stat-card.success { border-left: 4px solid #28a745; }
+
+.stat-icon {
+  font-size: 28px;
+  margin-right: 15px;
+}
+
+.stat-card.trial .stat-icon { color: #17a2b8; }
+.stat-card.warning .stat-icon { color: #ffc107; }
+.stat-card.danger .stat-icon { color: #dc3545; }
+.stat-card.success .stat-icon { color: #28a745; }
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.stat-info p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Filters */
+.filters-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+}
+
+.filter-group select, .filter-group input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.filter-group.search {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group.search input {
+  width: 100%;
+}
+
+.refresh-btn {
+  height: fit-content;
+}
+
+/* Table */
+.table-container {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+.subscription-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.subscription-table th, .subscription-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.subscription-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.subscription-table tr:hover {
+  background: #f8f9fa;
+}
+
+.subscription-table tr.expiring {
+  background: #fff3cd;
+}
+
+.subscription-table tr.expired {
+  background: #f8d7da;
+}
+
+/* Badges */
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-info { background: #17a2b8; color: white; }
+.badge-primary { background: #007bff; color: white; }
+.badge-gold { background: linear-gradient(135deg, #f5af19, #f12711); color: white; }
+.badge-secondary { background: #6c757d; color: white; }
+
+/* Text Colors */
+.text-danger { color: #dc3545; }
+.text-warning { color: #856404; }
+.text-success { color: #28a745; }
+.text-muted { color: #999; }
+
+/* Actions */
+.actions-cell {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-sm { padding: 4px 8px; }
+.btn-primary { background: #007bff; color: white; }
+.btn-warning { background: #ffc107; color: #333; }
+.btn-info { background: #17a2b8; color: white; }
+.btn-success { background: #28a745; color: white; }
+
+.btn:hover { opacity: 0.9; }
+
+/* Loading & Error States */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.error-state {
+  color: #dc3545;
+}
+
+.loading-state i, .error-state i {
+  margin-right: 8px;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #999;
+}
+
+.empty-state i {
+  font-size: 48px;
+  margin-bottom: 15px;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filters-section {
+    flex-direction: column;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+  }
+}
+

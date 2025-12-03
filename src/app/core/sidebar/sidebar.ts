@@ -192,19 +192,36 @@ export class Sidebar implements OnInit, OnDestroy {
           ]
         },
         {
+          icon: 'fa-solid fa-credit-card',
+          title: 'Subscriptions',
+          children: [
+            { label: 'All Subscriptions', route: '/super-admin/subscriptions' },
+            { label: 'Expiring Trials', route: '/super-admin/subscriptions', queryParams: { status: 'expiring' } },
+            { label: 'Expired Trials', route: '/super-admin/subscriptions', queryParams: { status: 'expired' } }
+          ]
+        },
+        {
+          icon: 'fa-solid fa-tags',
+          title: 'Pricing & Plans',
+          children: [
+            { label: 'Manage Plans', route: '/super-admin/plans' }
+          ]
+        },
+        {
           icon: 'fa-solid fa-users',
           title: 'User Management',
           children: [
             { label: 'Create User', route: '/auth/register' },
-            { label: 'Manage Users', route: '/super-admin/users' }
+	            { label: 'Manage Users', route: '/super-admin/users' },
+	            { label: 'Roles & Permissions', route: '/roles/list' }
           ]
         }
       ];
       return;
     }
 
-    // Lab users (LabAdmin, Technician, etc.) get full pathology sidebar
-    const allSections = [
+	    // Lab users (LabAdmin, Technician, etc.) get full pathology sidebar
+	    const allSections: any[] = [
       {
         icon: 'fa-solid fa-cog',
         title: 'Lab Settings',
@@ -280,22 +297,58 @@ export class Sidebar implements OnInit, OnDestroy {
           { label: 'Daily Cash Report', route: '/reporting/daily-cash-report' },
           { label: 'Daily Cash Summary', route: '/reporting/daily-cash-summary' }
         ]
-      }
-    ];
+      },
+	      {
+	        icon: 'fa-solid fa-credit-card',
+	        title: 'Subscription',
+	        children: [
+	          { label: 'My Subscription', route: '/pathology/my-subscription' }
+	        ]
+	      }
+	    ];
+
+	    // Lab owner roles get their own User Management section
+	    if (this.currentUser && (this.currentUser.role === 'LabAdmin' || this.currentUser.role === 'Admin')) {
+	      allSections.push({
+	        icon: 'fa-solid fa-users-gear',
+	        title: 'User Management',
+	        children: [
+	          { label: 'Roles & Permissions', route: '/roles/list' }
+	        ]
+	      });
+	    }
 
     const applyAllowedRoutes = (sections: any[]) => {
       const user = this.currentUser as any;
       const allowed: string[] = (user && Array.isArray(user.allowedRoutes)) ? user.allowedRoutes : [];
+
+      // If no user, SuperAdmin, or no explicit allowedRoutes, show full sidebar
       if (!user || user.role === 'SuperAdmin' || !allowed.length) return sections;
-      const allowedSet = new Set(allowed);
-      return sections.map(s => ({
+
+	      const allowedSet = new Set(allowed);
+	      // Lab owner should never lose access to subscription page even if they
+	      // misconfigure permissions for themselves. For all other roles,
+	      // Subscription visibility is fully controlled via allowedRoutes.
+	      const forceSubscription = user.role === 'LabAdmin';
+
+	      const mapped = sections.map(s => ({
         ...s,
         children: (s.children || []).filter((c: any) => {
           // If /lab-setup is allowed, also allow its child Template Setup route
           if (c.route === '/lab-setup/template-setup' && allowedSet.has('/lab-setup')) return true;
+
+	          // Always show subscription page for LabAdmin (lab owner), even if not in allowedRoutes yet
+	          if (forceSubscription && c.route === '/pathology/my-subscription') return true;
+	  
+	          // Lab owner roles can always see Roles & Permissions
+	          if (user && (user.role === 'LabAdmin' || user.role === 'Admin') && c.route === '/roles/list') return true;
+
           return allowedSet.has(c.route);
         })
       }));
+
+      // Remove empty sections so user never sees a heading with no items
+      return mapped.filter(s => (s.children || []).length > 0);
     };
 
     // Unified sidebar for all roles; allowedRoutes will trim items per user

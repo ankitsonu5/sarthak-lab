@@ -9,6 +9,18 @@ import { environment } from '../../../environments/environment';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { LabNameService } from '../../core/services/lab-name.service';
 
+interface SubscriptionPlan {
+  _id: string;
+  planName: string;
+  displayName: string;
+  priceMonthly: number;
+  featureList: string[];
+  discountPercent: number;
+  offerText: string;
+  badgeColor: string;
+  isPopular: boolean;
+}
+
 interface LabStatistic {
   title: string;
   value: number;
@@ -99,6 +111,14 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
   calendarDays: any[] = [];
 
   chart: Chart | null = null;
+
+  // Trial/Subscription Info
+  showTrialBanner = false;
+  trialDaysLeft = 0;
+  isTrialExpired = false;
+  subscriptionPlan = 'trial';
+  subscriptionPlans: SubscriptionPlan[] = [];
+  showPlansModal = false;
 
   constructor(
     private authService: Auth,
@@ -212,6 +232,12 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
 
     this.generateCalendarDays();
     this.loadDashboardData();
+
+    // Check trial status for LabAdmin
+    if (currentUser.role === 'LabAdmin') {
+      this.checkTrialStatus();
+      this.loadSubscriptionPlans();
+    }
   }
 
   ngOnDestroy(): void {
@@ -230,6 +256,66 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
     // 🚫 DISABLED: Time update interval to prevent infinite change detection loops
     console.log('🚫 PATHOLOGY DASHBOARD: Time interval disabled to prevent infinite loops');
     // Time interval removed - manual time update only
+  }
+
+  // Check trial status and show notification if expiring
+  checkTrialStatus(): void {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    this.http.get<any>(`${environment.apiUrl}/settings/subscription-info`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).subscribe({
+      next: (response) => {
+        if (response.success && response.subscription) {
+          const sub = response.subscription;
+          this.subscriptionPlan = sub.subscriptionPlan || 'trial';
+
+          if (this.subscriptionPlan === 'trial' && sub.trialEndsAt) {
+            const trialEnd = new Date(sub.trialEndsAt);
+            const today = new Date();
+            const diffTime = trialEnd.getTime() - today.getTime();
+            this.trialDaysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // Show banner if trial ending in 7 days or less
+            if (this.trialDaysLeft <= 7) {
+              this.showTrialBanner = true;
+              this.isTrialExpired = this.trialDaysLeft <= 0;
+            }
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => console.error('Error checking trial status:', err)
+    });
+  }
+
+  // Load subscription plans from API
+  loadSubscriptionPlans(): void {
+    this.http.get<any>(`${environment.apiUrl}/subscription-plans`).subscribe({
+      next: (response) => {
+        if (response.plans) {
+          this.subscriptionPlans = response.plans.filter((p: any) => p.planName !== 'trial');
+        }
+      },
+      error: () => {
+        // Fallback plans if API fails
+        this.subscriptionPlans = [
+          { _id: '1', planName: 'basic', displayName: 'Basic', priceMonthly: 2000, featureList: ['Unlimited Reports', 'Email Support'], discountPercent: 0, offerText: '', badgeColor: '#007bff', isPopular: false },
+          { _id: '2', planName: 'premium', displayName: 'Premium', priceMonthly: 5000, featureList: ['Everything in Basic', 'Priority Support', 'Advanced Analytics'], discountPercent: 0, offerText: '', badgeColor: '#f5af19', isPopular: true }
+        ];
+      }
+    });
+  }
+
+  // Toggle plans modal
+  togglePlansModal(): void {
+    this.showPlansModal = !this.showPlansModal;
+  }
+
+  // Dismiss trial banner
+  dismissTrialBanner(): void {
+    this.showTrialBanner = false;
   }
 
   loadPathologyInvoices(): void {

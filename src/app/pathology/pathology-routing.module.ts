@@ -74,6 +74,10 @@ const routes: Routes = [
   {
     path: 'test-summary',
     component: TestSummaryComponent
+  },
+  {
+    path: 'my-subscription',
+    loadComponent: () => import('./my-subscription/my-subscription.component').then(m => m.MySubscriptionComponent)
   }
 ];
 

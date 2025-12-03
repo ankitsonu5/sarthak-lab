@@ -93,6 +93,16 @@ const labSchema = new mongoose.Schema({
   subscriptionEndsAt: {
     type: Date
   },
+  subscriptionStartedAt: {
+    type: Date
+  },
+  trialNotificationSent: {
+    type: Boolean,
+    default: false
+  },
+  trialNotificationSentAt: {
+    type: Date
+  },
   
   // Approval
   approvalStatus: {

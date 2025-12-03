@@ -1,8 +1,13 @@
 <div class="super-admin-dashboard">
   <!-- Header -->
   <div class="dashboard-header">
-    <h1><i class="fas fa-shield-alt"></i> Super Admin Dashboard</h1>
-    <p>Multi-Lab Management System</p>
+    <div class="header-content">
+      <h1><i class="fas fa-shield-alt"></i> Super Admin Dashboard</h1>
+      <p>Multi-Lab Management System</p>
+    </div>
+    <button class="btn-refresh" (click)="refreshData()" [disabled]="loading">
+      <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i> Refresh
+    </button>
   </div>
 
   <!-- Stats Cards -->
@@ -198,27 +203,9 @@
           </td>
           <td>{{ formatDate(lab.createdAt) }}</td>
           <td (click)="$event.stopPropagation()">
-            <div class="action-buttons">
-              <button
-                *ngIf="lab.approvalStatus === 'pending'"
-                (click)="approveLab(lab._id); $event.stopPropagation()"
-                class="btn-approve"
-                title="Approve Lab"
-              >
-                <i class="fas fa-check"></i> Approve
-              </button>
-              <button
-                *ngIf="lab.approvalStatus === 'pending'"
-                (click)="rejectLab(lab._id); $event.stopPropagation()"
-                class="btn-reject"
-                title="Reject Lab"
-              >
-                <i class="fas fa-times"></i> Reject
-              </button>
-              <span *ngIf="lab.approvalStatus !== 'pending'" class="no-action">
-                -
-              </span>
-            </div>
+            <button class="btn btn-sm btn-primary" (click)="viewLabProfile(lab._id)">
+              <i class="fas fa-eye"></i> View
+            </button>
           </td>
         </tr>
       </tbody>

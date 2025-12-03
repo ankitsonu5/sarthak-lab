@@ -937,7 +937,9 @@ export class PatientModalNewComponent implements OnInit {
           this.router.navigate(['/reception/patient-registration']);
         };
       } else {
-        console.error('❌ PRINT: Failed to open print window');
+        // Pop-up blocked / failed to open. Inform the user instead of noisy console error.
+        alert('Unable to open print window. Please allow pop-ups for this site and try again.');
+        console.info('PRINT: printWindow open() returned null (pop-up blocked)');
       }
     });
   }

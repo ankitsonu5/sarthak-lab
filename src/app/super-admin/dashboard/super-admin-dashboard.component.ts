@@ -1,7 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { Subject } from 'rxjs';
+import { takeUntil, timeout } from 'rxjs/operators';
 
 interface AdminUser {
   _id: string;
@@ -45,7 +47,10 @@ interface DashboardStats {
   templateUrl: './super-admin-dashboard.component.html',
   styleUrls: ['./super-admin-dashboard.component.css']
 })
-export class SuperAdminDashboardComponent implements OnInit {
+export class SuperAdminDashboardComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  private dataLoaded = false;
+
   stats: DashboardStats = {
     totalLabs: 0,
     pendingApprovals: 0,
@@ -75,29 +80,50 @@ export class SuperAdminDashboardComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    // Load data immediately when component initializes
-    this.loadDashboardData();
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    // Also reload when query params change (e.g., from sidebar filter clicks)
-    this.route.queryParams.subscribe(params => {
+  ngOnInit(): void {
+    // Try to load from cache first for instant display
+    const cached = sessionStorage.getItem('superadmin_labs');
+    if (cached) {
+      try {
+        this.labs = JSON.parse(cached);
+        this.calculateStats();
+        this.applyFilters();
+        this.dataLoaded = true;
+      } catch (e) { }
+    }
+
+    // Subscribe to query params
+    this.route.queryParams.pipe(takeUntil(this.destroy$)).subscribe(params => {
       const filter = params['filter'];
-      if (filter) {
-        // Only re-apply filter and reload if filter param exists
-        if (filter === 'all') {
-          this.filterStatus = 'all';
-        } else if (filter === 'pending') {
-          this.filterStatus = 'pending';
-        } else if (filter === 'active') {
-          this.filterStatus = 'approved';
-        }
-        this.loadDashboardData();
+      if (filter === 'all') {
+        this.filterStatus = 'all';
+      } else if (filter === 'pending') {
+        this.filterStatus = 'pending';
+      } else if (filter === 'active') {
+        this.filterStatus = 'approved';
+      }
+
+      // If we have cached data, just apply filters
+      if (this.dataLoaded && this.labs.length > 0) {
+        this.applyFilters();
+      }
+
+      // Load fresh data in background (or immediately if no cache)
+      if (!this.loading) {
+        this.loadDashboardData(!this.dataLoaded);
       }
     });
   }
 
-  loadDashboardData(): void {
-    this.loading = true;
+  loadDashboardData(showLoading = true): void {
+    if (showLoading) {
+      this.loading = true;
+    }
     this.error = '';
 
     const apiUrl = `${environment.apiUrl || 'http://localhost:3000/api'}/lab-management/labs`;
@@ -105,20 +131,35 @@ export class SuperAdminDashboardComponent implements OnInit {
 
     this.http.get<any>(apiUrl, {
       headers: { Authorization: `Bearer ${token}` }
-    }).subscribe({
+    }).pipe(
+      timeout(10000), // 10 second timeout
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: (response) => {
         this.labs = response.labs || [];
+        // Cache for instant load next time
+        sessionStorage.setItem('superadmin_labs', JSON.stringify(this.labs));
+        this.dataLoaded = true;
         this.calculateStats();
         this.applyFilters();
         this.loading = false;
-        this.cdr.detectChanges(); // Force UI update
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        this.error = error.error?.message || error.message || 'Failed to load labs';
+        if (error.name === 'TimeoutError') {
+          this.error = 'Request timed out. Please try again.';
+        } else {
+          this.error = error.error?.message || error.message || 'Failed to load labs';
+        }
         this.loading = false;
-        this.cdr.detectChanges(); // Force UI update
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  refreshData(): void {
+    sessionStorage.removeItem('superadmin_labs');
+    this.loadDashboardData(true);
   }
 
   calculateStats(): void {

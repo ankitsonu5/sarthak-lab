@@ -216,27 +216,36 @@
             <td>
               <div class="action-buttons">
                 <button
-                  class="btn btn-sm btn-view"
+                  class="action-btn btn btn-sm btn-view"
                   (click)="viewPatient(patient)"
                   title="View Patient Details"
                 >
                   <i class="fas fa-eye"></i>
                 </button>
                 <button
-                  class="btn btn-sm btn-edit"
+                  class="action-btn btn btn-sm btn-edit"
                   (click)="editPatient(patient)"
                   title="Edit Patient"
                   *ngIf="patient.source !== 'self'"
                 >
                   <i class="fas fa-edit"></i>
                 </button>
+                <!-- Removed Register-as-Lab action for self-registered rows as requested -->
                 <button
-                  class="btn btn-sm btn-register"
-                  (click)="registerSelfPatient(patient)"
-                  title="Register as Lab Patient"
+                  class="action-btn btn btn-sm btn-sample"
+                  (click)="markSampleCollected(patient)"
+                  title="Mark Sample Collected"
                   *ngIf="patient.source === 'self'"
                 >
-                  <i class="fas fa-user-plus"></i>
+                  <i class="fas fa-vial"></i>
+                </button>
+                <button
+                  class="action-btn btn btn-sm btn-report"
+                  (click)="createReportForPatient(patient)"
+                  title="Create Report / Open Registration"
+                  *ngIf="patient.source === 'self'"
+                >
+                  <i class="fas fa-file-medical"></i>
                 </button>
               </div>
             </td>

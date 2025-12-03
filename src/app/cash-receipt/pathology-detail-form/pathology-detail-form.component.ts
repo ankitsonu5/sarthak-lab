@@ -3452,8 +3452,15 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
         paymentMethod: this.getSelectedPaymentMethod()
       },
       labInfo: {
-        name: this.labSettings?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय',
-        address: [this.labSettings?.addressLine1, this.labSettings?.addressLine2, this.labSettings?.city, this.labSettings?.state, this.labSettings?.pincode].filter(Boolean).join(', ') || 'चौकाघाट, वाराणसी',
+	        // Use dynamic lab name & address (with sensible defaults) instead of hardcoded hospital
+	        name: this.defaultLabConfig.getLabName(this.labSettings?.labName),
+	        address: this.defaultLabConfig.getLabAddress([
+	          this.labSettings?.addressLine1,
+	          this.labSettings?.addressLine2,
+	          this.labSettings?.city,
+	          this.labSettings?.state,
+	          this.labSettings?.pincode
+	        ].filter(Boolean).join(', ')),
         phone: this.labSettings?.phone || this.labSettings?.altPhone || ''
       }
     };
@@ -3733,7 +3740,18 @@ export class PathologyDetailFormComponent implements OnInit, AfterViewInit, OnDe
               tests,
               payment: { totalAmount: inv.payment?.totalAmount ?? inv.totalAmount ?? patient.totalAmount ?? patient.payment?.totalAmount ?? 0 },
               mode: (inv.mode || patient.mode || this.pathologyForm.get('mode')?.value || 'OPD'),
-              labInfo: { name: this.labSettings?.labName || 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय', address: [this.labSettings?.addressLine1, this.labSettings?.addressLine2, this.labSettings?.city, this.labSettings?.state, this.labSettings?.pincode].filter(Boolean).join(', ') || 'चौकाघाट, वाराणसी', phone: this.labSettings?.phone || this.labSettings?.altPhone || '' },
+	              labInfo: {
+	                // Derive lab info from current lab settings instead of hardcoding hospital details
+	                name: this.defaultLabConfig.getLabName(this.labSettings?.labName),
+	                address: this.defaultLabConfig.getLabAddress([
+	                  this.labSettings?.addressLine1,
+	                  this.labSettings?.addressLine2,
+	                  this.labSettings?.city,
+	                  this.labSettings?.state,
+	                  this.labSettings?.pincode
+	                ].filter(Boolean).join(', ')),
+	                phone: this.labSettings?.phone || this.labSettings?.altPhone || ''
+	              },
               department: inv.department || patient.department || null,
               doctor: inv.doctor || patient.doctor || null,
               doctorRefNo: inv.doctorRefNo || patient.doctorRefNo || this.pathologyForm.get('doctorRefNo')?.value || ''

@@ -1,0 +1,149 @@
+<div class="subscription-container">
+  <div class="page-header">
+    <h1>🔬 Subscription Plans</h1>
+    <p>Choose the best plan for your lab</p>
+  </div>
+
+  <!-- Login Required Banner -->
+  @if (!isLoggedIn) {
+    <div class="login-required-banner">
+      <div class="login-icon">🔐</div>
+      <h2>Login Required</h2>
+      <p>Please login to your Lab Admin account to subscribe to a plan</p>
+      <button class="login-btn" (click)="goToLogin()">
+        <i class="fa-solid fa-right-to-bracket"></i> Login to Continue
+      </button>
+      <p class="signup-text">
+        Don't have an account? <a routerLink="/self-registration">Register your lab</a>
+      </p>
+    </div>
+  }
+
+  <!-- Success/Error Messages -->
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+
+  <!-- Current Subscription Card (only for logged in users) -->
+  @if (isLoggedIn && currentSubscription) {
+    <div class="current-plan-card" [class.expired]="getDaysLeft() <= 0">
+      <div class="plan-status">
+        <span class="status-badge" [class.active]="getDaysLeft() > 0" [class.expired]="getDaysLeft() <= 0">
+          {{ getDaysLeft() > 0 ? 'Active' : 'Expired' }}
+        </span>
+      </div>
+      <div class="plan-info">
+        <h2>{{ currentSubscription.subscriptionPlan | titlecase }} Plan</h2>
+        <p class="lab-name">{{ currentSubscription.labName }}</p>
+        @if (getDaysLeft() > 0) {
+          <p class="days-left">
+            <span class="days-count">{{ getDaysLeft() }}</span> days remaining
+          </p>
+        } @else {
+          <p class="days-left expired">Your plan has expired. Please renew to continue.</p>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading plans...</p>
+    </div>
+  }
+
+  <!-- Billing Cycle Toggle -->
+  @if (!loading && plans.length > 0) {
+    <div class="billing-toggle">
+      <span [class.active]="billingCycle === 'monthly'">Monthly</span>
+      <label class="switch">
+        <input type="checkbox" [checked]="billingCycle === 'yearly'" 
+               (change)="billingCycle = billingCycle === 'monthly' ? 'yearly' : 'monthly'">
+        <span class="slider"></span>
+      </label>
+      <span [class.active]="billingCycle === 'yearly'">
+        Yearly <span class="save-badge">Save 17%</span>
+      </span>
+    </div>
+  }
+
+  <!-- Plans Grid -->
+  @if (!loading && plans.length > 0) {
+    <div class="plans-grid">
+      @for (plan of plans; track plan._id) {
+        <div class="plan-card" [class.popular]="plan.isPopular" [class.current]="isCurrentPlan(plan)">
+          @if (plan.isPopular) {
+            <div class="popular-badge">Most Popular</div>
+          }
+          @if (plan.offerText) {
+            <div class="offer-badge">{{ plan.offerText }}</div>
+          }
+          
+          <div class="plan-header" [style.background]="plan.badgeColor">
+            <h3>{{ plan.displayName }}</h3>
+            <p class="plan-desc">{{ plan.description }}</p>
+          </div>
+          
+          <div class="plan-price">
+            <span class="currency">₹</span>
+            <span class="amount">{{ getPrice(plan) | number }}</span>
+            <span class="period">/{{ billingCycle === 'yearly' ? 'year' : 'month' }}</span>
+          </div>
+
+          @if (plan.discountPercent > 0) {
+            <div class="discount-tag">{{ plan.discountPercent }}% OFF</div>
+          }
+
+          <ul class="feature-list">
+            @for (feature of plan.featureList; track feature) {
+              <li>✓ {{ feature }}</li>
+            }
+          </ul>
+
+          @if (isLoggedIn) {
+            <button class="subscribe-btn"
+                    [disabled]="processing || isCurrentPlan(plan)"
+                    [class.processing]="processing"
+                    (click)="subscribeToPlan(plan)">
+              @if (processing) {
+                <span class="btn-spinner"></span> Processing...
+              } @else if (isCurrentPlan(plan)) {
+                Current Plan
+              } @else {
+                Subscribe Now
+              }
+            </button>
+          } @else {
+            <button class="subscribe-btn login-required" (click)="goToLogin()">
+              <i class="fa-solid fa-right-to-bracket"></i> Login to Subscribe
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- No Plans Message -->
+  @if (!loading && plans.length === 0) {
+    <div class="no-plans">
+      <p>No subscription plans available at the moment.</p>
+      <p>Please contact support for assistance.</p>
+    </div>
+  }
+
+  <!-- Contact Section -->
+  <div class="contact-section">
+    <h3>Need Help?</h3>
+    <p>Contact us for custom plans or any queries</p>
+    <div class="contact-info">
+      <span>📞 +91-9876543210</span>
+      <span>📧 support&#64;labbookpathology.com</span>
+    </div>
+  </div>
+</div>
+

@@ -35,6 +35,10 @@ const routes: Routes = [
     path: 'pathology',
     loadChildren: () => import('./pathology/pathology.module').then(m => m.PathologyModule)
   },
+  {
+    path: 'counters',
+    loadComponent: () => import('./counters/counter-admin.component').then(m => m.CounterAdminComponent)
+  },
 
 ];
 

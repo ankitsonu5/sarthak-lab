@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, ChangeDetectorRef, OnDestroy } from '
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { DashboardService, DashboardStats as ServiceDashboardStats, WeatherData } from '../../core/services/dashboard.service';
 
 import { Auth, User } from '../../core/services/auth';
@@ -16,7 +17,7 @@ import { LabNameService } from '../../core/services/lab-name.service';
 @Component({
   selector: 'app-super-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, HttpClientModule],
+  imports: [CommonModule, RouterModule, HttpClientModule, FormsModule],
   templateUrl: './super-admin-dashboard.component.html',
   styleUrls: ['./super-admin-dashboard.component.css']
 })
@@ -52,6 +53,12 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
   cashReceiptPatients: Array<{ time: string; activity: string }> = [];
   // Today’s receipt edits (additions/refunds)
   todayReceiptEdits: Array<{ time: string; patient: string; receiptNumber: number | string; delta: number; action: 'ADD' | 'REFUND' | 'NONE' }> = [];
+
+  // SuperAdmin-managed payment methods (localStorage-backed)
+  paymentMethods: Array<{ code: string; name: string }> = [];
+  newPaymentMethod: { code: string; name: string } = { code: '', name: '' };
+  // Per-lab payment method mapping
+  labPaymentMap: { [labId: string]: { code: string; name: string } } = {};
 
 
 
@@ -146,6 +153,17 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
     this.loadTodayPatients();
     this.loadRevenueTrends();
 
+    // Load saved payment methods (localStorage fallback)
+    try {
+      const raw = localStorage.getItem('superAdmin:paymentMethods');
+      if (raw) this.paymentMethods = JSON.parse(raw) || [];
+    } catch {}
+    // Load per-lab payment map
+    try {
+      const raw2 = localStorage.getItem('superAdmin:labPaymentMethods');
+      if (raw2) this.labPaymentMap = JSON.parse(raw2) || {};
+    } catch {}
+
 
     // Today's logins (derived from users' lastLogin)
     this.loadTodayLogins();
@@ -163,6 +181,67 @@ export class SuperAdminDashboardComponent implements OnInit, AfterViewInit, OnDe
 
     // If user has already viewed Requests in Central Stock, clear badge on load
 
+  }
+
+  // Payment method helpers
+  savePaymentMethods(): void {
+    try { localStorage.setItem('superAdmin:paymentMethods', JSON.stringify(this.paymentMethods || [])); } catch {}
+  }
+
+  addPaymentMethod(): void {
+    const code = (this.newPaymentMethod.code || '').trim();
+    const name = (this.newPaymentMethod.name || '').trim();
+    if (!code || !name) return;
+    // prevent duplicates
+    if (this.paymentMethods.find(m => m.code.toLowerCase() === code.toLowerCase())) return;
+    this.paymentMethods.push({ code, name });
+    this.newPaymentMethod = { code: '', name: '' };
+    this.savePaymentMethods();
+    this.cdr.detectChanges();
+  }
+
+  removePaymentMethod(code: string): void {
+    this.paymentMethods = (this.paymentMethods || []).filter(m => m.code !== code);
+    this.savePaymentMethods();
+    this.cdr.detectChanges();
+  }
+
+  // Lab payment map helpers
+  saveLabPaymentMap(): void {
+    try { localStorage.setItem('superAdmin:labPaymentMethods', JSON.stringify(this.labPaymentMap || {})); } catch {}
+  }
+
+  getLabPaymentCode(lab: any): string {
+    return this.labPaymentMap?.[lab._id]?.code || '';
+  }
+
+  getLabPaymentDisplay(lab: any): string {
+    return this.labPaymentMap?.[lab._id]?.name || '-';
+  }
+
+  onPaymentMethodChange(code: string, lab: any): void {
+    const pm = this.paymentMethods.find(m => m.code === code);
+    if (pm) {
+      this.labPaymentMap[lab._id] = { code: pm.code, name: pm.name };
+    } else {
+      // clear
+      delete this.labPaymentMap[lab._id];
+    }
+    this.saveLabPaymentMap();
+    this.cdr.detectChanges();
+  }
+
+  promptAddPaymentMethodForLab(lab: any): void {
+    const code = window.prompt('Enter payment method code (eg: UPI, CARD):');
+    if (!code) return;
+    const name = window.prompt('Enter display name for ' + code + ':');
+    if (!name) return;
+    // Add globally if missing
+    if (!this.paymentMethods.find(m => m.code.toLowerCase() === code.toLowerCase())) {
+      this.paymentMethods.push({ code: code.trim(), name: name.trim() });
+      this.savePaymentMethods();
+    }
+    this.onPaymentMethodChange(code.trim(), lab);
   }
 
 

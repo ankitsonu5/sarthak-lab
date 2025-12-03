@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
+const Lab = require('../models/Lab');
 const { sendEmail } = require('../utils/mailer');
 const router = express.Router();
 
@@ -22,12 +23,21 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Register new user (restricted to SuperAdmin)
+// Register new user
+// - SuperAdmin: can create any user (global)
+// - LabAdmin/Admin: can create ONLY staff users within their own lab, and only if subscription is valid
 router.post('/register', authenticateToken, async (req, res) => {
   try {
-    // Only SuperAdmin can register new users
-    if (!req.user || req.user.role !== 'SuperAdmin') {
-      return res.status(403).json({ message: 'Only SuperAdmin can create users' });
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const actor = req.user;
+    const isSuperAdmin = actor.role === 'SuperAdmin';
+    const isLabAdmin = !isSuperAdmin && (actor.role === 'LabAdmin' || actor.role === 'Admin');
+
+    if (!isSuperAdmin && !isLabAdmin) {
+      return res.status(403).json({ message: 'Only SuperAdmin or Lab Admin can create users' });
     }
 
     const { username, email, password, role, firstName, lastName, phone } = req.body;
@@ -36,6 +46,18 @@ router.post('/register', authenticateToken, async (req, res) => {
     const emailNorm = String(email || '').trim().toLowerCase();
     const roleNorm = String(role || '').trim();
     const phoneNorm = String(phone || '').trim();
+
+    // When lab admin is creating users, restrict target roles to lab staff only
+    if (isLabAdmin) {
+      // Lab owner (LabAdmin/Admin) can create only lab-scoped staff users.
+      // This matches the options shown on the "Create New User" screen.
+      const allowedStaffRoles = ['Pathology', 'Technician', 'Receptionist', 'Doctor', 'Pharmacy'];
+      if (!allowedStaffRoles.includes(roleNorm)) {
+        return res.status(403).json({
+          message: 'Lab Admin can only create staff users (Pathology, Technician, Receptionist, Doctor)'
+        });
+      }
+    }
 
     // Check if user already exists by email or phone (username can duplicate by role policy)
     const orConds = [{ email: emailNorm }];
@@ -58,7 +80,43 @@ router.post('/register', authenticateToken, async (req, res) => {
       else finalUsername = (emailNorm.split('@')[0] || 'user').trim();
     }
 
-    // Create new user
+    let lab = null;
+
+    // For LabAdmin/Admin: enforce lab scope & subscription before creating staff users
+    if (isLabAdmin) {
+      if (!actor.labId) {
+        return res.status(400).json({ message: 'Your account is not linked to any lab. Cannot create users.' });
+      }
+
+      lab = await Lab.findById(actor.labId);
+      if (!lab) {
+        return res.status(404).json({ message: 'Lab not found for your account' });
+      }
+
+      // Enforce subscription validity and user count limits
+      if (!lab.hasValidSubscription()) {
+        return res.status(403).json({
+          message: 'Your lab subscription is not active. Please renew or upgrade to add more users.',
+          subscriptionStatus: lab.subscriptionStatus,
+          subscriptionPlan: lab.subscriptionPlan,
+          trialEndsAt: lab.trialEndsAt,
+          subscriptionEndsAt: lab.subscriptionEndsAt
+        });
+      }
+
+      if (!lab.canAddUser()) {
+        const details = lab.planDetails || {};
+        return res.status(403).json({
+          message: 'Your current subscription plan user limit has been reached. Please upgrade your plan to add more users.',
+          subscriptionPlan: lab.subscriptionPlan,
+          subscriptionStatus: lab.subscriptionStatus,
+          totalUsers: lab.totalUsers,
+          maxUsers: details.maxUsers
+        });
+      }
+    }
+
+    // Create new user (SuperAdmin: global, LabAdmin/Admin: lab-scoped)
     const user = new User({
       username: finalUsername,
       email: emailNorm,
@@ -66,11 +124,19 @@ router.post('/register', authenticateToken, async (req, res) => {
       role: roleNorm,
       firstName,
       lastName,
-      phone: phoneNorm
+      phone: phoneNorm,
+      labId: isLabAdmin && lab ? lab._id : null
     });
 
     await user.save();
-    console.log('✅ User saved to DB:', { id: user._id.toString(), email: user.email, role: user.role });
+
+    // If created under a lab, increment lab user count
+    if (isLabAdmin && lab) {
+      lab.totalUsers = (lab.totalUsers || 0) + 1;
+      await lab.save();
+    }
+
+    console.log('✅ User saved to DB:', { id: user._id.toString(), email: user.email, role: user.role, labId: user.labId });
 
     // Try to send credentials to the user's email (best-effort)
     const plainPassword = password; // We received plain password in req body
@@ -191,19 +257,23 @@ router.post('/login', async (req, res) => {
         console.log('⚠️ Lab subscription is not active:', lab.subscriptionStatus);
         // Allow login but warn about subscription
       }
-
-      // Check trial expiry
-      if (lab.subscriptionPlan === 'trial' && lab.trialEndsAt) {
-        const trialEndsAt = new Date(lab.trialEndsAt);
-        if (trialEndsAt < new Date()) {
-          console.log('⚠️ Trial period has expired');
-          return res.status(403).json({
-            message: 'Your trial period has expired. Please subscribe to continue.',
-            subscriptionStatus: 'expired',
-            trialEndsAt: lab.trialEndsAt
-          });
-        }
-      }
+	    	
+	    	  // Check trial expiry
+	    	  if (lab.subscriptionPlan === 'trial' && lab.trialEndsAt) {
+	    	    const trialEndsAt = new Date(lab.trialEndsAt);
+	    	    if (trialEndsAt < new Date()) {
+	    	      console.log('⚠️ Trial period has expired - marking subscription as expired but allowing login');
+	    	      // Mark lab subscription as expired (so frontend guards can block modules)
+	    	      if (lab.subscriptionStatus !== 'expired') {
+	    	        try {
+	    	          lab.subscriptionStatus = 'expired';
+	    	          await lab.save();
+	    	        } catch (e) {
+	    	          console.warn('⚠️ Failed to update lab subscriptionStatus to expired on login:', e?.message || e);
+	    	        }
+	    	      }
+	    	    }
+	    	  }
     }
 
     // Update last login
@@ -234,7 +304,8 @@ router.post('/login', async (req, res) => {
         subscriptionPlan: lab.subscriptionPlan,
         subscriptionStatus: lab.subscriptionStatus,
         approvalStatus: lab.approvalStatus,
-        trialEndsAt: lab.trialEndsAt
+        trialEndsAt: lab.trialEndsAt,
+        subscriptionEndsAt: lab.subscriptionEndsAt
       };
     }
 
@@ -541,14 +612,27 @@ router.post('/test-email', authenticateToken, sendTestEmailHandler);
 router.post('/test-email1', authenticateToken, sendTestEmailHandler);
 
 
-// List all users (SuperAdmin only)
+// List users
+// - SuperAdmin/Admin: all users
+// - LabAdmin with labId: users from their own lab only
 router.get('/users', authenticateToken, async (req, res) => {
   try {
-    if (!req.user || (req.user.role !== 'SuperAdmin' && req.user.role !== 'Admin')) {
-      return res.status(403).json({ message: 'Only SuperAdmin/Admin can view users' });
+    const actor = req.user;
+    if (!actor) {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-    const users = await User.find({}).sort({ createdAt: -1 });
-    res.json({ users, total: users.length });
+
+    if (actor.role === 'SuperAdmin' || actor.role === 'Admin') {
+      const users = await User.find({}).sort({ createdAt: -1 });
+      return res.json({ users, total: users.length });
+    }
+
+    if (actor.role === 'LabAdmin' && actor.labId) {
+      const users = await User.find({ labId: actor.labId }).sort({ createdAt: -1 });
+      return res.json({ users, total: users.length });
+    }
+
+    return res.status(403).json({ message: 'Access denied. Only SuperAdmin/Admin or LabAdmin can view users.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -650,6 +734,36 @@ router.put('/users/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'User updated', user: userDoc, emailSent: typeof emailSent !== 'undefined' ? !!emailSent : undefined });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Update a user's route access within the same lab (LabAdmin/Admin)
+router.patch('/users/:id/routes', authenticateToken, async (req, res) => {
+  try {
+    const actor = req.user;
+    if (!actor || !(actor.role === 'LabAdmin' || actor.role === 'Admin') || !actor.labId) {
+      return res.status(403).json({ message: 'Only Lab Admin/Admin with lab context can update route access' });
+    }
+
+    const { id } = req.params;
+    const userDoc = await User.findById(id);
+    if (!userDoc) return res.status(404).json({ message: 'User not found' });
+
+    if (!userDoc.labId || String(userDoc.labId) !== String(actor.labId)) {
+      return res.status(403).json({ message: 'You can only manage users from your own lab' });
+    }
+
+    const { allowedRoutes } = req.body || {};
+    if (!Array.isArray(allowedRoutes)) {
+      return res.status(400).json({ message: 'allowedRoutes must be an array of route strings' });
+    }
+
+    userDoc.allowedRoutes = allowedRoutes.filter(r => typeof r === 'string');
+    await userDoc.save();
+
+    return res.json({ message: 'User route access updated', user: userDoc });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 });
 

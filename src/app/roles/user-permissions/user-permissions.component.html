@@ -26,14 +26,14 @@
     <!-- Component Access by Section (routes) -->
     <div class="groups" style="margin-top: 12px;">
       <div class="group" *ngFor="let sec of routeSections">
-        <div class="group-title">
-          {{ sec.title }}
-          <label style="float:right; font-weight: normal; font-size: 12px;">
-            <input type="checkbox" [checked]="areAllRoutesChecked(sec)"
-                   (change)="toggleAllRoutes(sec, $any($event.target).checked)" />
-            Select All
-          </label>
-        </div>
+	        <div class="group-title">
+	          <span class="group-title-text">{{ sec.title }}</span>
+	          <label class="select-all">
+	            <input type="checkbox" [checked]="areAllRoutesChecked(sec)"
+	                   (change)="toggleAllRoutes(sec, $any($event.target).checked)" />
+	            <span>Select all</span>
+	          </label>
+	        </div>
         <div class="items">
           <div class="item" *ngFor="let ch of sec.children">
             <input type="checkbox"

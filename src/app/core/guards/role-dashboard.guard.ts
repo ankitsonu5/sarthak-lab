@@ -30,15 +30,18 @@ export class RoleDashboardGuard implements CanActivate {
         const expectedRole = route.data['expectedRole'];
         const currentPath = route.routeConfig?.path;
 
+        // Roles that can access pathology dashboard
+        const pathologyRoles = ['Pathology', 'LabAdmin', 'Technician', 'Receptionist', 'Doctor'];
+
         // If user is trying to access dashboard without specific role requirement
         if (currentPath === '' && !expectedRole) {
           console.log('🔄 Redirecting to role-specific dashboard');
           // Use replaceUrl to prevent caching issues
-          if (user.role === 'Pathology') {
+          if (pathologyRoles.includes(user.role)) {
             this.router.navigate(['/dashboard/pathology'], { replaceUrl: true });
             return false;
           } else if (user.role === 'SuperAdmin') {
-            this.router.navigate(['/roles/super-admin'], { replaceUrl: true });
+            this.router.navigate(['/super-admin/dashboard'], { replaceUrl: true });
             return false;
           } else if (user.role === 'Admin') {
             this.router.navigate(['/dashboard/admin'], { replaceUrl: true });
@@ -50,13 +53,22 @@ export class RoleDashboardGuard implements CanActivate {
         }
 
         // If specific role is expected, check if user has that role
+        // For Pathology dashboard, allow multiple roles (LabAdmin, Technician, Receptionist, Doctor, Pathology)
+        const pathologyAllowedRoles = ['Pathology', 'LabAdmin', 'Technician', 'Receptionist', 'Doctor'];
+
+        if (expectedRole === 'Pathology' && pathologyAllowedRoles.includes(user.role)) {
+          // Allow these roles to access pathology dashboard
+          console.log('✅ Access granted for pathology dashboard - role:', user.role);
+          return true;
+        }
+
         if (expectedRole && user.role !== expectedRole) {
           console.log(`❌ Role mismatch. Expected: ${expectedRole}, Got: ${user.role}`);
           // Use replaceUrl to prevent caching and navigation history issues
-          if (user.role === 'Pathology') {
+          if (pathologyAllowedRoles.includes(user.role)) {
             this.router.navigate(['/dashboard/pathology'], { replaceUrl: true });
           } else if (user.role === 'SuperAdmin') {
-            this.router.navigate(['/roles/super-admin'], { replaceUrl: true });
+            this.router.navigate(['/super-admin/dashboard'], { replaceUrl: true });
           } else if (user.role === 'Admin') {
             this.router.navigate(['/dashboard/admin'], { replaceUrl: true });
           } else if (user.role === 'Pharmacy') {

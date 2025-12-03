@@ -8,7 +8,7 @@
 
 <!-- Notification Menu -->
 <mat-menu #notificationMenu="matMenu">
-  <ng-container *ngIf="notifications?.length; else noNotifs">
+  <ng-container *ngIf="notifications.length; else noNotifs">
     <button mat-menu-item *ngFor="let n of notifications | slice:0:7" (click)="openNotification(n)">
       <mat-icon>{{ getNotificationIcon(n) }}</mat-icon>
       <div class="ml-2" style="display:flex;flex-direction:column;">

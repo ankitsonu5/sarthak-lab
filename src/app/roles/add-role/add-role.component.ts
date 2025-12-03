@@ -32,7 +32,8 @@ export class AddRoleComponent {
   successTitle = '🎉 User Created Successfully!';
   successMessage = 'User saved successfully.';
   showRecordExistsModal = false;
-  recordExistsMessage = '';
+	  recordExistsMessage = '';
+	  currentUserRole: string | null = null;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -42,8 +43,12 @@ export class AddRoleComponent {
     Admin: ['Manage users', 'Manage doctors/patients/appointments', 'View all data', 'Manage system settings'],
     Doctor: ['View patients & appointments', 'Create prescriptions/reports', 'Update appointments'],
     Patient: ['View own appointments/reports/prescriptions', 'Update own profile'],
-    Pathology: ['Manage pathology', 'Create lab reports', 'Generate lab invoices'],
-
+	    Pathology: ['Manage pathology', 'Create lab reports', 'Generate lab invoices'],
+	    LabAdmin: ['Manage lab staff', 'Configure lab settings', 'Access all lab modules'],
+	    Technician: ['Perform tests', 'Update lab results'],
+	    Receptionist: ['Register patients', 'Schedule appointments', 'Manage front-desk billing'],
+	    Pharmacy: ['Manage medicines', 'Handle pharmacy billing'],
+	
   };
 
   // Map sidebar routes -> permission keys (subset; extend as needed)
@@ -87,6 +92,8 @@ export class AddRoleComponent {
     '/pathology-module/all-reports': 'manage_reports',
     '/pathology-module/reports-records': 'manage_reports',
     '/pathology-module/test-summary': 'manage_reports',
+	    // Subscription
+	    '/pathology/my-subscription': 'manage_subscription',
 
     // Reporting
 
@@ -96,15 +103,17 @@ export class AddRoleComponent {
   availableComponents: Array<{ section: string; label: string; route: string; perm?: string; selected: boolean }> = [];
 
 
-  constructor(
-    private fb: FormBuilder,
-    private rolesService: RolesService,
-    private auth: Auth,
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-    private alert: AlertService
-  ) {
-    this.form = this.fb.group({
+	  constructor(
+	    private fb: FormBuilder,
+	    private rolesService: RolesService,
+	    private auth: Auth,
+	    private router: Router,
+	    private cdr: ChangeDetectorRef,
+	    private alert: AlertService
+	  ) {
+	    const me = this.auth.getCurrentUser();
+	    this.currentUserRole = me?.role || null;
+	    this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       firstName: [''],
       lastName: [''],
@@ -160,20 +169,23 @@ export class AddRoleComponent {
         { label: 'Reports Records', route: '/pathology-module/reports-records' },
         { label: 'Test Summary', route: '/pathology-module/test-summary' },
       ]},
+	      { title: 'Subscription', children: [
+	        { label: 'My Subscription', route: '/pathology/my-subscription' }
+	      ]},
 
     ];
 
     // Role-based filtering similar to sidebar.ts
     const roleNorm = String(role || '').trim();
     let visible = allSections.slice();
-    if (roleNorm === 'SuperAdmin') {
-      const hide = ['Reception', 'IPD', 'Cash Receipt', 'Pathology'];
+	    if (roleNorm === 'SuperAdmin') {
+	      const hide = ['Reception', 'IPD', 'Cash Receipt', 'Pathology'];
       visible = allSections.filter(s => !hide.includes(s.title));
     } else if (roleNorm === 'Admin') {
       visible = allSections
         .filter(s => s.title !== 'Pathology' && s.title !== 'Data' && s.title !== 'Role Assignment');
     } else if (roleNorm === 'Pathology') {
-      visible = allSections.filter(s => ['Setup','Pathology'].includes(s.title));
+	      visible = allSections.filter(s => ['Setup','Pathology','Subscription'].includes(s.title));
     }
 
 

@@ -28,6 +28,17 @@ export class RolesService {
   private apiUrl = `${environment.apiUrl}/auth`;
   constructor(private http: HttpClient) {}
 
+	  private getCurrentUserRole(): string | null {
+	    try {
+	      const raw = localStorage.getItem('user');
+	      if (!raw) return null;
+	      const parsed = JSON.parse(raw);
+	      return parsed?.role || null;
+	    } catch {
+	      return null;
+	    }
+	  }
+
   // Fetch users; try secure endpoint first, then fall back to public users-open if needed.
   getUsers(nocache = true): Observable<{ users: AppUser[]; total: number }> {
     const params = nocache ? new HttpParams().set('_', Date.now()) : (undefined as any);
@@ -45,10 +56,24 @@ export class RolesService {
     );
   }
 
-  // Update an existing user (SuperAdmin only)
-  updateUser(id: string, update: Partial<AppUser & { password?: string }>): Observable<{ message: string; user: AppUser }>{
-    return this.http.put<{ message: string; user: AppUser }>(`${this.apiUrl}/users/${id}`, update);
-  }
+	  // Update an existing user
+	  // - SuperAdmin: full update via PUT /users/:id
+	  // - LabAdmin/Admin: only route access (allowedRoutes) via PATCH /users/:id/routes
+	  updateUser(id: string, update: Partial<AppUser & { password?: string }>): Observable<{ message: string; user: AppUser }>{
+	    const role = this.getCurrentUserRole();
+	    const keys = Object.keys(update || {});
+	    const onlyAllowedRoutes = keys.length === 1 && keys[0] === 'allowedRoutes';
+
+	    if (role && (role === 'LabAdmin' || role === 'Admin') && onlyAllowedRoutes) {
+	      const allowedRoutes = (update as any).allowedRoutes || [];
+	      return this.http.patch<{ message: string; user: AppUser }>(
+	        `${this.apiUrl}/users/${id}/routes`,
+	        { allowedRoutes }
+	      );
+	    }
+
+	    return this.http.put<{ message: string; user: AppUser }>(`${this.apiUrl}/users/${id}`, update);
+	  }
 
   // Set user active/inactive (SuperAdmin only)
   setUserActive(id: string, isActive: boolean): Observable<{ message: string; user: AppUser }>{

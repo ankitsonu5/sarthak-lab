@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['SuperAdmin', 'LabAdmin', 'Technician', 'Doctor', 'Receptionist', 'Admin', 'Patient', 'Pathology'],
+	    enum: ['SuperAdmin', 'LabAdmin', 'Technician', 'Doctor', 'Receptionist', 'Admin', 'Patient', 'Pathology', 'Pharmacy'],
     required: true
   },
   permissions: [{
@@ -169,7 +169,10 @@ const assignRolePermissions = (role) => {
     'Pathology': [
       'manage_pathology', 'view_lab_tests', 'create_lab_reports', 'manage_lab_results',
       'view_patients', 'manage_test_categories', 'generate_lab_invoices'
-    ]
+	    ],
+	    'Pharmacy': [
+	      'view_patients', 'manage_prescriptions', 'generate_lab_invoices'
+	    ]
   };
   return rolePermissions[role] || [];
 };

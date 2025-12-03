@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { SuperAdminDashboardComponent } from './dashboard/super-admin-dashboard.component';
 import { LabProfileComponent } from './lab-profile/lab-profile.component';
 import { UserManagementComponent } from './user-management/user-management.component';
+import { SubscriptionComponent } from './subscription/subscription.component';
+import { PlansManagementComponent } from './plans-management/plans-management.component';
 import { RoleGuard } from '../core/guards/role.guard';
 
 const routes: Routes = [
@@ -20,6 +22,18 @@ const routes: Routes = [
   {
     path: 'users',
     component: UserManagementComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['SuperAdmin'] }
+  },
+  {
+    path: 'subscriptions',
+    component: SubscriptionComponent,
+    canActivate: [RoleGuard],
+    data: { roles: ['SuperAdmin'] }
+  },
+  {
+    path: 'plans',
+    component: PlansManagementComponent,
     canActivate: [RoleGuard],
     data: { roles: ['SuperAdmin'] }
   },

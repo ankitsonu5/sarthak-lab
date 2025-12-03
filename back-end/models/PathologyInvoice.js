@@ -114,15 +114,15 @@ const pathologyInvoiceSchema = new mongoose.Schema({
     }]
   },
 
-  // Lab Information
+  // Lab Information (comes from lab settings / payload; keep defaults empty to avoid hardcoding)
   labInfo: {
     name: {
       type: String,
-      default: 'राजकीय आयुर्वेद महाविद्यालय एवं चिकित्सालय'
+      default: ''
     },
     address: {
       type: String,
-      default: 'चौकाघाट, वाराणसी'
+      default: ''
     }
   },
 

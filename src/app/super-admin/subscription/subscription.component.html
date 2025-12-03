@@ -1,0 +1,180 @@
+<div class="subscription-container">
+  <div class="page-header">
+    <div>
+      <h2>Subscription Management</h2>
+      <p class="subtitle">Manage lab subscriptions and trial periods</p>
+    </div>
+    <a routerLink="/super-admin/plans" class="btn-manage-plans">
+      <i class="fas fa-cog"></i> Manage Plans
+    </a>
+  </div>
+
+  <!-- Pricing Plans Section - Dynamic -->
+  <div class="pricing-plans" *ngIf="!plansLoading">
+    <div class="plan-card" *ngFor="let plan of plans" [style.borderColor]="plan.badgeColor">
+      <div class="plan-popular" *ngIf="plan.isPopular">⭐ Popular</div>
+      <div class="plan-offer-badge" *ngIf="plan.offerText">
+        {{ plan.offerText }} <span *ngIf="plan.discountPercent > 0">({{ plan.discountPercent }}% off)</span>
+      </div>
+      <div class="plan-header">
+        <h4>{{ plan.displayName }}</h4>
+        <div class="plan-price">
+          ₹{{ plan.priceMonthly | number }}
+          <span *ngIf="plan.trialDays > 0">/{{ plan.trialDays }} days</span>
+          <span *ngIf="plan.trialDays === 0">/month</span>
+        </div>
+      </div>
+      <ul class="plan-features">
+        <li *ngFor="let feature of plan.featureList">
+          <i class="fas fa-check"></i> {{ feature }}
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Plans Loading -->
+  <div class="plans-loading" *ngIf="plansLoading">
+    <i class="fas fa-spinner fa-spin"></i> Loading plans...
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card trial">
+      <div class="stat-icon"><i class="fas fa-hourglass-start"></i></div>
+      <div class="stat-info">
+        <h3>{{ totalTrialLabs }}</h3>
+        <p>Total Trial Labs</p>
+      </div>
+    </div>
+    <div class="stat-card warning">
+      <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-info">
+        <h3>{{ expiringTrialLabs }}</h3>
+        <p>Expiring Soon (≤3 days)</p>
+      </div>
+    </div>
+    <div class="stat-card danger">
+      <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+      <div class="stat-info">
+        <h3>{{ expiredTrialLabs }}</h3>
+        <p>Expired Trials</p>
+      </div>
+    </div>
+    <div class="stat-card success">
+      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <h3>{{ activePaidLabs }}</h3>
+        <p>Active Paid Labs</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Plan:</label>
+      <select [(ngModel)]="filterPlan" (change)="onFilterChange()">
+        <option value="all">All Plans</option>
+        <option value="trial">Trial</option>
+        <option value="basic">Basic</option>
+        <option value="premium">Premium</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="filterStatus" (change)="onFilterChange()">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="expiring">Expiring Soon</option>
+        <option value="expired">Expired</option>
+      </select>
+    </div>
+    <div class="filter-group search">
+      <label>Search:</label>
+      <input type="text" [(ngModel)]="searchQuery" (input)="onFilterChange()" 
+             placeholder="Search by name, code, email...">
+    </div>
+    <button class="btn btn-primary refresh-btn" (click)="loadSubscriptions()">
+      <i class="fas fa-sync-alt"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i> Loading subscriptions...
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Subscriptions Table -->
+  <div class="table-container" *ngIf="!loading && !error">
+    <table class="subscription-table">
+      <thead>
+        <tr>
+          <th>Lab Name</th>
+          <th>Lab Code</th>
+          <th>Email</th>
+          <th>Plan</th>
+          <th>Ends On</th>
+          <th>Days Left</th>
+          <th>Notification</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let lab of filteredLabs" [class.expiring]="lab.isExpiringSoon" [class.expired]="lab.daysLeft < 0">
+          <td>{{ lab.labName }}</td>
+          <td>{{ lab.labCode }}</td>
+          <td>{{ lab.email }}</td>
+          <td>
+            <span class="badge" [ngClass]="getPlanBadgeClass(lab.subscriptionPlan)">
+              {{ lab.subscriptionPlan | uppercase }}
+            </span>
+          </td>
+          <td>{{ formatDate((lab.subscriptionPlan === 'trial' ? lab.trialEndsAt : lab.subscriptionEndsAt) || '') }}</td>
+          <td [ngClass]="getDaysLeftClass(lab.daysLeft)">
+            <strong>
+              <span *ngIf="lab.daysLeft < 0">Expired {{ -lab.daysLeft }} days ago</span>
+              <span *ngIf="lab.daysLeft === 0">Expires Today!</span>
+              <span *ngIf="lab.daysLeft > 0">{{ lab.daysLeft }} days left</span>
+            </strong>
+          </td>
+          <td>
+            <span *ngIf="lab.notificationSent" class="text-success">
+              <i class="fas fa-check"></i> Sent
+            </span>
+            <span *ngIf="!lab.notificationSent" class="text-muted">
+              <i class="fas fa-minus"></i> Not sent
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="btn btn-sm btn-warning" (click)="sendTrialEndingNotification(lab)"
+                    *ngIf="lab.subscriptionPlan === 'trial' && !lab.notificationSent && lab.daysLeft <= 3"
+                    title="Send Trial Ending Notification">
+              <i class="fas fa-bell"></i> Notify
+            </button>
+            <button class="btn btn-sm btn-info" (click)="extendTrial(lab)"
+                    *ngIf="lab.subscriptionPlan === 'trial'"
+                    title="Extend Trial">
+              <i class="fas fa-plus"></i> Extend
+            </button>
+            <button class="btn btn-sm btn-success" (click)="upgradeToPaid(lab)"
+                    title="Upgrade to Paid Plan">
+              <i class="fas fa-arrow-up"></i> Upgrade
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="filteredLabs.length === 0">
+      <i class="fas fa-inbox"></i>
+      <p>No subscriptions found matching your filters.</p>
+    </div>
+  </div>
+</div>
+

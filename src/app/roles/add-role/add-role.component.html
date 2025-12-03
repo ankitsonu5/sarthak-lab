@@ -92,13 +92,30 @@
                 <span class="label-icon">🎭</span>
                 Role *
               </label>
-              <select class="form-input form-select" formControlName="role" (change)="onRoleChange($any($event.target).value)">
-                <option value="" disabled>Select a role</option>
-                <option value="Admin">👨‍💼 Admin</option>
-                <option value="Pathology">🔬 Pathology</option>
-                <option value="Pharmacy">💊 Pharmacy</option>
-                <option value="SuperAdmin">⚡ SuperAdmin</option>
-              </select>
+	              <select class="form-input form-select" formControlName="role" (change)="onRoleChange($any($event.target).value)">
+	                <option value="" disabled>Select a role</option>
+	                <!-- SuperAdmin can create any role -->
+	                <ng-container *ngIf="currentUserRole === 'SuperAdmin'; else labOwnerRoleOptions">
+	                  <option value="Admin">👨‍💼 Admin</option>
+	                  <option value="LabAdmin">🧪 Lab Admin</option>
+	                  <option value="Pathology">🔬 Pathology</option>
+	                  <option value="Technician">🧪 Technician</option>
+	                  <option value="Receptionist">☎ Receptionist</option>
+	                  <option value="Doctor">👨‍⚕️ Doctor</option>
+	                  <option value="Pharmacy">💊 Pharmacy</option>
+	                  <option value="SuperAdmin">⚡ SuperAdmin</option>
+	                </ng-container>
+	                <!-- Lab Admin/Admin can create only staff roles under their lab -->
+	                <ng-template #labOwnerRoleOptions>
+	                  <ng-container *ngIf="currentUserRole === 'Admin' || currentUserRole === 'LabAdmin'">
+	                    <option value="Pathology">🔬 Pathology</option>
+	                    <option value="Technician">🧪 Technician</option>
+	                    <option value="Receptionist">☎ Receptionist</option>
+	                    <option value="Doctor">👨‍⚕️ Doctor</option>
+	                    <option value="Pharmacy">💊 Pharmacy</option>
+	                  </ng-container>
+	                </ng-template>
+	              </select>
             </div>
 
             <div class="form-field">

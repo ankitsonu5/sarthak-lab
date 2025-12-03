@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Lab = require('../models/Lab');
 const router = express.Router();
 
 // Lightweight JWT auth (same as smtp-settings)
@@ -85,6 +86,53 @@ router.post('/me/lab', requireAuth, async (req, res) => {
     return res.json({ message: 'Lab settings saved', lab: me.labSettings });
   } catch (e) {
     console.error('Lab settings save error:', e);
+    return res.status(500).json({ message: e.message });
+  }
+});
+
+// Get current lab's subscription info (for LabAdmin dashboard)
+router.get('/subscription-info', requireAuth, async (req, res) => {
+  try {
+    const me = await User.findById(req.user.userId).lean();
+    if (!me) return res.status(404).json({ message: 'User not found' });
+
+    // Get lab by user's labCode
+    if (!me.labCode) {
+      return res.json({
+        success: true,
+        subscription: {
+          subscriptionPlan: 'trial',
+          trialEndsAt: null,
+          subscriptionStatus: 'pending'
+        }
+      });
+    }
+
+    const lab = await Lab.findOne({ labCode: me.labCode }).lean();
+    if (!lab) {
+      return res.json({
+        success: true,
+        subscription: {
+          subscriptionPlan: 'trial',
+          trialEndsAt: null,
+          subscriptionStatus: 'pending'
+        }
+      });
+    }
+
+    return res.json({
+      success: true,
+      subscription: {
+        subscriptionPlan: lab.subscriptionPlan || 'trial',
+        subscriptionStatus: lab.subscriptionStatus || 'pending',
+        trialEndsAt: lab.trialEndsAt,
+        subscriptionEndsAt: lab.subscriptionEndsAt,
+        labName: lab.labName,
+        labCode: lab.labCode
+      }
+    });
+  } catch (e) {
+    console.error('Error getting subscription info:', e);
     return res.status(500).json({ message: e.message });
   }
 });
