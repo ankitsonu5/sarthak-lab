@@ -50,14 +50,12 @@ router.post('/register', authenticateToken, async (req, res) => {
     const roleNorm = String(role || '').trim();
     const phoneNorm = String(phone || '').trim();
 
-    // When lab admin is creating users, restrict target roles to lab staff only
+    // Lab Admin can create any custom role EXCEPT SuperAdmin or LabAdmin
     if (isLabAdmin) {
-      // Lab owner (LabAdmin/Admin) can create only lab-scoped staff users.
-      // This matches the options shown on the "Create New User" screen.
-      const allowedStaffRoles = ['Pathology', 'Technician', 'Receptionist', 'Doctor', 'Pharmacy'];
-      if (!allowedStaffRoles.includes(roleNorm)) {
+      const restrictedRoles = ['SuperAdmin', 'LabAdmin'];
+      if (restrictedRoles.includes(roleNorm)) {
         return res.status(403).json({
-          message: 'Lab Admin can only create staff users (Pathology, Technician, Receptionist, Doctor)'
+          message: 'Lab Admin cannot create SuperAdmin or LabAdmin accounts'
         });
       }
     }
@@ -141,21 +139,27 @@ router.post('/register', authenticateToken, async (req, res) => {
 
     console.log('✅ User saved to DB (legacy /register):', { id: user._id.toString(), email: user.email, role: user.role, labId: user.labId });
 
-    // For backward-compatibility we still send a credentials email here,
-    // but new UI should use /invite-user instead so that passwords are not emailed.
+    // Send welcome email with login credentials
     const plainPassword = password; // Received in req body
-    const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
-    const hospitalNameEn = 'Sarthak Diagnostic Network';
-    const emailSubject = `${hospitalNameEn} - Account Created & Role Assigned`;
+    const labName = lab ? lab.name : 'Sarthak Diagnostic Network';
+    const labNameHi = lab && lab.nameHindi ? lab.nameHindi : 'सार्थक डायग्नोस्टिक नेटवर्क';
+    const emailSubject = `${labName} - आपका अकाउंट बना दिया गया है | Account Created`;
     const emailHtml = `
-      <div style=\"font-family:Arial,sans-serif;font-size:14px;color:#111\">
-        <p>Dear ${firstName || 'User'},</p>
-        <p>Your access to <b>${hospitalNameHi}</b> (${hospitalNameEn}) has been created.</p>
-        <p><strong>Assigned Role:</strong> ${role}</p>
-        <p><strong>Login ID (Email):</strong> ${email}<br/>
-           <strong>Password:</strong> ${plainPassword}</p>
-        <p>For security, please change your password after first login.</p>
-        <p>Regards,<br/>${(req.user && req.user.email) ? req.user.email : 'HMS System'}</p>
+      <div style="font-family:Arial,sans-serif;font-size:14px;color:#111;max-width:600px;margin:0 auto;padding:20px;border:1px solid #ddd;border-radius:8px;">
+        <h2 style="color:#2196F3;text-align:center;">${labNameHi}</h2>
+        <h3 style="text-align:center;color:#666;">${labName}</h3>
+        <hr style="border:1px solid #eee;margin:20px 0;">
+        <p>प्रिय ${firstName || 'User'},</p>
+        <p>आपका अकाउंट <b>${labName}</b> में बना दिया गया है।</p>
+        <div style="background:#f5f5f5;padding:15px;border-radius:5px;margin:15px 0;">
+          <p style="margin:5px 0;"><strong>👤 Role (भूमिका):</strong> ${role}</p>
+          <p style="margin:5px 0;"><strong>📧 Login ID (Email):</strong> ${email}</p>
+          <p style="margin:5px 0;"><strong>🔑 Password:</strong> ${plainPassword}</p>
+        </div>
+        <p style="color:#f44336;"><strong>⚠️ सुरक्षा के लिए, पहली बार लॉगिन करने के बाद अपना पासवर्ड बदल लें।</strong></p>
+        <p style="color:#666;">For security, please change your password after first login.</p>
+        <hr style="border:1px solid #eee;margin:20px 0;">
+        <p style="color:#888;font-size:12px;">Regards,<br/>${labName} Team</p>
       </div>`;
     const adminDoc = await User.findById(req.user.userId);
     let emailSent = false;
@@ -163,11 +167,11 @@ router.post('/register', authenticateToken, async (req, res) => {
       emailSent = await sendEmail({
         to: email,
         subject: emailSubject,
-        text: `Hospital: ${hospitalNameEn}\nRole: ${role}\nLogin: ${email}\nPassword: ${plainPassword}`,
+        text: `Lab: ${labName}\nRole: ${role}\nLogin Email: ${email}\nPassword: ${plainPassword}\n\nकृपया पहली बार लॉगिन करने के बाद अपना पासवर्ड बदल लें।`,
         html: emailHtml,
         fromUser: adminDoc
       });
-      console.log(emailSent ? '📧 Welcome email sent (or queued)' : '📭 Welcome email not sent (SMTP not configured).');
+      console.log(emailSent ? '📧 Welcome email sent to ' + email : '📭 Welcome email not sent (SMTP not configured).');
     } catch (err) {
       console.warn('📭 Email send skipped:', err?.message || err);
       emailSent = false;
@@ -227,12 +231,12 @@ router.post('/invite-user', authenticateToken, async (req, res) => {
       return res.status(400).json({ message: 'Email and role are required' });
     }
 
-    // When lab admin is creating users, restrict target roles to lab staff only
+    // Lab Admin can create any custom role EXCEPT SuperAdmin or LabAdmin
     if (isLabAdmin) {
-      const allowedStaffRoles = ['Pathology', 'Technician', 'Receptionist', 'Doctor', 'Pharmacy'];
-      if (!allowedStaffRoles.includes(roleNorm)) {
+      const restrictedRoles = ['SuperAdmin', 'LabAdmin'];
+      if (restrictedRoles.includes(roleNorm)) {
         return res.status(403).json({
-          message: 'Lab Admin can only create staff users (Pathology, Technician, Receptionist, Doctor, Pharmacy)'
+          message: 'Lab Admin cannot create SuperAdmin or LabAdmin accounts'
         });
       }
     }

@@ -7,6 +7,7 @@
     <a href="#numbering">Numbering</a>
     <a href="#notes">Notes</a>
     <a href="#layout">Layout</a>
+    <a href="#roles">Roles</a>
     <a href="#preview">Preview</a>
   </div>
 
@@ -120,6 +121,58 @@
           <div class="self-reg-qr">
             <img [src]="selfRegQrUrl" alt="Self-Register QR" width="140" height="140"/>
           </div>
+        </div>
+      </div>
+
+      <!-- Custom Role Management Section -->
+      <div class="role-management-section">
+        <h2 id="roles">Custom Roles / कस्टम रोल</h2>
+        <p class="muted">Create custom roles for your lab staff. These roles will appear in the user creation dropdown.</p>
+
+        <!-- Success/Error Messages -->
+        <div class="role-message success" *ngIf="roleSuccess">✓ {{ roleSuccess }}</div>
+        <div class="role-message error" *ngIf="roleError">✗ {{ roleError }}</div>
+
+        <!-- Add New Role Form -->
+        <div class="add-role-form">
+          <div class="row two">
+            <div>
+              <label>Role Name (English) *</label>
+              <input type="text" [(ngModel)]="newRoleName" [ngModelOptions]="{standalone: true}" placeholder="e.g., Technician, Accountant, Sample Collector"/>
+            </div>
+            <div>
+              <label>Display Label (Hindi/English)</label>
+              <input type="text" [(ngModel)]="newRoleLabel" [ngModelOptions]="{standalone: true}" placeholder="e.g., टेक्नीशियन, अकाउंटेंट"/>
+            </div>
+          </div>
+          <div class="row">
+            <label>Description (Optional)</label>
+            <input type="text" [(ngModel)]="newRoleDescription" [ngModelOptions]="{standalone: true}" placeholder="Brief description of this role"/>
+          </div>
+          <button class="btn primary" type="button" (click)="addRole()" [disabled]="roleLoading || !newRoleName.trim()">
+            {{ roleLoading ? 'Adding...' : '+ Add Role' }}
+          </button>
+        </div>
+
+        <!-- Existing Roles List -->
+        <div class="roles-list" *ngIf="customRoles.length > 0">
+          <h3>Your Custom Roles ({{ customRoles.length }})</h3>
+          <div class="role-item" *ngFor="let role of customRoles">
+            <div class="role-info">
+              <span class="role-name">{{ role.name }}</span>
+              <span class="role-label" *ngIf="role.label && role.label !== role.name">({{ role.label }})</span>
+              <span class="role-desc" *ngIf="role.description">- {{ role.description }}</span>
+            </div>
+            <button class="btn danger small" type="button" (click)="deleteRole(role.name)" [disabled]="roleLoading">Delete</button>
+          </div>
+        </div>
+
+        <div class="no-roles" *ngIf="customRoles.length === 0 && !roleLoading">
+          <p class="muted">No custom roles created yet. Add your first role above!</p>
+        </div>
+
+        <div class="loading" *ngIf="roleLoading && customRoles.length === 0">
+          Loading roles...
         </div>
       </div>
     </form>
