@@ -12,15 +12,15 @@
       <p style="margin: 0;">
         Your lab has been registered with code: <strong>{{ registeredLabCode }}</strong>
       </p>
-      <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: #0f5132;">
-        ✅ Your 30-day FREE trial has started!
-      </p>
-      <p style="margin: 0.5rem 0 0 0;">
-        You can login now and start using the platform immediately.
-      </p>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #666;">
-        Redirecting to login page in 5 seconds...
-      </p>
+	      <p style="margin: 0.5rem 0 0 0; font-weight: 600; color: #0f5132;">
+	        ✅ Your FREE trial has started!
+	      </p>
+	      <p style="margin: 0.5rem 0 0 0;">
+	        We have sent a link on your Admin Email to create password and activate your Lab Admin login.
+	      </p>
+	      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #666;">
+	        Please set your password from that email and then login. Redirecting to login page in 5 seconds...
+	      </p>
     </div>
 
     <!-- Registration Form -->
@@ -183,34 +183,8 @@
         </div>
 
         <div class="form-row">
-          <div class="form-group">
-            <label for="password">Password *</label>
-            <input
-              id="password"
-              type="password"
-              formControlName="password"
-              placeholder="Min 6 characters"
-              class="form-input"
-            >
-            <div *ngIf="password?.touched && password?.hasError('minlength')" class="error-message">
-              Password must be at least 6 characters
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password *</label>
-            <input
-              id="confirmPassword"
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="Re-enter password"
-              class="form-input"
-            >
-            <div *ngIf="confirmPassword?.touched && confirmPassword?.hasError('passwordMismatch')" class="error-message">
-              Passwords do not match
-            </div>
-          </div>
-        </div>
+	          <!-- No password at registration time; Lab Admin will create password from email link -->
+	        </div>
       </div>
 
       <!-- Info Alert -->
@@ -219,11 +193,11 @@
         <br>
         • Your lab will be assigned a unique Lab Code
         <br>
-        • You'll get 14-day free trial
-        <br>
-        • Admin approval required before login
-        <br>
-        • You'll be notified via email once approved
+	        • You'll get free trial period
+	        <br>
+	        • A link will be sent to Admin Email to create password
+	        <br>
+	        • Use that email ID + password to login as Lab Admin
       </div>
 
       <!-- Error Message -->

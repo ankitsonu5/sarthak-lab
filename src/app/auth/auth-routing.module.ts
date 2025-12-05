@@ -5,6 +5,7 @@ import { Register } from './register/register';
 import { ForgotPassword } from './forgot-password/forgot-password';
 import { ResetPasswordComponent } from './reset-password/reset-password';
 import { LabRegisterComponent } from './lab-register/lab-register.component';
+import { CreatePasswordComponent } from './create-password/create-password';
 import { RoleGuard } from '../core/guards/role.guard';
 
 const routes: Routes = [
@@ -15,7 +16,8 @@ const routes: Routes = [
   // Only SuperAdmin can access user registration
   { path: 'register', component: Register, canActivate: [RoleGuard], data: { roles: ['SuperAdmin'] } },
   { path: 'forgot-password', component: ForgotPassword },
-  { path: 'reset-password', component: ResetPasswordComponent }
+	  { path: 'reset-password', component: ResetPasswordComponent },
+	  { path: 'create-password', component: CreatePasswordComponent }
 ];
 
 @NgModule({

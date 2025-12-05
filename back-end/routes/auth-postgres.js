@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const { query } = require('../config/postgres');
 const { generateToken, authMiddleware } = require('../middleware/auth');
+const { sendEmail } = require('../utils/mailer');
 
 /**
  * @route   POST /api/auth/login
@@ -185,13 +186,13 @@ router.post('/register', authMiddleware, async (req, res) => {
       });
     }
 
-    // Validate role
-    const allowedRoles = ['Technician', 'Doctor', 'Receptionist', 'LabAdmin'];
-    if (!allowedRoles.includes(role)) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid role. Allowed roles: ${allowedRoles.join(', ')}`
-      });
+    // Validate role: allow custom roles for LabAdmin/Admin, but reserve 'Admin' and 'SuperAdmin' for SuperAdmin only
+    if (!role || typeof role !== 'string' || !role.trim()) {
+      return res.status(400).json({ success: false, message: 'Invalid role' });
+    }
+    const roleNorm = String(role).trim();
+    if ((roleNorm === 'Admin' || roleNorm === 'SuperAdmin') && currentUser.role !== 'SuperAdmin') {
+      return res.status(403).json({ success: false, message: 'Only SuperAdmin can create Admin or SuperAdmin accounts' });
     }
 
     // Check if email already exists
@@ -239,9 +240,21 @@ router.post('/register', authMiddleware, async (req, res) => {
 
     console.log('✅ User created successfully:', newUser.email);
 
+    // Attempt to send welcome email with credentials (best-effort)
+    let emailSent = false;
+    try {
+      const subject = 'Your account has been created';
+      const text = `Hello ${newUser.first_name || ''},\n\nAn account has been created for you at ${req.hostname}.\n\nLogin details:\nEmail: ${newUser.email}\nTemporary password: ${password || '(hidden)'}\n\nPlease change your password after first login.`;
+      emailSent = await sendEmail({ to: newUser.email, subject, text });
+    } catch (mailErr) {
+      console.error('❌ Failed to send registration email:', mailErr?.message || mailErr);
+      emailSent = false;
+    }
+
     res.status(201).json({
       success: true,
       message: 'User created successfully',
+      emailSent,
       user: {
         id: newUser.id,
         email: newUser.email,

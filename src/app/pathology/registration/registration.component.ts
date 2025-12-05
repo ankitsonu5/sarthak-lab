@@ -135,9 +135,8 @@ export class PathologyRegistrationComponent implements OnInit {
     }
   ];
 
-  selectedCategory: string = '';
-  selectedTests: SelectedTest[] = [];
-  totalAmount = 0;
+	selectedTests: SelectedTest[] = [];
+	totalAmount = 0;
 
   // Registration Mode
   registrationMode: string = 'General';
@@ -398,17 +397,7 @@ export class PathologyRegistrationComponent implements OnInit {
     });
   }
 
-  selectCategory(category: string): void {
-    this.selectedCategory = category;
-    console.log('📂 Selected category:', category);
-  }
-
-  getTestsByCategory(categoryCode: string): PathologyTest[] {
-    const category = this.testCategories.find(cat => cat.code === categoryCode);
-    return category ? category.tests : [];
-  }
-
-  // Extract category name from category object or string
+	  // Extract category name from category object or string
   extractCategoryName(category: any): string {
     console.log('🔍 Extracting category name from:', category);
 
@@ -1088,7 +1077,6 @@ export class PathologyRegistrationComponent implements OnInit {
   resetForm(): void {
     this.registrationForm.reset();
     this.selectedTests = [];
-    this.selectedCategory = '';
     this.totalAmount = 0;
     this.showSuccessMessage = false;
     this.receiptFound = false;

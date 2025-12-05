@@ -190,6 +190,53 @@
     </div>
   </div>
 
+  <!-- Self Registration / Home Collection Requests -->
+  <div class="self-reg-section">
+    <div class="dashboard-card self-reg-card">
+      <div class="card-header">
+        <h3>
+          <i class="fa-solid fa-house-medical"></i>
+          Home Collection Requests
+          <span class="live-indicator pulse">●</span>
+        </h3>
+        <span class="activity-count home-count">{{ selfRegistrations.length }}</span>
+      </div>
+      <div class="card-content">
+        <div class="self-reg-list" *ngIf="selfRegistrations.length > 0">
+          <div class="self-reg-item" *ngFor="let sr of selfRegistrations | slice:0:5; let i = index" [class.new-entry]="i < 2">
+            <div class="patient-avatar">
+              <span>{{ (sr.firstName?.charAt(0) || 'P') | uppercase }}</span>
+            </div>
+            <div class="patient-info">
+              <div class="patient-name">{{ (sr.firstName || '') + ' ' + (sr.lastName || '') }}</div>
+              <div class="patient-details">
+                <span class="detail-item">📞 {{ sr.phone || 'N/A' }}</span>
+                <span class="detail-item" *ngIf="sr.age">🎂 {{ sr.age }} yrs</span>
+                <span class="detail-item" *ngIf="sr.gender">{{ sr.gender === 'M' ? '👨' : sr.gender === 'F' ? '👩' : '🧑' }}</span>
+              </div>
+              <div class="patient-address" *ngIf="sr.address || sr.city">
+                📍 {{ sr.address || '' }} {{ sr.city ? ', ' + sr.city : '' }}
+              </div>
+              <div class="preferred-time" *ngIf="sr.preferredDate || sr.preferredTime">
+                📅 {{ sr.preferredDate | date:'dd MMM yyyy' }} {{ sr.preferredTime || '' }}
+              </div>
+            </div>
+            <div class="item-badges">
+              <span class="collection-badge home" *ngIf="sr.homeCollection">🏠 HOME</span>
+              <span class="collection-badge lab" *ngIf="!sr.homeCollection">🏥 LAB</span>
+              <span class="time-badge">{{ sr.createdAt | date:'h:mm a' }}</span>
+              <span class="new-badge" *ngIf="i < 2">NEW</span>
+            </div>
+          </div>
+        </div>
+        <div class="no-data" *ngIf="selfRegistrations.length === 0">
+          <span class="empty-icon">📭</span>
+          <span>No pending home collection requests</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Tables Row -->
   <div class="tables-section">
     <!-- Latest Tests Table -->

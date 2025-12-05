@@ -468,6 +468,144 @@
   margin: 0 auto;
 }
 
+/* Self Registration / Home Collection Card */
+.self-reg-section {
+  padding: 0 30px 20px 30px;
+  background: #f8fafc;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.self-reg-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 2px solid #86efac;
+}
+
+.self-reg-card .card-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-count {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.activity-count.home-count {
+  background: rgba(34, 197, 94, 0.12);
+  color: #166534;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.live-indicator {
+  font-size: 11px;
+  margin-left: 4px;
+  color: #16a34a;
+}
+
+.live-indicator.pulse {
+  animation: livePulse 1.2s infinite ease-in-out;
+}
+
+@keyframes livePulse {
+  0% { opacity: 0.3; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.3; transform: scale(0.9); }
+}
+
+.self-reg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.self-reg-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.15s ease-out;
+}
+
+.self-reg-item:hover {
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.16);
+  transform: translateY(-1px);
+  border-color: #6ee7b7;
+}
+
+.self-reg-item.new-entry {
+  border-color: #22c55e;
+}
+
+.patient-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.patient-avatar span {
+  font-size: 16px;
+}
+
+.item-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: 12px;
+}
+
+.collection-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.collection-badge.home {
+  background: rgba(34, 197, 94, 0.15);
+  color: #166534;
+}
+
+.collection-badge.lab {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.time-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(15, 23, 42, 0.06);
+  color: #374151;
+}
+
+.self-reg-item .new-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #f0fdf4;
+  font-size: 10px;
+  font-weight: 700;
+}
+
 /* Dashboard Grid - Legacy (keeping for compatibility) */
 .dashboard-grid {
   display: grid;

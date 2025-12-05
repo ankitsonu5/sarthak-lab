@@ -105,17 +105,25 @@
 	                  <option value="Pharmacy">💊 Pharmacy</option>
 	                  <option value="SuperAdmin">⚡ SuperAdmin</option>
 	                </ng-container>
-	                <!-- Lab Admin/Admin can create only staff roles under their lab -->
-	                <ng-template #labOwnerRoleOptions>
-	                  <ng-container *ngIf="currentUserRole === 'Admin' || currentUserRole === 'LabAdmin'">
-	                    <option value="Pathology">🔬 Pathology</option>
-	                    <option value="Technician">🧪 Technician</option>
-	                    <option value="Receptionist">☎ Receptionist</option>
-	                    <option value="Doctor">👨‍⚕️ Doctor</option>
-	                    <option value="Pharmacy">💊 Pharmacy</option>
-	                  </ng-container>
-	                </ng-template>
+                  <!-- Lab Admin/Admin can create staff roles; also show as fallback when currentUserRole missing -->
+                  <ng-template #labOwnerRoleOptions>
+                    <option value="Pathology">🔬 Pathology</option>
+                    <option value="Technician">🧪 Technician</option>
+                    <option value="Receptionist">☎ Receptionist</option>
+                    <option value="Doctor">👨‍⚕️ Doctor</option>
+                    <option value="Pharmacy">💊 Pharmacy</option>
+                    <option value="__custom">➕ Create custom role</option>
+                  </ng-template>
 	              </select>
+                      <!-- Custom role input for LabAdmin/Admin when they choose to create custom roles -->
+                      <div class="form-field" *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && form.get('role')?.value === '__custom'">
+                        <label class="field-label">
+                          <span class="label-icon">✍️</span>
+                          Custom Role Name *
+                        </label>
+                        <input class="form-input" type="text" formControlName="customRole" placeholder="e.g. InventoryManager or LabAssistant" />
+                        <span class="field-hint">Provide a custom role identifier (no spaces preferred)</span>
+                      </div>
             </div>
 
             <div class="form-field">

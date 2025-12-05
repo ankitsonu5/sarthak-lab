@@ -9,6 +9,7 @@ import { PathologyInvoiceService } from '../../services/pathology-invoice.servic
 import { environment } from '../../../environments/environment';
 import { Chart, ChartConfiguration, ChartType, registerables } from 'chart.js';
 import { LabNameService } from '../../core/services/lab-name.service';
+import { SelfRegistrationService } from '../../shared/services/self-registration.service';
 
 interface LabStatistic {
   title: string;
@@ -102,6 +103,8 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
   recentRegistrations: any[] = [];
   recentReports: any[] = [];
   activeTab = 'registrations';
+	// Self-registrations / Home collection requests for this lab
+	selfRegistrations: any[] = [];
 
   // Calendar
   calendarDays: any[] = [];
@@ -113,8 +116,9 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private pathologyInvoiceService: PathologyInvoiceService,
     private dataRefresh: DataRefreshService,
-    private cdr: ChangeDetectorRef,
-    private labNameService: LabNameService
+		private cdr: ChangeDetectorRef,
+		private labNameService: LabNameService,
+		private selfRegService: SelfRegistrationService
   ) {
     try { Chart.register(...registerables); } catch {}
   }
@@ -223,7 +227,7 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
 
     // Auto-refresh when pathology booking/report changes happen
     this.subscription.add(
-      this.dataRefresh.onEntityRefresh('pathology').subscribe(() => this.loadDashboardData())
+			this.dataRefresh.onEntityRefresh('pathology').subscribe(() => this.loadDashboardData())
     );
   }
 
@@ -243,10 +247,83 @@ export class PathologyDashboardComponent implements OnInit, OnDestroy {
     // Load pathology reports
     this.loadPathologyReports().then(() => this.cdr.detectChanges());
 
+		// Load self-registrations / home collection requests for this lab
+		this.loadSelfRegistrations();
+
     // 🚫 DISABLED: Time update interval to prevent infinite change detection loops
     console.log('🚫 PATHOLOGY DASHBOARD: Time interval disabled to prevent infinite loops');
     // Time interval removed - manual time update only
   }
+
+	/**
+	 * Resolve current labCode from authenticated user or localStorage.
+	 * Prefer lab.labCode when available (multi-tenant SaaS style).
+	 */
+	private getCurrentLabCode(): string | null {
+		try {
+			const u: any = this.authService.getCurrentUser();
+			if (u?.lab?.['labCode']) return String(u.lab['labCode']);
+			const userStr = localStorage.getItem('user');
+			if (userStr) {
+				const parsed = JSON.parse(userStr);
+				if (parsed?.lab?.['labCode']) return String(parsed.lab['labCode']);
+			}
+		} catch {}
+		return null;
+	}
+
+	/**
+	 * Resolve current labId from authenticated user or localStorage.
+	 */
+	private getCurrentLabId(): string | null {
+		try {
+			const u: any = this.authService.getCurrentUser();
+			if (u?.lab?.['_id']) return String(u.lab['_id']);
+			if (u?.labId) return String(u.labId);
+			const userStr = localStorage.getItem('user');
+			if (userStr) {
+				const parsed = JSON.parse(userStr);
+				if (parsed?.lab?.['_id']) return String(parsed.lab['_id']);
+				if (parsed?.labId) return String(parsed.labId);
+			}
+		} catch {}
+		return null;
+	}
+
+	/**
+	 * Load recent self-registrations / home collection requests for this lab.
+	 * Mirrors the behaviour of the SuperAdmin dashboard card but scoped to current lab.
+	 */
+	private loadSelfRegistrations(): void {
+		try {
+			const labCode = this.getCurrentLabCode();
+			const labId = this.getCurrentLabId();
+
+			if (labCode) {
+				this.selfRegService.listRecentByCode(labCode).subscribe({
+					next: (res) => {
+						const items: any[] = (res as any)?.items || [];
+						this.selfRegistrations = items.slice(0, 5);
+						try { this.cdr.detectChanges(); } catch {}
+					},
+					error: () => { this.selfRegistrations = []; }
+				});
+			} else if (labId) {
+				this.selfRegService.listRecent(labId).subscribe({
+					next: (res) => {
+						const items: any[] = (res as any)?.items || [];
+						this.selfRegistrations = items.slice(0, 5);
+						try { this.cdr.detectChanges(); } catch {}
+					},
+					error: () => { this.selfRegistrations = []; }
+				});
+			} else {
+				this.selfRegistrations = [];
+			}
+		} catch {
+			this.selfRegistrations = [];
+		}
+	}
 
   loadPathologyInvoices(): void {
     console.log('🧪 Loading PATHOLOGY category invoices...');

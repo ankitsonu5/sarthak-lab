@@ -118,7 +118,8 @@ export class AddRoleComponent {
       firstName: [''],
       lastName: [''],
       phone: ['', Validators.required], // mandatory per preference
-      role: ['', Validators.required], // force selection
+        role: ['', Validators.required], // force selection
+        customRole: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       username: [''] // will be auto from email before submit
     });
@@ -260,6 +261,16 @@ export class AddRoleComponent {
     this.saving = true;
     const vals = this.form.value as any;
     this.tempPassword = vals.password || '';
+    // If a custom role was specified, use it instead of the placeholder
+    if (vals.role === '__custom') {
+      if (!vals.customRole || !String(vals.customRole).trim()) {
+        this.saving = false;
+        this.alert.showError('Validation', 'Please provide a name for the custom role');
+        this.cdr.detectChanges();
+        return;
+      }
+      vals.role = String(vals.customRole).trim();
+    }
     const emailLocal = (vals.email ? String(vals.email).toLowerCase().split('@')[0] : '').trim();
 
     // Force fixed usernames for specific roles as per preference

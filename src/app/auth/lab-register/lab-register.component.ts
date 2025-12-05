@@ -41,23 +41,8 @@ export class LabRegisterComponent implements OnInit {
       adminFirstName: ['', Validators.required],
       adminLastName: [''],
       adminEmail: ['', [Validators.required, Validators.email]],
-      adminPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, {
-      validators: this.passwordMatchValidator
-    });
-  }
-
-  passwordMatchValidator(form: FormGroup) {
-    const password = form.get('password');
-    const confirmPassword = form.get('confirmPassword');
-
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      confirmPassword.setErrors({ passwordMismatch: true });
-      return { passwordMismatch: true };
-    }
-    return null;
+	      adminPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]]
+	    });
   }
 
   onSubmit(): void {
@@ -66,8 +51,7 @@ export class LabRegisterComponent implements OnInit {
       this.error = '';
       this.conflict = null;
 
-      const formData = this.registerForm.value;
-      delete formData.confirmPassword; // Remove confirm password
+	      const formData = this.registerForm.value;
 
       const apiUrl = `${environment.apiUrl || 'http://localhost:3000/api'}/lab-management/register`;
 
@@ -133,8 +117,6 @@ export class LabRegisterComponent implements OnInit {
   get adminFirstName() { return this.registerForm.get('adminFirstName'); }
   get adminLastName() { return this.registerForm.get('adminLastName'); }
   get adminEmail() { return this.registerForm.get('adminEmail'); }
-  get adminPhone() { return this.registerForm.get('adminPhone'); }
-  get password() { return this.registerForm.get('password'); }
-  get confirmPassword() { return this.registerForm.get('confirmPassword'); }
+	  get adminPhone() { return this.registerForm.get('adminPhone'); }
 }
 

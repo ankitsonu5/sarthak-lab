@@ -6,6 +6,7 @@ const Patient = require('../models/Patient');
 const PathologyRegistration = require('../models/PathologyRegistration');
 const { authenticateToken } = require('../middlewares/auth');
 const { sendEmail } = require('../utils/mailer');
+const crypto = require('crypto');
 
 /**
  * @route   POST /api/lab-management/register
@@ -26,17 +27,16 @@ router.post('/register', async (req, res) => {
       adminFirstName,
       adminLastName,
       adminEmail,
-      adminPhone,
-      password
+	      adminPhone
     } = req.body;
 
     console.log('🏥 New lab registration request:', { labName, email });
 
-    // Validation
-    if (!labName || !email || !password || !adminFirstName || !adminEmail) {
+	    // Validation (password is no longer required - admin will set via email link)
+	    if (!labName || !email || !adminFirstName || !adminEmail) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: labName, email, password, adminFirstName, adminEmail'
+	        message: 'Required fields: labName, email, adminFirstName, adminEmail'
       });
     }
 
@@ -114,28 +114,65 @@ router.post('/register', async (req, res) => {
       '/pathology/my-subscription'
     ];
 
-    // Create lab admin user
-    const adminUser = new User({
-      labId: lab._id,
-      username: adminEmail.split('@')[0],
-      email: adminEmail.toLowerCase(),
-      password, // Will be hashed by pre-save hook
-      role: 'LabAdmin',
-      firstName: adminFirstName,
-      lastName: adminLastName || '',
-      phone: adminPhone || phone,
-      isActive: true,
-      allowedRoutes: defaultLabAdminRoutes
-    });
+	    // Create lab admin user with invite-style password setup
+	    const tempPassword = crypto.randomBytes(32).toString('hex');
+	    const inviteToken = crypto.randomBytes(32).toString('hex');
+	    const inviteExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
 
-    await adminUser.save();
+	    const adminUser = new User({
+	      labId: lab._id,
+	      username: adminEmail.split('@')[0],
+	      email: adminEmail.toLowerCase(),
+	      password: tempPassword, // Hashed by pre-save hook; never shown to user
+	      role: 'LabAdmin',
+	      firstName: adminFirstName,
+	      lastName: adminLastName || '',
+	      phone: adminPhone || phone,
+	      isActive: false, // Activate only after they create their own password
+	      allowedRoutes: defaultLabAdminRoutes,
+	      passwordResetToken: inviteToken,
+	      passwordResetExpires: inviteExpires
+	    });
+
+	    await adminUser.save();
+
+	    // Send email to Lab Admin with create-password link
+	    const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
+	    const hospitalNameEn = 'Sarthak Diagnostic Network';
+	    const baseUrl = process.env.PUBLIC_URL || process.env.FRONTEND_URL || 'http://localhost:4200';
+	    const inviteUrl = `${baseUrl}/auth/create-password?token=${inviteToken}`;
+
+	    const emailSubject = `${hospitalNameEn} - Lab Registered & Admin Access`;
+	    const emailHtml = `
+	      <div style="font-family:Arial,sans-serif;font-size:14px;color:#111">
+	        <p>Dear ${adminFirstName || 'Admin'},</p>
+	        <p>Your lab <b>${lab.labName}</b> has been registered on <b>${hospitalNameHi}</b> (${hospitalNameEn}).</p>
+	        <p><strong>Lab Code:</strong> ${lab.labCode}</p>
+	        <p><strong>Login ID (Email):</strong> ${adminEmail.toLowerCase()}</p>
+	        <p>To activate your Lab Admin account and create your password, please click the link below:</p>
+	        <p><a href="${inviteUrl}">Create your password</a></p>
+	        <p>This link will expire in 24 hours for your security.</p>
+	        <p>Regards,<br/>${hospitalNameEn} Team</p>
+	      </div>`;
+
+	    try {
+	      const emailSent = await sendEmail({
+	        to: adminEmail.toLowerCase(),
+	        subject: emailSubject,
+	        text: `Your lab ${lab.labName} has been registered. Use this link to create your password (valid 24 hours): ${inviteUrl}`,
+	        html: emailHtml
+	      });
+	      console.log(emailSent ? '📧 Lab admin invite email sent (or queued).' : '📭 Lab admin invite email not sent (SMTP not configured).');
+	    } catch (err) {
+	      console.warn('📭 Lab admin invite email send skipped:', err?.message || err);
+	    }
 
     console.log('✅ Lab registered successfully:', labCode);
     console.log('🎉 Auto-approved with 10-day free trial');
 
-    res.status(201).json({
-      success: true,
-      message: 'Lab registered successfully! Your 10-day free trial has started. You can login now.',
+	    res.status(201).json({
+	      success: true,
+	      message: 'Lab registered successfully! Your 10-day free trial has started. A link has been emailed to the admin to create their password.',
       lab: {
         id: lab._id,
         labCode: lab.labCode,

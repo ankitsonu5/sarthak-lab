@@ -6,6 +6,7 @@ import { Register } from './register/register';
 import { ForgotPassword } from './forgot-password/forgot-password';
 import { ResetPasswordComponent } from './reset-password/reset-password';
 import { LabRegisterComponent } from './lab-register/lab-register.component';
+	import { CreatePasswordComponent } from './create-password/create-password';
 
 @NgModule({
   declarations: [
@@ -13,7 +14,8 @@ import { LabRegisterComponent } from './lab-register/lab-register.component';
     Register,
     ForgotPassword,
     ResetPasswordComponent,
-    LabRegisterComponent
+	    LabRegisterComponent,
+	    CreatePasswordComponent
   ],
   imports: [
     SharedModule,

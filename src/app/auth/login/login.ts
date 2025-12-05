@@ -69,8 +69,15 @@ export class Login implements OnInit {
       this.router.navigate(['/dashboard/pathology']);
     } else if (user?.role === 'Pathology') {
       this.router.navigate(['/dashboard/pathology']);
-    } else if (user?.role === 'Admin') {
-      this.router.navigate(['/dashboard/admin']);
+	    } else if (user?.role === 'Admin') {
+	      // Lab-scoped Admins (with lab info) should see the same lab dashboard
+	      // as LabAdmin and other lab users. Only non-lab Admins (if any) go to
+	      // the legacy admin dashboard.
+	      if ((user as any)?.lab || (user as any)?.labId) {
+	        this.router.navigate(['/dashboard/pathology']);
+	      } else {
+	        this.router.navigate(['/dashboard/admin']);
+	      }
     } else if (user?.role === 'Pharmacy') {
       this.router.navigate(['/pharmacy']);
     } else {

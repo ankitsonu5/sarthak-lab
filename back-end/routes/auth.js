@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Lab = require('../models/Lab');
 const { sendEmail } = require('../utils/mailer');
@@ -23,7 +24,9 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Register new user
+// Register new user (legacy direct-create with temp password)
+// NOTE: New UI should prefer /auth/invite-user which sends an email invite
+//       and lets the user create their own password.
 // - SuperAdmin: can create any user (global)
 // - LabAdmin/Admin: can create ONLY staff users within their own lab, and only if subscription is valid
 router.post('/register', authenticateToken, async (req, res) => {
@@ -136,10 +139,11 @@ router.post('/register', authenticateToken, async (req, res) => {
       await lab.save();
     }
 
-    console.log('✅ User saved to DB:', { id: user._id.toString(), email: user.email, role: user.role, labId: user.labId });
+    console.log('✅ User saved to DB (legacy /register):', { id: user._id.toString(), email: user.email, role: user.role, labId: user.labId });
 
-    // Try to send credentials to the user's email (best-effort)
-    const plainPassword = password; // We received plain password in req body
+    // For backward-compatibility we still send a credentials email here,
+    // but new UI should use /invite-user instead so that passwords are not emailed.
+    const plainPassword = password; // Received in req body
     const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
     const hospitalNameEn = 'Sarthak Diagnostic Network';
     const emailSubject = `${hospitalNameEn} - Account Created & Role Assigned`;
@@ -153,18 +157,23 @@ router.post('/register', authenticateToken, async (req, res) => {
         <p>For security, please change your password after first login.</p>
         <p>Regards,<br/>${(req.user && req.user.email) ? req.user.email : 'HMS System'}</p>
       </div>`;
-    // Will use SuperAdmin's SMTP if configured, else global env
     const adminDoc = await User.findById(req.user.userId);
     let emailSent = false;
     try {
-      emailSent = await sendEmail({ to: email, subject: emailSubject, text: `Hospital: ${hospitalNameEn}\nRole: ${role}\nLogin: ${email}\nPassword: ${plainPassword}`, html: emailHtml, fromUser: adminDoc });
+      emailSent = await sendEmail({
+        to: email,
+        subject: emailSubject,
+        text: `Hospital: ${hospitalNameEn}\nRole: ${role}\nLogin: ${email}\nPassword: ${plainPassword}`,
+        html: emailHtml,
+        fromUser: adminDoc
+      });
       console.log(emailSent ? '📧 Welcome email sent (or queued)' : '📭 Welcome email not sent (SMTP not configured).');
     } catch (err) {
       console.warn('📭 Email send skipped:', err?.message || err);
       emailSent = false;
     }
 
-    // Generate JWT token
+    // For /register we keep returning token (legacy behaviour)
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       (process.env.JWT_SECRET || 'hospital_management_secret_key_2025_secure_token'),
@@ -186,6 +195,183 @@ router.post('/register', authenticateToken, async (req, res) => {
     }
     console.error('❌ Register error:', error);
     res.status(500).json({ message: error.message });
+  }
+});
+
+// ================= INVITE-BASED USER CREATION =================
+// New flow: SuperAdmin / LabAdmin create a user without setting a password.
+// The system generates a secure token and emails an invite link so the
+// invited user can create their own password (similar to SaaS products).
+router.post('/invite-user', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const actor = req.user;
+    const isSuperAdmin = actor.role === 'SuperAdmin';
+    const isLabAdmin = !isSuperAdmin && (actor.role === 'LabAdmin' || actor.role === 'Admin');
+
+    if (!isSuperAdmin && !isLabAdmin) {
+      return res.status(403).json({ message: 'Only SuperAdmin or Lab Admin can invite users' });
+    }
+
+    const { username, email, role, firstName, lastName, phone } = req.body;
+
+    // Normalize
+    const emailNorm = String(email || '').trim().toLowerCase();
+    const roleNorm = String(role || '').trim();
+    const phoneNorm = String(phone || '').trim();
+
+    if (!emailNorm || !roleNorm) {
+      return res.status(400).json({ message: 'Email and role are required' });
+    }
+
+    // When lab admin is creating users, restrict target roles to lab staff only
+    if (isLabAdmin) {
+      const allowedStaffRoles = ['Pathology', 'Technician', 'Receptionist', 'Doctor', 'Pharmacy'];
+      if (!allowedStaffRoles.includes(roleNorm)) {
+        return res.status(403).json({
+          message: 'Lab Admin can only create staff users (Pathology, Technician, Receptionist, Doctor, Pharmacy)'
+        });
+      }
+    }
+
+    // Check if user already exists by email or phone
+    const orConds = [{ email: emailNorm }];
+    if (phoneNorm) orConds.push({ phone: phoneNorm });
+
+    const existingUser = await User.findOne({ $or: orConds });
+    if (existingUser) {
+      const which = existingUser.email === emailNorm ? 'email' : (existingUser.phone === phoneNorm ? 'phone' : 'email/phone');
+      console.warn('🚫 Duplicate invite attempt:', { emailNorm, phoneNorm, matchedBy: which, existingId: existingUser._id?.toString() });
+      return res.status(400).json({ message: `User with this ${which} already exists` });
+    }
+
+    // Auto username by role if needed
+    let finalUsername = (username || '').trim();
+    const roleLc = roleNorm.toLowerCase();
+    if (!finalUsername) {
+      if (roleLc === 'admin') finalUsername = 'admin';
+      else if (roleLc === 'pathology') finalUsername = 'pathology';
+      else if (roleLc === 'pharmacy') finalUsername = 'pharmacy';
+      else finalUsername = (emailNorm.split('@')[0] || 'user').trim();
+    }
+
+    let lab = null;
+
+    // For LabAdmin/Admin: enforce lab scope & subscription before creating staff users
+    if (isLabAdmin) {
+      if (!actor.labId) {
+        return res.status(400).json({ message: 'Your account is not linked to any lab. Cannot invite users.' });
+      }
+
+      lab = await Lab.findById(actor.labId);
+      if (!lab) {
+        return res.status(404).json({ message: 'Lab not found for your account' });
+      }
+
+      // Enforce subscription validity and user count limits
+      if (!lab.hasValidSubscription()) {
+        return res.status(403).json({
+          message: 'Your lab subscription is not active. Please renew or upgrade to add more users.',
+          subscriptionStatus: lab.subscriptionStatus,
+          subscriptionPlan: lab.subscriptionPlan,
+          trialEndsAt: lab.trialEndsAt,
+          subscriptionEndsAt: lab.subscriptionEndsAt
+        });
+      }
+
+      if (!lab.canAddUser()) {
+        const details = lab.planDetails || {};
+        return res.status(403).json({
+          message: 'Your current subscription plan user limit has been reached. Please upgrade your plan to add more users.',
+          subscriptionPlan: lab.subscriptionPlan,
+          subscriptionStatus: lab.subscriptionStatus,
+          totalUsers: lab.totalUsers,
+          maxUsers: details.maxUsers
+        });
+      }
+    }
+
+    // Generate a random placeholder password (never shown to user)
+    const tempPassword = crypto.randomBytes(32).toString('hex');
+
+    // Generate an invite token reusing the reset-password mechanism
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
+
+    // Create new user (SuperAdmin: global, LabAdmin/Admin: lab-scoped)
+    const user = new User({
+      username: finalUsername,
+      email: emailNorm,
+      password: tempPassword,
+      role: roleNorm,
+      firstName,
+      lastName,
+      phone: phoneNorm,
+      labId: isLabAdmin && lab ? lab._id : null,
+      passwordResetToken: token,
+      passwordResetExpires: tokenExpires
+    });
+
+    await user.save();
+
+    // If created under a lab, increment lab user count
+    if (isLabAdmin && lab) {
+      lab.totalUsers = (lab.totalUsers || 0) + 1;
+      await lab.save();
+    }
+
+    console.log('✅ Invite user created:', { id: user._id.toString(), email: user.email, role: user.role, labId: user.labId });
+
+    const hospitalNameHi = 'सार्थक डायग्नोस्टिक नेटवर्क';
+    const hospitalNameEn = 'Sarthak Diagnostic Network';
+    const baseUrl = process.env.PUBLIC_URL || '';
+    const inviteUrl = `${baseUrl}/auth/create-password?token=${token}`;
+
+    const emailSubject = `${hospitalNameEn} - You have been invited`;
+    const emailHtml = `
+      <div style=\"font-family:Arial,sans-serif;font-size:14px;color:#111\">
+        <p>Dear ${firstName || 'User'},</p>
+        <p>You have been invited to access <b>${hospitalNameHi}</b> (${hospitalNameEn}).</p>
+        <p><strong>Assigned Role:</strong> ${roleNorm}</p>
+        <p><strong>Login ID (Email):</strong> ${emailNorm}</p>
+        <p>To activate your account and create your password, please click the link below:</p>
+        <p><a href="${inviteUrl}">Create your password</a></p>
+        <p>This link will expire in 24 hours for your security.</p>
+        <p>Regards,<br/>${(req.user && req.user.email) ? req.user.email : 'HMS System'}</p>
+      </div>`;
+
+    const adminDoc = await User.findById(req.user.userId);
+    let emailSent = false;
+    try {
+      emailSent = await sendEmail({
+        to: emailNorm,
+        subject: emailSubject,
+        text: `You have been invited to ${hospitalNameEn}. Use this link to create your password (valid 24 hours): ${inviteUrl}`,
+        html: emailHtml,
+        fromUser: adminDoc
+      });
+      console.log(emailSent ? '📧 Invite email sent (or queued)' : '📭 Invite email not sent (SMTP not configured).');
+    } catch (err) {
+      console.warn('📭 Invite email send skipped:', err?.message || err);
+      emailSent = false;
+    }
+
+    return res.status(201).json({
+      message: 'User invited successfully',
+      user,
+      emailSent: typeof emailSent !== 'undefined' ? !!emailSent : undefined
+    });
+  } catch (error) {
+    if (error && (error.code === 11000 || error.name === 'MongoServerError')) {
+      const fields = Object.keys(error.keyPattern || {});
+      const which = fields.includes('email') ? 'email' : (fields.includes('phone') ? 'phone' : 'email/phone');
+      return res.status(400).json({ message: `User with this ${which} already exists` });
+    }
+    console.error('❌ Invite user error:', error);
+    return res.status(500).json({ message: error.message });
   }
 });
 
@@ -507,7 +693,7 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// Reset password with token
+// Reset password with token (used by "Forgot password")
 router.post('/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -521,6 +707,27 @@ router.post('/reset-password', async (req, res) => {
     res.json({ message: 'Password reset successfully' });
   } catch (error) {
     console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Create password with invite token (first-time setup for invited users)
+router.post('/create-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ message: 'Invalid request' });
+    const user = await User.findOne({ passwordResetToken: token, passwordResetExpires: { $gt: new Date() } });
+    if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    user.isActive = true; // ensure invited user is active after setting password
+    await user.save();
+
+    res.json({ message: 'Password created successfully. You can now log in.' });
+  } catch (error) {
+    console.error('Create password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

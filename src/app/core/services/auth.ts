@@ -203,6 +203,10 @@ export class Auth {
     return this.http.post<{ message: string }>(`${this.apiUrl}/reset-password`, { token, newPassword });
   }
 
+	  createPassword(token: string, newPassword: string) {
+	    return this.http.post<{ message: string }>(`${this.apiUrl}/create-password`, { token, newPassword });
+	  }
+
   // Request SuperAdmin approval via email
   requestPasswordResetApproval(email: string) {
     return this.http.post<{ message: string }>(`${this.apiUrl}/request-reset-approval`, { email });
