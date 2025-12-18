@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="header-info">
-        <h1 class="page-title">✨ Create New User</h1>
+        <h1 class="page-title">✨Create New User</h1>
         <p class="page-subtitle">Add a new team member to your lab</p>
       </div>
     </div>
@@ -105,14 +105,20 @@
 	                  <option value="Pharmacy">💊 Pharmacy</option>
 	                  <option value="SuperAdmin">⚡ SuperAdmin</option>
 	                </ng-container>
-                  <!-- Lab Admin/Admin can create staff roles; also show as fallback when currentUserRole missing -->
+                  <!-- Lab Admin/Admin: Show ONLY dynamic custom roles from API -->
                   <ng-template #labOwnerRoleOptions>
-                    <option value="Pathology">🔬 Pathology</option>
-                    <option value="Technician">🧪 Technician</option>
-                    <option value="Receptionist">☎ Receptionist</option>
-                    <option value="Doctor">👨‍⚕️ Doctor</option>
-                    <option value="Pharmacy">💊 Pharmacy</option>
-                    <option value="__custom">➕ Create custom role</option>
+                    <!-- Loading state -->
+                    <option *ngIf="rolesLoading" value="" disabled>Loading roles...</option>
+                    <!-- Dynamic custom roles from API -->
+                    <option *ngFor="let role of customRoles" [value]="role.name">
+                      🏷️ {{ role.label || role.name }}
+                    </option>
+                    <!-- Option to create new custom role inline -->
+                    <option value="__custom">➕ Create new role</option>
+                    <!-- Message if no roles exist -->
+                    <option *ngIf="!rolesLoading && customRoles.length === 0" value="" disabled>
+                      No roles found. Create roles in Lab Setup first.
+                    </option>
                   </ng-template>
 	              </select>
                       <!-- Custom role input for LabAdmin/Admin when they choose to create custom roles -->
@@ -121,9 +127,13 @@
                           <span class="label-icon">✍️</span>
                           Custom Role Name *
                         </label>
-                        <input class="form-input" type="text" formControlName="customRole" placeholder="e.g. InventoryManager or LabAssistant" />
-                        <span class="field-hint">Provide a custom role identifier (no spaces preferred)</span>
+                        <input class="form-input" type="text" formControlName="customRole" placeholder="e.g. Accountant, Sample Collector" />
+                        <span class="field-hint">This role will be created. Go to Lab Setup to manage roles.</span>
                       </div>
+                      <!-- Hint to create roles in Lab Setup -->
+                      <span class="field-hint" *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && customRoles.length === 0 && !rolesLoading">
+                        💡 Tip: Create custom roles in <a routerLink="/setup/lab-setup" style="color:#2563eb;">Lab Setup</a> first
+                      </span>
             </div>
 
             <div class="form-field">

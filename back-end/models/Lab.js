@@ -143,6 +143,16 @@ const labSchema = new mongoose.Schema({
     default: Date.now
   },
   
+  // Custom Roles - Lab Admin can create unlimited custom roles
+  customRoles: [{
+    name: { type: String, required: true, trim: true },
+    label: { type: String, trim: true }, // Display label (Hindi/English)
+    description: { type: String, trim: true },
+    permissions: [{ type: String }], // Optional default permissions for this role
+    isActive: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+  }],
+
   // Settings
   settings: {
     printLayout: {
@@ -217,10 +227,9 @@ labSchema.virtual('planDetails').get(function() {
 });
 
 // Method to check if lab can add more users
+// NOTE: No limit on users - Lab Admin can create unlimited users
 labSchema.methods.canAddUser = function() {
-  const maxUsers = this.planDetails.maxUsers;
-  if (maxUsers === -1) return true; // unlimited
-  return this.totalUsers < maxUsers;
+  return true; // Unlimited users allowed
 };
 
 // Method to check if lab can add more patients

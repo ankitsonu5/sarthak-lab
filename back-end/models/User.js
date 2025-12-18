@@ -27,8 +27,9 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-	    enum: ['SuperAdmin', 'LabAdmin', 'Technician', 'Doctor', 'Receptionist', 'Admin', 'Patient', 'Pathology', 'Pharmacy'],
-    required: true
+    required: true,
+    trim: true
+    // No enum restriction - Lab Admin can create any custom role
   },
   permissions: [{
     type: String,

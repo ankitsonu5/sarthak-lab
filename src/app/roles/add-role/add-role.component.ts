@@ -1,22 +1,23 @@
-import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ViewChild, ElementRef, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RolesService, AppUser } from '../services/roles.service';
 import { Auth } from '../../core/services/auth';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { SuccessAlertComponent } from '../../shared/components/success-alert/success-alert.component';
 import { RecordExistsModalComponent } from '../../shared/components/record-exists-modal/record-exists-modal.component';
 import { AlertService } from '../../shared/services/alert.service';
+import { LabSettingsService, CustomRole } from '../../setup/lab-setup/lab-settings.service';
 
 @Component({
   selector: 'app-add-role',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, SuccessAlertComponent, RecordExistsModalComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, SuccessAlertComponent, RecordExistsModalComponent, RouterLink],
   templateUrl: './add-role.component.html',
   styleUrls: ['./add-role.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddRoleComponent {
+export class AddRoleComponent implements OnInit {
   form!: FormGroup;
   saving = false;
   message = '';
@@ -34,6 +35,10 @@ export class AddRoleComponent {
   showRecordExistsModal = false;
 	  recordExistsMessage = '';
 	  currentUserRole: string | null = null;
+
+  // Dynamic roles from API
+  customRoles: CustomRole[] = [];
+  rolesLoading = false;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -109,7 +114,8 @@ export class AddRoleComponent {
 	    private auth: Auth,
 	    private router: Router,
 	    private cdr: ChangeDetectorRef,
-	    private alert: AlertService
+	    private alert: AlertService,
+	    private labSettingsService: LabSettingsService
 	  ) {
 	    const me = this.auth.getCurrentUser();
 	    this.currentUserRole = me?.role || null;
@@ -122,6 +128,29 @@ export class AddRoleComponent {
         customRole: [''],
       password: ['', [Validators.required, Validators.minLength(6)]],
       username: [''] // will be auto from email before submit
+    });
+  }
+
+  ngOnInit(): void {
+    // Load custom roles from API for Lab Admin
+    if (this.currentUserRole === 'LabAdmin' || this.currentUserRole === 'Admin') {
+      this.loadCustomRoles();
+    }
+  }
+
+  loadCustomRoles(): void {
+    this.rolesLoading = true;
+    this.labSettingsService.getRoles().subscribe({
+      next: (res) => {
+        this.customRoles = res.roles || [];
+        this.rolesLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.customRoles = [];
+        this.rolesLoading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 

@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { LabSettingsService, LabSettings } from './lab-settings.service';
+import { LabSettingsService, LabSettings, CustomRole } from './lab-settings.service';
 
 @Component({
   selector: 'app-lab-setup',
@@ -25,6 +25,15 @@ export class LabSetupComponent implements OnInit {
   selfRegLink: string = '';
   selfRegQrUrl: string = '';
   copyDone = false;
+
+  // Custom Role Management
+  customRoles: CustomRole[] = [];
+  newRoleName = '';
+  newRoleLabel = '';
+  newRoleDescription = '';
+  roleLoading = false;
+  roleError: string | null = null;
+  roleSuccess: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -65,7 +74,8 @@ export class LabSetupComponent implements OnInit {
       error: () => { this.cdr.markForCheck(); }
     });
 
-
+    // Load custom roles
+    this.loadRoles();
   }
 
   onFileChange(ev: Event, controlName: 'logoDataUrl' | 'sideLogoDataUrl' | 'signatureDataUrl') {
@@ -146,6 +156,79 @@ export class LabSetupComponent implements OnInit {
         this.saving = false;
         this.statusMessage = err?.error?.message || 'Save failed';
         this.statusError = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // =====================================================
+  // CUSTOM ROLE MANAGEMENT
+  // =====================================================
+
+  loadRoles() {
+    this.roleLoading = true;
+    this.roleError = null;
+    this.api.getRoles().subscribe({
+      next: (res) => {
+        this.customRoles = res.roles || [];
+        this.roleLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.roleError = err?.error?.message || 'Failed to load roles';
+        this.roleLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  addRole() {
+    if (!this.newRoleName.trim()) {
+      this.roleError = 'Role name is required';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.roleLoading = true;
+    this.roleError = null;
+    this.roleSuccess = null;
+
+    this.api.createRole({
+      name: this.newRoleName.trim(),
+      label: this.newRoleLabel.trim() || this.newRoleName.trim(),
+      description: this.newRoleDescription.trim()
+    }).subscribe({
+      next: (res) => {
+        this.roleSuccess = `Role '${res.role.name}' created successfully!`;
+        this.newRoleName = '';
+        this.newRoleLabel = '';
+        this.newRoleDescription = '';
+        this.loadRoles();
+        setTimeout(() => { this.roleSuccess = null; this.cdr.markForCheck(); }, 3000);
+      },
+      error: (err) => {
+        this.roleError = err?.error?.message || 'Failed to create role';
+        this.roleLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  deleteRole(roleName: string) {
+    if (!confirm(`Are you sure you want to delete role '${roleName}'?`)) return;
+
+    this.roleLoading = true;
+    this.roleError = null;
+
+    this.api.deleteRole(roleName).subscribe({
+      next: () => {
+        this.roleSuccess = `Role '${roleName}' deleted successfully!`;
+        this.loadRoles();
+        setTimeout(() => { this.roleSuccess = null; this.cdr.markForCheck(); }, 3000);
+      },
+      error: (err) => {
+        this.roleError = err?.error?.message || 'Failed to delete role';
+        this.roleLoading = false;
         this.cdr.markForCheck();
       }
     });

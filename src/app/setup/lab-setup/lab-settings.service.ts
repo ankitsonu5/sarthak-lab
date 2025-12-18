@@ -3,6 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface CustomRole {
+  name: string;
+  label?: string;
+  description?: string;
+  permissions?: string[];
+  isActive?: boolean;
+  createdAt?: Date;
+}
+
 export interface LabSettings {
   labName?: string;
   shortName?: string;
@@ -89,6 +98,32 @@ export class LabSettingsService {
         }
       })
     );
+  }
+
+  // =====================================================
+  // CUSTOM ROLE MANAGEMENT
+  // =====================================================
+
+  private rolesBase = `${environment.apiUrl}/settings/roles`;
+
+  /** Get all custom roles for the lab */
+  getRoles(): Observable<{ success: boolean; roles: CustomRole[] }> {
+    return this.http.get<{ success: boolean; roles: CustomRole[] }>(this.rolesBase);
+  }
+
+  /** Create a new custom role */
+  createRole(role: Partial<CustomRole>): Observable<{ success: boolean; message: string; role: CustomRole }> {
+    return this.http.post<{ success: boolean; message: string; role: CustomRole }>(this.rolesBase, role);
+  }
+
+  /** Update an existing custom role */
+  updateRole(roleName: string, updates: Partial<CustomRole>): Observable<{ success: boolean; message: string; role: CustomRole }> {
+    return this.http.put<{ success: boolean; message: string; role: CustomRole }>(`${this.rolesBase}/${encodeURIComponent(roleName)}`, updates);
+  }
+
+  /** Delete a custom role */
+  deleteRole(roleName: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.rolesBase}/${encodeURIComponent(roleName)}`);
   }
 }
 
