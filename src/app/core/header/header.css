@@ -1,77 +1,163 @@
-.brand-logo{
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  object-fit: contain;
-  background: #fff;
-  padding: 2px;
-}
-.brand-name{ white-space: nowrap; }
-
-/* Fixed Notification Wrapper */
-.fixed-notification-wrapper {
+/* Glass Header Container */
+.app-header-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
-  padding: 12px 24px;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
 }
 
-/* Golden Bell Container */
-.notification-bell-container {
+/* Left: Welcome / Breadcrumb */
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-greeting {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.header-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  /* Dark Blue */
+}
+
+/* Right: Tools */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Search Bar (Visual) */
+.header-search {
   position: relative;
+  display: none;
+}
+
+@media(min-width: 768px) {
+  .header-search {
+    display: block;
+  }
+}
+
+.search-input {
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 0.6rem 1rem 0.6rem 2.5rem !important;
+  font-size: 0.9rem;
+  width: 250px;
+  transition: all 0.2s;
+  color: #1e293b;
+}
+
+.search-input:focus {
+  background: white;
+  width: 300px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+  border: 1px solid #bfdbfe;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+/* Notification Bell */
+.notification-btn {
+  position: relative;
+  background: none;
+  border: none;
   cursor: pointer;
   padding: 8px;
-  transition: transform 0.2s ease;
+  border-radius: 50%;
+  transition: all 0.2s;
+  color: #64748b;
 }
 
-.notification-bell-container:hover {
-  transform: scale(1.1);
+.notification-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
-/* Bell Emoji - Golden Style */
-.bell-emoji {
-  font-size: 36px;
-  display: block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: transform 0.1s ease;
+.bell-icon {
+  font-size: 1.3rem;
 }
 
-/* Ringing Animation */
-@keyframes ring {
-  0% { transform: rotate(0deg); }
-  10% { transform: rotate(15deg); }
-  20% { transform: rotate(-15deg); }
-  30% { transform: rotate(12deg); }
-  40% { transform: rotate(-12deg); }
-  50% { transform: rotate(8deg); }
-  60% { transform: rotate(-8deg); }
-  70% { transform: rotate(4deg); }
-  80% { transform: rotate(-4deg); }
-  90% { transform: rotate(2deg); }
-  100% { transform: rotate(0deg); }
-}
-
-.bell-emoji.ringing {
-  animation: ring 1s ease-in-out infinite;
-  transform-origin: 50% 0%;
-}
-
-/* Notification Count Badge */
-.notification-count {
+.badge-count {
   position: absolute;
-  top: 0;
-  right: 0;
-  background: #ef4444;
+  top: 4px;
+  right: 4px;
+  background: #3b82f6;
   color: white;
-  font-size: 12px;
+  font-size: 0.7rem;
   font-weight: 700;
-  min-width: 20px;
-  height: 20px;
-  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5);
   border: 2px solid white;
+}
+
+/* User Profile Preview */
+.user-profile-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.user-profile-preview:hover {
+  background: #f1f5f9;
+}
+
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #dbeafe;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #1e3a8a;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #64748b;
 }

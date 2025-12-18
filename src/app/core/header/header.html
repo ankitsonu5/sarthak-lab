@@ -1,29 +1,74 @@
-<!-- Fixed Notification Bell - Golden Bell with Animation -->
-<div class="fixed-notification-wrapper">
-  <div class="notification-bell-container" [class.has-notifications]="unreadCount > 0" [matMenuTriggerFor]="notificationMenu" (menuOpened)="onNotificationMenuOpened()">
-    <span class="bell-emoji" [class.ringing]="unreadCount > 0">🔔</span>
-    <span class="notification-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+<header class="app-header-container">
+  <!-- Left Section: Greeting/Context -->
+  <div class="header-left">
+    <span class="header-greeting">Welcome back,</span>
+    <span class="header-title">{{ currentUser?.firstName || 'User' }}</span>
   </div>
-</div>
+
+  <!-- Right Section: Actions -->
+  <div class="header-right">
+    <!-- Global Search -->
+    <div class="header-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search patients, tests..." class="search-input">
+    </div>
+
+    <!-- Notification Bell -->
+    <button class="notification-btn" [matMenuTriggerFor]="notificationMenu" (menuOpened)="onNotificationMenuOpened()">
+      <i class="fas fa-bell bell-icon" [class.animate-swing]="unreadCount > 0"></i>
+      <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+    </button>
+
+    <!-- User Profile Trigger -->
+    <div class="user-profile-preview" [matMenuTriggerFor]="profileMenu">
+      <div class="user-meta">
+        <span class="user-name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+        <span class="user-role">{{ currentUser?.role }}</span>
+      </div>
+      <div class="avatar-circle">
+        {{ (currentUser?.firstName | slice:0:1) || 'U' }}
+      </div>
+    </div>
+  </div>
+</header>
 
 <!-- Notification Menu -->
-<mat-menu #notificationMenu="matMenu">
+<mat-menu #notificationMenu="matMenu" class="premium-menu">
+  <div class="menu-header px-4 py-2 border-b">
+    <span class="font-bold text-sm">Notifications</span>
+  </div>
   <ng-container *ngIf="notifications.length; else noNotifs">
     <button mat-menu-item *ngFor="let n of notifications | slice:0:7" (click)="openNotification(n)">
-      <mat-icon>{{ getNotificationIcon(n) }}</mat-icon>
-      <div class="ml-2" style="display:flex;flex-direction:column;">
-        <span class="font-medium">{{ n.title }}</span>
-        <span class="text-xs text-gray-600" *ngIf="n.message">{{ n.message }}</span>
+      <mat-icon class="text-primary-600">{{ getNotificationIcon(n) }}</mat-icon>
+      <div class="ml-2 flex flex-col">
+        <span class="font-medium text-sm">{{ n.title }}</span>
+        <span class="text-xs text-gray-500" *ngIf="n.message">{{ n.message }}</span>
       </div>
-      <span class="ml-auto text-primary" *ngIf="!n.read">•</span>
+      <span class="ml-auto text-xs text-blue-500" *ngIf="!n.read">•</span>
     </button>
     <mat-divider></mat-divider>
     <button mat-menu-item (click)="clearNotifications()">
-      <span>Clear all</span>
+      <span class="text-xs text-gray-500 w-full text-center">Clear all</span>
     </button>
   </ng-container>
   <ng-template #noNotifs>
-    <button mat-menu-item disabled>No notifications</button>
+    <div class="p-4 text-center text-sm text-gray-500">No new notifications</div>
   </ng-template>
 </mat-menu>
 
+<!-- Profile Menu -->
+<mat-menu #profileMenu="matMenu" class="premium-menu">
+  <button mat-menu-item routerLink="/profile">
+    <mat-icon>person</mat-icon>
+    <span>My Profile</span>
+  </button>
+  <button mat-menu-item routerLink="/setup" *ngIf="['Admin','SuperAdmin'].includes(currentUser?.role || '')">
+    <mat-icon>settings</mat-icon>
+    <span>Settings</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="logout()" class="text-red-600">
+    <mat-icon color="warn">logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>

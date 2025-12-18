@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Auth, LoginRequest } from '../../core/services/auth';
+import gsap from 'gsap';
 
 @Component({
   selector: 'app-login',
@@ -9,7 +10,7 @@ import { Auth, LoginRequest } from '../../core/services/auth';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class Login implements OnInit {
+export class Login implements OnInit, AfterViewInit {
   loginForm!: FormGroup;
   loading = false;
   error = '';
@@ -20,7 +21,7 @@ export class Login implements OnInit {
     private authService: Auth,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Clear any invalid auth data first (ensure user must provide credentials)
@@ -40,7 +41,7 @@ export class Login implements OnInit {
     if (prefill) {
       this.loginForm.patchValue({ email: prefill });
       if (remembered) { this.loginForm.patchValue({ rememberMe: true }); }
-      if (qpEmail) { try { localStorage.removeItem('prefillLoginEmail'); } catch {} }
+      if (qpEmail) { try { localStorage.removeItem('prefillLoginEmail'); } catch { } }
     }
 
     // Clear any existing errors
@@ -51,6 +52,29 @@ export class Login implements OnInit {
       console.log('User already logged in, redirecting based on role');
       this.redirectBasedOnRole();
     }
+  }
+
+  ngAfterViewInit(): void {
+    // Initial State - Hidden
+    gsap.set('.hero-content > *', { opacity: 0, y: 20 });
+    gsap.set('.auth-card', { opacity: 0, y: 30 }); // Animate the whole card now
+
+    // Timeline
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+    // 1. Auth Card Entrance
+    tl.to('.auth-card', {
+      opacity: 1,
+      y: 0,
+      duration: 0.8
+    })
+      // 2. Hero Content Text
+      .to('.hero-content > *', {
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+        stagger: 0.2
+      }, '-=0.4');
   }
 
   redirectBasedOnRole(): void {
@@ -69,15 +93,15 @@ export class Login implements OnInit {
       this.router.navigate(['/dashboard/pathology']);
     } else if (user?.role === 'Pathology') {
       this.router.navigate(['/dashboard/pathology']);
-	    } else if (user?.role === 'Admin') {
-	      // Lab-scoped Admins (with lab info) should see the same lab dashboard
-	      // as LabAdmin and other lab users. Only non-lab Admins (if any) go to
-	      // the legacy admin dashboard.
-	      if ((user as any)?.lab || (user as any)?.labId) {
-	        this.router.navigate(['/dashboard/pathology']);
-	      } else {
-	        this.router.navigate(['/dashboard/admin']);
-	      }
+    } else if (user?.role === 'Admin') {
+      // Lab-scoped Admins (with lab info) should see the same lab dashboard
+      // as LabAdmin and other lab users. Only non-lab Admins (if any) go to
+      // the legacy admin dashboard.
+      if ((user as any)?.lab || (user as any)?.labId) {
+        this.router.navigate(['/dashboard/pathology']);
+      } else {
+        this.router.navigate(['/dashboard/admin']);
+      }
     } else if (user?.role === 'Pharmacy') {
       this.router.navigate(['/pharmacy']);
     } else {
@@ -112,19 +136,19 @@ export class Login implements OnInit {
 
       const emailNorm = String(this.loginForm.value.email || '').trim().toLowerCase();
       const credentials: LoginRequest = { email: emailNorm, password: this.loginForm.value.password };
-	      console.log('🔄 Attempting login with:', credentials);
-	
-	      // Persist remembered email preference immediately so it works even if login fails
-	      try {
-	        if (this.loginForm.value.rememberMe) {
-	          localStorage.setItem('rememberedEmail', emailNorm);
-	        } else {
-	          localStorage.removeItem('rememberedEmail');
-	        }
-	      } catch {}
-	
-	      // Always use real authentication (no bypass)
-	      this.authService.login(credentials).subscribe({
+      console.log('🔄 Attempting login with:', credentials);
+
+      // Persist remembered email preference immediately so it works even if login fails
+      try {
+        if (this.loginForm.value.rememberMe) {
+          localStorage.setItem('rememberedEmail', emailNorm);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+      } catch { }
+
+      // Always use real authentication (no bypass)
+      this.authService.login(credentials).subscribe({
         next: (response) => {
           console.log('✅ Login successful:', response);
           this.loading = false;
@@ -134,8 +158,8 @@ export class Login implements OnInit {
             console.log('🏢 Lab:', response.user.lab.labName, '(Code: ' + response.user.lab.labCode + ')');
           }
 
-	          // Redirect based on role
-	          this.redirectBasedOnRole();
+          // Redirect based on role
+          this.redirectBasedOnRole();
         },
         error: (error) => {
           console.error('❌ Login error:', error);

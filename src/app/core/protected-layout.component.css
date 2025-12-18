@@ -1,111 +1,102 @@
+/* Main Layout Wrapper - Fixed Height & No body scroll */
 .protected-layout {
   display: flex;
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
-/* Sidebar styling */
-app-sidebar {
-  width: 280px;
-  min-width: 280px;
-  max-width: 280px;
   height: 100vh;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  width: 100vw;
+  background: var(--bg-body);
+  overflow: hidden;
+  /* Locks the body */
 }
 
+/* Sidebar: Fixed Width, Full Height, Independent Scroll */
+app-sidebar {
+  flex: 0 0 280px;
+  /* Rigid width */
+  width: 280px;
+  height: 100%;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(180deg, #0f172a 0%, #1e3a8a 100%);
+  /* Match sidebar theme */
+}
+
+/* Main Content Area: Takes remaining width, Independent Scroll */
 .protected-content {
   flex: 1;
+  /* Takes remaining space */
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  padding-bottom: 0!important;
-  padding-top: 0 !important;
-  background: #f8fafc;
-  min-height: 100vh;
+  height: 100%;
+  min-width: 0;
+  background: var(--bg-body);
   overflow-y: auto;
+  /* Content Scrolls here */
+  overflow-x: hidden;
   position: relative;
 }
 
-/* Fixed Header with Notification Icon */
+/* Header: Sticky on Top of content */
 app-header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  right: 0;
-  left: 280px;
-  z-index: 100;
-  background: transparent;
+  z-index: 90;
+  width: 100%;
 }
 
+/* Inner Content Wrapper */
 .content-wrapper {
   flex: 1;
-  min-height: calc(100vh - 120px);
-  margin-top: 56px; /* Space for fixed header */
+  /* Pushes footer down if content is short */
+  padding: 2rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Smooth elegant fade in */
 }
 
-/* Print Styles */
-@media print {
-  .protected-layout {
-    display: block !important;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
-  app-sidebar {
-    display: none !important;
-  }
-
-  .protected-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    background: white !important;
-  }
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-  app-sidebar {
-    width: 260px;
-    min-width: 260px;
-    max-width: 260px;
-  }
-
-  app-header {
-    left: 260px;
-  }
-
-  .protected-content {
-    padding: 16px;
-    padding-top: 0 !important;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+app-footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  opacity: 0.7;
+  font-size: 0.85rem;
+}
+
+/* Responsive - Mobile behavior */
 @media (max-width: 768px) {
   .protected-layout {
     flex-direction: column;
+    height: auto;
+    /* Let it scroll naturally on mobile */
+    overflow-y: auto;
   }
 
   app-sidebar {
     width: 100%;
-    min-width: 100%;
-    max-width: 100%;
+    flex: none;
     height: auto;
     position: relative;
   }
 
-  app-header {
-    left: 0;
-    top: auto;
-    position: sticky;
-  }
-
   .protected-content {
-    padding: 12px;
-    padding-top: 0 !important;
+    height: auto;
+    overflow: visible;
   }
 
   .content-wrapper {
-    margin-top: 0;
+    padding: 1rem;
   }
 }
