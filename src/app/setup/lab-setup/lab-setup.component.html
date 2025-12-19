@@ -1,205 +1,285 @@
 <div class="lab-setup-container">
-  <h1>Lab Setup</h1>
-  <p class="muted">Login → Lab Setup → Save & Preview. You can edit/update anytime.</p>
-  <div class="subnav">
-    <a href="#basic">Basic</a>
-    <a href="#branding">Branding</a>
-    <a href="#numbering">Numbering</a>
-    <a href="#notes">Notes</a>
-    <a href="#layout">Layout</a>
-    <a href="#roles">Roles</a>
-    <a href="#preview">Preview</a>
+  <!-- New Premium Header Section -->
+  <div class="lab-header">
+    <div class="header-content">
+      <h1>Lab Setup</h1>
+      <p class="muted-white">Login → Lab Setup → Save & Preview. You can edit/update anytime.</p>
+    </div>
+    <div class="subnav">
+      <a (click)="setStep('basic')" [class.active]="currentStep === 'basic'">Basic</a>
+      <a (click)="setStep('branding')" [class.active]="currentStep === 'branding'">Branding</a>
+      <a (click)="setStep('numbering')" [class.active]="currentStep === 'numbering'">Numbering</a>
+      <a (click)="setStep('notes')" [class.active]="currentStep === 'notes'">Notes</a>
+      <a (click)="setStep('layout')" [class.active]="currentStep === 'layout'">Layout</a>
+      <a (click)="setStep('roles')" [class.active]="currentStep === 'roles'">Roles</a>
+      <a (click)="setStep('preview')" [class.active]="currentStep === 'preview'">Preview</a>
+    </div>
   </div>
 
 
   <div class="grid">
     <form (ngSubmit)="saveAndPreview()" [formGroup]="form" class="card">
-      <h2 id="basic">Basic Details</h2>
-      <div class="row"><label>Lab Name</label><input formControlName="labName" placeholder="ABC Diagnostics" (input)="updatePreview()"/></div>
-      <div class="row"><label>Short Name</label><input formControlName="shortName" placeholder="ABC LAB" (input)="updatePreview()"/></div>
-      <div class="row"><label>Address Line 1</label><input formControlName="addressLine1" (input)="updatePreview()"/></div>
-      <div class="row"><label>Address Line 2</label><input formControlName="addressLine2" (input)="updatePreview()"/></div>
-      <div class="row two">
-        <div><label>City</label><input formControlName="city" (input)="updatePreview()"/></div>
-        <div><label>State</label><input formControlName="state" (input)="updatePreview()"/></div>
-      </div>
-      <div class="row two">
-        <div><label>Pincode</label><input formControlName="pincode" (input)="updatePreview()"/></div>
-        <div><label>Phone</label><input formControlName="phone" (input)="updatePreview()"/></div>
-      </div>
-      <div class="row two">
-        <div><label>Alt Phone</label><input formControlName="altPhone" (input)="updatePreview()"/></div>
-        <div><label>Email</label><input formControlName="email" (input)="updatePreview()"/></div>
-      </div>
-      <div class="row"><label>Website</label><input formControlName="website" (input)="updatePreview()"/></div>
 
-      <h2 id="branding">Branding</h2>
-      <div class="row two">
-        <div>
-          <label>Logo (Left)</label>
-          <input type="file" accept="image/*" (change)="onFileChange($event, 'logoDataUrl')" />
+      <!-- STEP 1: BASIC -->
+      <div *ngIf="currentStep === 'basic'">
+        <h2 id="basic">Basic Details</h2>
+        <div class="row"><label>Lab Name</label><input formControlName="labName" placeholder="ABC Diagnostics"
+            (input)="updatePreview()" /></div>
+        <div class="row"><label>Short Name</label><input formControlName="shortName" placeholder="ABC LAB"
+            (input)="updatePreview()" /></div>
+        <div class="row"><label>Address Line 1</label><input formControlName="addressLine1" (input)="updatePreview()" />
         </div>
-        <div>
-          <label>Side Logo (Right)</label>
-          <input type="file" accept="image/*" (change)="onFileChange($event, 'sideLogoDataUrl')" />
+        <div class="row"><label>Address Line 2</label><input formControlName="addressLine2" (input)="updatePreview()" />
         </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>Authorized Sign</label>
-          <input type="file" accept="image/*" (change)="onFileChange($event, 'signatureDataUrl')" />
+        <div class="row two">
+          <div><label>City</label><input formControlName="city" (input)="updatePreview()" /></div>
+          <div><label>State</label><input formControlName="state" (input)="updatePreview()" /></div>
         </div>
+        <div class="row two">
+          <div><label>Pincode</label><input formControlName="pincode" (input)="updatePreview()" /></div>
+          <div><label>Phone</label><input formControlName="phone" (input)="updatePreview()" /></div>
+        </div>
+        <div class="row two">
+          <div><label>Alt Phone</label><input formControlName="altPhone" (input)="updatePreview()" /></div>
+          <div><label>Email</label><input formControlName="email" (input)="updatePreview()" /></div>
+        </div>
+        <div class="row"><label>Website</label><input formControlName="website" (input)="updatePreview()" /></div>
       </div>
 
-      <h2 id="numbering">Print & Numbering</h2>
-      <div formGroupName="prefixes">
+      <!-- STEP 2: BRANDING -->
+      <div *ngIf="currentStep === 'branding'">
+        <h2 id="branding">Branding Resources</h2>
         <div class="row two">
-          <div><label>Receipt Prefix</label><input formControlName="receipt" placeholder="RCPT" (input)="updatePreview()"/></div>
-          <div><label>Report Prefix</label><input formControlName="report" placeholder="RPT" (input)="updatePreview()"/></div>
-        </div>
-        <div class="row two">
-          <div><label>Yearly No. Prefix</label><input formControlName="labYearlyPrefix" placeholder="LY" (input)="updatePreview()"/></div>
-          <div><label>Daily No. Prefix</label><input formControlName="labDailyPrefix" placeholder="LD" (input)="updatePreview()"/></div>
-        </div>
-      </div>
-      <div formGroupName="numbering">
-        <div class="row two">
-          <div><label>Receipt Start</label><input type="number" formControlName="receiptStart" (input)="updatePreview()"/></div>
-          <div><label>Report Start</label><input type="number" formControlName="reportStart" (input)="updatePreview()"/></div>
+          <div>
+            <label>Logo (Left)</label>
+            <input type="file" accept="image/*" (change)="onFileChange($event, 'logoDataUrl')" />
+            <div class="muted" style="font-size:11px; margin-top:4px">Shown on top-left of reports</div>
+          </div>
+          <div>
+            <label>Side Logo (Right)</label>
+            <input type="file" accept="image/*" (change)="onFileChange($event, 'sideLogoDataUrl')" />
+            <div class="muted" style="font-size:11px; margin-top:4px">Shown on top-right of reports</div>
+          </div>
         </div>
         <div class="row">
-          <label>Reset Rule</label>
-          <select formControlName="resetRule" (change)="updatePreview()">
-            <option value="yearly">Yearly</option>
-            <option value="monthly">Monthly</option>
-            <option value="never">Never</option>
-          </select>
-        </div>
-      </div>
-
-      <h2 id="notes">Notes</h2>
-      <div class="row"><label>Header Note</label><input formControlName="headerNote" (input)="updatePreview()"/></div>
-      <div class="row"><label>Footer Note</label><input formControlName="footerNote" (input)="updatePreview()"/></div>
-      <div class="row"><label>Report Disclaimer</label><textarea formControlName="reportDisclaimer" rows="2" (input)="updatePreview()"></textarea></div>
-
-      <h2 id="layout">Layout Options</h2>
-      <p class="muted" style="font-size:12px; margin-top:-4px;">To change report template style, go to <a routerLink="/setup/lab-template" style="color:#2563eb;">Lab Template</a> page.</p>
-      <div formGroupName="printLayout">
-        <div class="row toggles">
-          <label class="switch">
-            <input type="checkbox" formControlName="showHeader" (change)="updatePreview()"/>
-            <span class="slider"></span><span class="switch-text">Show Header</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" formControlName="showFooter" (change)="updatePreview()"/>
-            <span class="slider"></span><span class="switch-text">Show Footer</span>
-          </label>
-          <label class="switch">
-            <input type="checkbox" formControlName="showQr" (change)="updatePreview()"/>
-            <span class="slider"></span><span class="switch-text">Show QR</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn primary" type="submit" [disabled]="saving">{{ saving ? 'Saving…' : 'Save & Preview' }}</button>
-        <div class="status" *ngIf="statusMessage" [class.error]="statusError">{{ statusMessage }}</div>
-      </div>
-
-      <!-- Self-Registration Link & QR - INSIDE form, below actions -->
-      <div class="self-reg-section" *ngIf="labCode">
-        <h2>Public Self-Registration</h2>
-        <div class="self-reg-content">
-          <div class="self-reg-info">
-            <div class="muted">Share this link with patients for self-registration</div>
-            <div class="self-reg-link">{{ selfRegLink }}</div>
-            <div class="self-reg-buttons">
-              <button class="btn" type="button" (click)="copySelfRegLink()">{{ copyDone ? 'Copied!' : 'Copy link' }}</button>
-              <button class="btn" type="button" (click)="printSelfRegQR()">Print QR</button>
-            </div>
-          </div>
-          <div class="self-reg-qr">
-            <img [src]="selfRegQrUrl" alt="Self-Register QR" width="140" height="140"/>
+          <div>
+            <label>Authorized Sign</label>
+            <input type="file" accept="image/*" (change)="onFileChange($event, 'signatureDataUrl')" />
+            <div class="muted" style="font-size:11px; margin-top:4px">Shown at bottom of reports</div>
           </div>
         </div>
       </div>
 
-      <!-- Custom Role Management Section -->
-      <div class="role-management-section">
-        <h2 id="roles">Custom Roles / कस्टम रोल</h2>
-        <p class="muted">Create custom roles for your lab staff. These roles will appear in the user creation dropdown.</p>
-
-        <!-- Success/Error Messages -->
-        <div class="role-message success" *ngIf="roleSuccess">✓ {{ roleSuccess }}</div>
-        <div class="role-message error" *ngIf="roleError">✗ {{ roleError }}</div>
-
-        <!-- Add New Role Form -->
-        <div class="add-role-form">
+      <!-- STEP 3: NUMBERING -->
+      <div *ngIf="currentStep === 'numbering'">
+        <h2 id="numbering">Print & Numbering</h2>
+        <div formGroupName="prefixes">
           <div class="row two">
-            <div>
-              <label>Role Name (English) *</label>
-              <input type="text" [(ngModel)]="newRoleName" [ngModelOptions]="{standalone: true}" placeholder="e.g., Technician, Accountant, Sample Collector"/>
-            </div>
-            <div>
-              <label>Display Label (Hindi/English)</label>
-              <input type="text" [(ngModel)]="newRoleLabel" [ngModelOptions]="{standalone: true}" placeholder="e.g., टेक्नीशियन, अकाउंटेंट"/>
-            </div>
+            <div><label>Receipt Prefix</label><input formControlName="receipt" placeholder="RCPT"
+                (input)="updatePreview()" /></div>
+            <div><label>Report Prefix</label><input formControlName="report" placeholder="RPT"
+                (input)="updatePreview()" /></div>
+          </div>
+          <div class="row two">
+            <div><label>Yearly No. Prefix</label><input formControlName="labYearlyPrefix" placeholder="LY"
+                (input)="updatePreview()" /></div>
+            <div><label>Daily No. Prefix</label><input formControlName="labDailyPrefix" placeholder="LD"
+                (input)="updatePreview()" /></div>
+          </div>
+        </div>
+        <div formGroupName="numbering">
+          <div class="row two">
+            <div><label>Receipt Start</label><input type="number" formControlName="receiptStart"
+                (input)="updatePreview()" /></div>
+            <div><label>Report Start</label><input type="number" formControlName="reportStart"
+                (input)="updatePreview()" /></div>
           </div>
           <div class="row">
-            <label>Description (Optional)</label>
-            <input type="text" [(ngModel)]="newRoleDescription" [ngModelOptions]="{standalone: true}" placeholder="Brief description of this role"/>
+            <label>Reset Rule</label>
+            <select formControlName="resetRule" (change)="updatePreview()">
+              <option value="yearly">Yearly</option>
+              <option value="monthly">Monthly</option>
+              <option value="never">Never</option>
+            </select>
           </div>
-          <button class="btn primary" type="button" (click)="addRole()" [disabled]="roleLoading || !newRoleName.trim()">
-            {{ roleLoading ? 'Adding...' : '+ Add Role' }}
-          </button>
-        </div>
-
-        <!-- Existing Roles List -->
-        <div class="roles-list" *ngIf="customRoles.length > 0">
-          <h3>Your Custom Roles ({{ customRoles.length }})</h3>
-          <div class="role-item" *ngFor="let role of customRoles">
-            <div class="role-info">
-              <span class="role-name">{{ role.name }}</span>
-              <span class="role-label" *ngIf="role.label && role.label !== role.name">({{ role.label }})</span>
-              <span class="role-desc" *ngIf="role.description">- {{ role.description }}</span>
-            </div>
-            <button class="btn danger small" type="button" (click)="deleteRole(role.name)" [disabled]="roleLoading">Delete</button>
-          </div>
-        </div>
-
-        <div class="no-roles" *ngIf="customRoles.length === 0 && !roleLoading">
-          <p class="muted">No custom roles created yet. Add your first role above!</p>
-        </div>
-
-        <div class="loading" *ngIf="roleLoading && customRoles.length === 0">
-          Loading roles...
         </div>
       </div>
+
+      <!-- STEP 4: NOTES -->
+      <div *ngIf="currentStep === 'notes'">
+        <h2 id="notes">Report Notes</h2>
+        <div class="row"><label>Header Note</label><input formControlName="headerNote" (input)="updatePreview()" />
+        </div>
+        <div class="row"><label>Footer Note</label><input formControlName="footerNote" (input)="updatePreview()" />
+        </div>
+        <div class="row"><label>Report Disclaimer</label><textarea formControlName="reportDisclaimer" rows="2"
+            (input)="updatePreview()"></textarea></div>
+      </div>
+
+      <!-- STEP 5: LAYOUT -->
+      <div *ngIf="currentStep === 'layout'">
+        <h2 id="layout">Layout Options</h2>
+        <p class="muted" style="font-size:12px; margin-top:-4px;">To change report template style, go to <a
+            routerLink="/setup/lab-template" style="color:#2563eb;">Lab Template</a> page.</p>
+        <div formGroupName="printLayout">
+          <div class="row toggles">
+            <label class="switch">
+              <input type="checkbox" formControlName="showHeader" (change)="updatePreview()" />
+              <span class="slider"></span><span class="switch-text">Show Header</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" formControlName="showFooter" (change)="updatePreview()" />
+              <span class="slider"></span><span class="switch-text">Show Footer</span>
+            </label>
+            <label class="switch">
+              <input type="checkbox" formControlName="showQr" (change)="updatePreview()" />
+              <span class="slider"></span><span class="switch-text">Show QR</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Self-Registration Link & QR - Moved to Layout section -->
+        <div class="self-reg-section" *ngIf="labCode" style="margin-top: 2rem;">
+          <h2>Public Self-Registration</h2>
+          <div class="self-reg-content">
+            <div class="self-reg-info">
+              <div class="muted">Share this link with patients for self-registration</div>
+              <div class="self-reg-link">{{ selfRegLink }}</div>
+              <div class="self-reg-buttons">
+                <button class="btn" type="button" (click)="copySelfRegLink()">{{ copyDone ? 'Copied!' : 'Copy link'
+                  }}</button>
+                <button class="btn" type="button" (click)="printSelfRegQR()">Print QR</button>
+              </div>
+            </div>
+            <div class="self-reg-qr">
+              <img [src]="selfRegQrUrl" alt="Self-Register QR" width="140" height="140" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6: ROLES -->
+      <div *ngIf="currentStep === 'roles'">
+        <div class="role-management-section" style="border-top: none; margin-top: 0; padding-top: 0;">
+          <h2 id="roles">Custom Roles / कस्टम रोल</h2>
+          <p class="muted">Create custom roles for your lab staff. These roles will appear in the user creation
+            dropdown.</p>
+
+          <!-- Success/Error Messages -->
+          <div class="role-message success" *ngIf="roleSuccess">✓ {{ roleSuccess }}</div>
+          <div class="role-message error" *ngIf="roleError">✗ {{ roleError }}</div>
+
+          <!-- Add New Role Form -->
+          <div class="add-role-form">
+            <div class="row two">
+              <div>
+                <label>Role Name (English) *</label>
+                <input type="text" [(ngModel)]="newRoleName" [ngModelOptions]="{standalone: true}"
+                  placeholder="e.g., Technician, Accountant, Sample Collector" />
+              </div>
+              <div>
+                <label>Display Label (Hindi/English)</label>
+                <input type="text" [(ngModel)]="newRoleLabel" [ngModelOptions]="{standalone: true}"
+                  placeholder="e.g., टेक्नीशियन, अकाउंटेंट" />
+              </div>
+            </div>
+            <div class="row">
+              <label>Description (Optional)</label>
+              <input type="text" [(ngModel)]="newRoleDescription" [ngModelOptions]="{standalone: true}"
+                placeholder="Brief description of this role" />
+            </div>
+            <button class="btn primary" type="button" (click)="addRole()"
+              [disabled]="roleLoading || !newRoleName.trim()">
+              {{ roleLoading ? 'Adding...' : '+ Add Role' }}
+            </button>
+          </div>
+
+          <!-- Existing Roles List -->
+          <div class="roles-list" *ngIf="customRoles.length > 0">
+            <h3>Your Custom Roles ({{ customRoles.length }})</h3>
+            <div class="role-item" *ngFor="let role of customRoles">
+              <div class="role-info">
+                <span class="role-name">{{ role.name }}</span>
+                <span class="role-label" *ngIf="role.label && role.label !== role.name">({{ role.label }})</span>
+                <span class="role-desc" *ngIf="role.description">- {{ role.description }}</span>
+              </div>
+              <button class="btn danger small" type="button" (click)="deleteRole(role.name)"
+                [disabled]="roleLoading">Delete</button>
+            </div>
+          </div>
+
+          <div class="no-roles" *ngIf="customRoles.length === 0 && !roleLoading">
+            <p class="muted">No custom roles created yet. Add your first role above!</p>
+          </div>
+
+          <div class="loading" *ngIf="roleLoading && customRoles.length === 0">
+            Loading roles...
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7: PREVIEW -->
+      <div *ngIf="currentStep === 'preview'">
+        <h2>Final Preview</h2>
+        <p class="muted">Review all your settings before saving final changes.</p>
+        <!-- The Preview Card is shown on the right, but we can also show a quick summary here if needed -->
+        <div class="status-message success" style="margin-bottom: 20px;">
+          ✓ Setup is complete! Click Save & Finish to apply changes.
+        </div>
+      </div>
+
+      <!-- NAVIGATION ACTIONS -->
+      <div class="actions">
+        <!-- Back Button -->
+        <button class="btn secondary" type="button" (click)="prevStep()" *ngIf="currentStep !== 'basic'"
+          style="margin-right: auto;">
+          ← Back
+        </button>
+
+        <!-- Next Button -->
+        <button class="btn primary" type="button" (click)="nextStep()" *ngIf="currentStep !== 'preview'">
+          Next Step →
+        </button>
+
+        <!-- Save Button (Only on Preview Step) -->
+        <button class="btn primary" type="button" (click)="saveAndPreview()" [disabled]="saving"
+          *ngIf="currentStep === 'preview'">
+          {{ saving ? 'Saving…' : 'Save & Finish' }}
+        </button>
+
+        <!-- Status Message -->
+        <div class="status" *ngIf="statusMessage" [class.error]="statusError" style="margin-left: 10px;">{{
+          statusMessage }}</div>
+      </div>
+
     </form>
 
     <div class="card preview" *ngIf="form">
-      <h2 id="preview">Preview</h2>
+      <h2 id="preview">Live Preview</h2>
       <div class="report">
         <div class="header" *ngIf="form.get('printLayout.showHeader')?.value !== false">
-          <img *ngIf="form.get('logoDataUrl')?.value" class="logo left-logo" [src]="form.get('logoDataUrl')?.value" alt="logo"/>
+          <img *ngIf="form.get('logoDataUrl')?.value" class="logo left-logo" [src]="form.get('logoDataUrl')?.value"
+            alt="logo" />
           <div class="header-mid">
             <div class="title">{{ form.get('labName')?.value || 'Your Lab Name' }}</div>
-            <div class="addr">{{ form.get('addressLine1')?.value }} {{ form.get('addressLine2')?.value }} {{ form.get('city')?.value }} {{ form.get('state')?.value }} - {{ form.get('pincode')?.value }}</div>
+            <div class="addr">{{ form.get('addressLine1')?.value }} {{ form.get('addressLine2')?.value }} {{
+              form.get('city')?.value }} {{ form.get('state')?.value }} - {{ form.get('pincode')?.value }}</div>
             <div class="contact">Ph: {{ form.get('phone')?.value }} | {{ form.get('email')?.value }}</div>
             <div class="header-note">{{ form.get('headerNote')?.value }}</div>
           </div>
-          <img *ngIf="form.get('sideLogoDataUrl')?.value" class="logo right-logo" [src]="form.get('sideLogoDataUrl')?.value" alt="side logo"/>
+          <img *ngIf="form.get('sideLogoDataUrl')?.value" class="logo right-logo"
+            [src]="form.get('sideLogoDataUrl')?.value" alt="side logo" />
         </div>
         <div class="body">
           <div class="placeholder">Sample report area preview…</div>
         </div>
         <div class="footer" *ngIf="form.get('printLayout.showFooter')?.value !== false">
           <div class="footer-note">{{ form.get('footerNote')?.value }}</div>
-          <img *ngIf="form.get('signatureDataUrl')?.value" class="sign" [src]="form.get('signatureDataUrl')?.value" alt="sign"/>
+          <img *ngIf="form.get('signatureDataUrl')?.value" class="sign" [src]="form.get('signatureDataUrl')?.value"
+            alt="sign" />
           <div class="disclaimer">{{ form.get('reportDisclaimer')?.value }}</div>
         </div>
       </div>
     </div>
   </div>
 </div>
-

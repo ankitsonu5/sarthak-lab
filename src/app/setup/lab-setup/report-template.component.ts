@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { LabSettingsService, LabSettings } from './lab-settings.service';
@@ -9,7 +9,8 @@ import { LabSettingsService, LabSettings } from './lab-settings.service';
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './report-template.component.html',
   styleUrls: ['./lab-setup.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class ReportTemplateComponent implements OnInit {
   form!: FormGroup;
@@ -23,7 +24,7 @@ export class ReportTemplateComponent implements OnInit {
     private fb: FormBuilder,
     private api: LabSettingsService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.form = this.fb.group({

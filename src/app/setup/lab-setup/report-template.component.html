@@ -1,127 +1,145 @@
 <div class="lab-setup-container">
-  <h1>Template Setup</h1>
-  <p class="muted">Choose your preferred report template design. Changes will apply to all future reports.</p>
+  <!-- Fixed Header -->
+  <div class="lab-header">
+    <div class="header-content">
+      <h1>Template Setup</h1>
+      <p class="muted-white">Choose your preferred report template design. Changes will apply to all future reports.</p>
+    </div>
+  </div>
 
-  <div class="form-section">
-    <form [formGroup]="form">
-      <h2>Select Template</h2>
-      <p class="section-description">Choose from three professionally designed templates. Each template offers a unique style while maintaining medical report standards.</p>
+  <!-- Scrollable Content Area -->
+  <div class="grid" style="display: block;">
+    <!-- Override grid display for this page if needed, or keep it. 'block' is better for full width form -->
+    <div class="form-section">
+      <form [formGroup]="form">
+        <h2>Select Template</h2>
+        <p class="section-description">Choose from three professionally designed templates. Each template offers a
+          unique style while maintaining medical report standards.</p>
 
-      <div class="template-selector">
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'classic'">
-          <input type="radio" formControlName="reportTemplate" value="classic" />
-          <div class="template-preview classic-preview">
-            <div class="template-header">
-              <div class="template-logo">
-                <img *ngIf="lab?.logoDataUrl; else fallbackClassic" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
-                <ng-template #fallbackClassic>🏥</ng-template>
+        <div class="template-selector">
+          <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'classic'">
+            <input type="radio" formControlName="reportTemplate" value="classic" />
+            <div class="template-preview classic-preview">
+              <div class="template-header">
+                <div class="template-logo">
+                  <img *ngIf="lab?.logoDataUrl; else fallbackClassic" [src]="lab?.logoDataUrl" alt="Logo"
+                    style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                  <ng-template #fallbackClassic>🏥</ng-template>
+                </div>
+                <div class="template-info">
+                  <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                  <div class="template-subtitle">
+                    {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' '
+                    + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '')
+                    }}
+                  </div>
+                </div>
               </div>
-              <div class="template-info">
-                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
-                <div class="template-subtitle">
-                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+              <div class="template-body">
+                <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>WBC</span><span><strong>7,500</strong> /µL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                  <span>Platelet</span><span><strong>2.1</strong> x10^5/µL</span>
                 </div>
               </div>
             </div>
-            <div class="template-body">
-              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>WBC</span><span><strong>7,500</strong> /µL</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px;">
-                <span>Platelet</span><span><strong>2.1</strong> x10^5/µL</span>
-              </div>
+            <div class="template-name">
+              <i class="fa-solid fa-file-medical"></i> Classic (Logo Left)
             </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-medical"></i> Classic (Logo Left)
-          </div>
-          <div class="template-description">Logo left • Details centered • Clean, traditional report layout</div>
-        </label>
+            <div class="template-description">Logo left • Details centered • Clean, traditional report layout</div>
+          </label>
 
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'modern'">
-          <input type="radio" formControlName="reportTemplate" value="modern" />
-          <div class="template-preview modern-preview">
-            <div class="template-header modern">
-              <div class="template-logo">
-                <img *ngIf="lab?.logoDataUrl; else fallbackModern" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
-                <ng-template #fallbackModern>🔬</ng-template>
+          <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'modern'">
+            <input type="radio" formControlName="reportTemplate" value="modern" />
+            <div class="template-preview modern-preview">
+              <div class="template-header modern">
+                <div class="template-logo">
+                  <img *ngIf="lab?.logoDataUrl; else fallbackModern" [src]="lab?.logoDataUrl" alt="Logo"
+                    style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                  <ng-template #fallbackModern>🔬</ng-template>
+                </div>
+                <div class="template-info">
+                  <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                  <div class="template-subtitle">
+                    {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' '
+                    + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '')
+                    }}
+                  </div>
+                </div>
               </div>
-              <div class="template-info">
-                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
-                <div class="template-subtitle">
-                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+              <div class="template-body">
+                <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>WBC</span><span><strong>7,500</strong> /µL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                  <span>Platelet</span><span><strong>2.1</strong> x10^5/µL</span>
                 </div>
               </div>
             </div>
-            <div class="template-body">
-              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>WBC</span><span><strong>7,500</strong> /\u00b5L</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px;">
-                <span>Platelet</span><span><strong>2.1</strong> x10^5/\u00b5L</span>
-              </div>
+            <div class="template-name">
+              <i class="fa-solid fa-file-lines"></i> Modern (Logo Right)
             </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-lines"></i> Modern (Logo Right)
-          </div>
-          <div class="template-description">Logo right • Details centered • Minimal, contemporary styling</div>
-        </label>
+            <div class="template-description">Logo right • Details centered • Minimal, contemporary styling</div>
+          </label>
 
-        <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'professional'">
-          <input type="radio" formControlName="reportTemplate" value="professional" />
-          <div class="template-preview professional-preview">
-            <div class="template-header professional">
-              <div class="template-logo">
-                <img *ngIf="lab?.logoDataUrl; else fallbackProfessional" [src]="lab?.logoDataUrl" alt="Logo" style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
-                <ng-template #fallbackProfessional>⚕️</ng-template>
+          <label class="template-card" [class.selected]="form.get('reportTemplate')?.value === 'professional'">
+            <input type="radio" formControlName="reportTemplate" value="professional" />
+            <div class="template-preview professional-preview">
+              <div class="template-header professional">
+                <div class="template-logo">
+                  <img *ngIf="lab?.logoDataUrl; else fallbackProfessional" [src]="lab?.logoDataUrl" alt="Logo"
+                    style="height:34px; width:34px; object-fit:contain; border-radius:6px;" />
+                  <ng-template #fallbackProfessional>⚕️</ng-template>
+                </div>
+                <div class="template-info">
+                  <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
+                  <div class="template-subtitle">
+                    {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' '
+                    + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '')
+                    }}
+                  </div>
+                </div>
               </div>
-              <div class="template-info">
-                <div class="template-title">{{ lab?.labName || 'Your Lab Name' }}</div>
-                <div class="template-subtitle">
-                  {{ (lab?.addressLine1 || '') + (lab?.addressLine2 ? ' ' + lab?.addressLine2 : '') + (lab?.city ? ' ' + lab?.city : '') + (lab?.state ? ' ' + lab?.state : '') + (lab?.pincode ? ' ' + lab?.pincode : '') }}
+              <div class="template-body">
+                <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
+                  <span>WBC</span><span><strong>7,500</strong> /µL</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                  <span>Platelet</span><span><strong>2.1</strong> x10^5/µL</span>
                 </div>
               </div>
             </div>
-            <div class="template-body">
-              <div style="font-weight:600; font-size:12px; margin-bottom:6px;">Patient: Rahul Sharma</div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>Hemoglobin</span><span><strong>13.8</strong> g/dL</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:4px;">
-                <span>WBC</span><span><strong>7,500</strong> /\u00b5L</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; font-size:11px;">
-                <span>Platelet</span><span><strong>2.1</strong> x10^5/\u00b5L</span>
-              </div>
+            <div class="template-name">
+              <i class="fa-solid fa-file-contract"></i> Professional (Logo Center)
             </div>
-          </div>
-          <div class="template-name">
-            <i class="fa-solid fa-file-contract"></i> Professional (Logo Center)
-          </div>
-          <div class="template-description">Logo centered • Details centered • Premium corporate styling</div>
-        </label>
-      </div>
-
-      <div class="action-row">
-        <button type="button" class="btn-primary" (click)="saveTemplate()" [disabled]="saving">
-          <i class="fa-solid" [class.fa-spinner]="saving" [class.fa-spin]="saving" [class.fa-save]="!saving"></i>
-          {{ saving ? 'Saving...' : 'Save Template' }}
-        </button>
-        <div class="status-message" *ngIf="statusMessage" [class.error]="statusError" [class.success]="!statusError">
-          <i class="fa-solid" [class.fa-check-circle]="!statusError" [class.fa-exclamation-circle]="statusError"></i>
-          {{ statusMessage }}
+            <div class="template-description">Logo centered • Details centered • Premium corporate styling</div>
+          </label>
         </div>
-      </div>
-    </form>
+
+        <div class="actions">
+          <button type="button" class="btn primary" (click)="saveTemplate()" [disabled]="saving">
+            <i class="fa-solid" [class.fa-spinner]="saving" [class.fa-spin]="saving" [class.fa-save]="!saving"></i>
+            {{ saving ? 'Saving...' : 'Save Template' }}
+          </button>
+          <div class="status-message" *ngIf="statusMessage" [class.error]="statusError" [class.success]="!statusError">
+            <i class="fa-solid" [class.fa-check-circle]="!statusError" [class.fa-exclamation-circle]="statusError"></i>
+            {{ statusMessage }}
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
-

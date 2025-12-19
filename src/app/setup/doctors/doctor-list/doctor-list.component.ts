@@ -1,17 +1,21 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+
+import { Component, OnInit, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, NavigationEnd } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
- import { DoctorService, Doctor, DoctorResponse } from '../services/doctor.service';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { DoctorService, Doctor, DoctorResponse } from '../services/doctor.service';
 import { DoctorProfileComponent } from '../doctor-profile/doctor-profile.component';
 import { DepartmentService, Department } from '../../departments/services/department.service';
-import { Subscription, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialog } from '@angular/material/dialog';
 import { DeleteConfirmationModalComponent } from '../../../shared/components/delete-confirmation-modal/delete-confirmation-modal.component';
 import { DeleteSuccessModalComponent } from '../../../shared/components/delete-success-modal/delete-success-modal.component';
 import { DeleteBlockedModalComponent } from '../../../shared/components/delete-blocked-modal/delete-blocked-modal.component';
 import { DoctorRoomDirectoryService } from '../../doctor-room-directory/services/doctor-room-directory.service';
+import { Subscription, Subject } from 'rxjs'; // Restored
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators'; // Restored
 
 @Component({
   selector: 'app-doctor-list',
@@ -19,15 +23,18 @@ import { DoctorRoomDirectoryService } from '../../doctor-room-directory/services
   imports: [
     CommonModule,
     FormsModule,
+    MatSnackBarModule,
+    MatSelectModule,
+    MatFormFieldModule,
     DeleteConfirmationModalComponent,
     DeleteSuccessModalComponent,
     DeleteBlockedModalComponent
   ],
   templateUrl: './doctor-list.component.html',
   styleUrls: ['./doctor-list.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush // RESTORED: OnPush change detection (reactive triggers disabled)
+  encapsulation: ViewEncapsulation.None
 })
-export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
+export class DoctorListComponent implements OnInit {
 
   doctors: Doctor[] = [];
   filteredDoctors: Doctor[] = [];
@@ -208,7 +215,7 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
         const currentDoctorCount = this.doctors.length;
 
         if (newDoctorCount !== currentDoctorCount) {
-          console.log(`🔄 QUIET REFRESH: Doctor count changed (${currentDoctorCount} → ${newDoctorCount})`);
+          console.log(`🔄 QUIET REFRESH: Doctor count changed(${currentDoctorCount} → ${newDoctorCount})`);
           this.doctors = doctors;
           this.applyFilters();
           // Remove manual change detection to prevent loops
@@ -370,7 +377,7 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filteredDoctors = this.doctors.filter(doctor => {
       // Flexible, multi-field search (name, id, phone, specialization, department)
       const departmentName = typeof doctor.department === 'string' ? doctor.department : (doctor.department?.name || '');
-      const fullName = (doctor.name || `${doctor.firstName || ''} ${doctor.lastName || ''}`).trim();
+      const fullName = (doctor.name || `${doctor.firstName || ''} ${doctor.lastName || ''} `).trim();
 
       // Create comprehensive searchable text - includes all possible fields INCLUDING department name
       const haystack = [
@@ -415,7 +422,7 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     console.log(`✅ Found ${this.filteredDoctors.length} matching doctors`);
     if (term && this.filteredDoctors.length > 0) {
-      console.log(`📋 Matches:`, this.filteredDoctors.map(d => `${d.name} (${d.doctorId}) - ${typeof d.department === 'string' ? d.department : d.department?.name}`));
+      console.log(`📋 Matches: `, this.filteredDoctors.map(d => `${d.name} (${d.doctorId}) - ${typeof d.department === 'string' ? d.department : d.department?.name} `));
     }
   }
 
@@ -447,7 +454,7 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // For non-empty search, use frontend filtering on already loaded data
     // This allows us to search department names which backend doesn't support
-    console.log(`📊 Current doctors array length: ${this.doctors.length}`);
+    console.log(`📊 Current doctors array length: ${this.doctors.length} `);
 
     // If we don't have doctors loaded yet, load them first without search term
     if (this.doctors.length === 0) {
@@ -543,19 +550,19 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
           if (directories && directories.length > 0) {
             // Block deletion only when THIS doctor is referenced
             const dirCount = directories.length;
-            this.deleteBlockedMessage = `This doctor cannot be deleted because it is used in ${dirCount} doctor-room-directory record${dirCount>1?'s':''}.`;
+            this.deleteBlockedMessage = `This doctor cannot be deleted because it is used in ${dirCount} doctor - room - directory record${dirCount > 1 ? 's' : ''}.`;
             // Collect rooms for quick info
             this.blockedRooms = directories
               .map((d: any) => ({ _id: (typeof d.room === 'string' ? d.room : d.room?._id) || '', roomNumber: (typeof d.room === 'string' ? d.roomNumber : d.room?.roomNumber) || '' }))
               .filter((r: any) => !!r._id || !!r.roomNumber);
-            this.deleteBlockedDetails = this.blockedRooms.slice(0, 3).map(r => `Room: ${r.roomNumber}`);
+            this.deleteBlockedDetails = this.blockedRooms.slice(0, 3).map(r => `Room: ${r.roomNumber} `);
             this.showDeleteBlocked = true;
             this.cdr.detectChanges();
             // Auto-hide like department-list
             setTimeout(() => this.closeDeleteBlocked(), 2000);
           } else {
             // Safe to delete – show confirmation modal
-            this.deleteMessage = `You are about to remove Dr. ${doctor.firstName} ${doctor.lastName} forever. Once deleted, this cannot be restored.`;
+            this.deleteMessage = `You are about to remove Dr.${doctor.firstName} ${doctor.lastName} forever.Once deleted, this cannot be restored.`;
             this.showDeleteConfirmation = true;
             this.cdr.detectChanges(); // ensure modal appears on first click (OnPush + async)
           }
@@ -671,14 +678,14 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
     this.router.navigate(['/setup/doctors/doctor-registration']);
   }
 
- navigateToDepartment(): void {
+  navigateToDepartment(): void {
     this.router.navigate(['/setup/departments/new']);
   }
-   navigateToDocSearchRegistration(): void {
+  navigateToDocSearchRegistration(): void {
     this.router.navigate(['/setup/doctors/doctor-list']);
   }
 
-    navigateToDocRoomDirectory(): void {
+  navigateToDocRoomDirectory(): void {
     this.router.navigate(['/setup/doctor-room-directory']);
   }
 
@@ -691,7 +698,7 @@ export class DoctorListComponent implements OnInit, OnDestroy, AfterViewInit {
     } else if ((doctor as any).fullName && (doctor as any).fullName !== 'undefined undefined' && (doctor as any).fullName !== 'Unknown') {
       return (doctor as any).fullName;
     } else if (doctor.firstName && doctor.lastName) {
-      return `${doctor.firstName} ${doctor.lastName}`;
+      return `${doctor.firstName} ${doctor.lastName} `;
     } else if (doctor.firstName) {
       return doctor.firstName;
     } else if (doctor.lastName) {

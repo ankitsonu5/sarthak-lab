@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -10,7 +10,8 @@ import { LabSettingsService, LabSettings, CustomRole } from './lab-settings.serv
   imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './lab-setup.component.html',
   styleUrls: ['./lab-setup.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None
 })
 export class LabSetupComponent implements OnInit {
   form!: FormGroup;
@@ -18,6 +19,10 @@ export class LabSetupComponent implements OnInit {
   preview: LabSettings | null = null;
   statusMessage: string | null = null;
   statusError = false;
+
+  // Stepper Configuration
+  currentStep: 'basic' | 'branding' | 'numbering' | 'notes' | 'layout' | 'roles' | 'preview' = 'basic';
+  steps = ['basic', 'branding', 'numbering', 'notes', 'layout', 'roles', 'preview'];
 
   // Self-registration link & QR
   appOrigin = typeof window !== 'undefined' && (window as any).location ? (window as any).location.origin : '';
@@ -40,7 +45,31 @@ export class LabSetupComponent implements OnInit {
     private api: LabSettingsService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute
-  ) {}
+  ) { }
+
+  setStep(step: any) {
+    this.currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.cdr.markForCheck();
+  }
+
+  nextStep() {
+    const idx = this.steps.indexOf(this.currentStep);
+    if (idx < this.steps.length - 1) {
+      this.currentStep = this.steps[idx + 1] as any;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.cdr.markForCheck();
+    }
+  }
+
+  prevStep() {
+    const idx = this.steps.indexOf(this.currentStep);
+    if (idx > 0) {
+      this.currentStep = this.steps[idx - 1] as any;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      this.cdr.markForCheck();
+    }
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -67,7 +96,7 @@ export class LabSetupComponent implements OnInit {
             const u = JSON.parse(userStr);
             this.labCode = (u?.lab?.labCode || u?.labCode || '').toString();
           }
-        } catch {}
+        } catch { }
         this.recomputeSelfReg();
         this.cdr.markForCheck();
       },
@@ -110,7 +139,7 @@ export class LabSetupComponent implements OnInit {
         setTimeout(() => { this.copyDone = false; this.cdr.markForCheck(); }, 1500);
         this.cdr.markForCheck();
       });
-    } catch {}
+    } catch { }
   }
 
   printSelfRegQR() {

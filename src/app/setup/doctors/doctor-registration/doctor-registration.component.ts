@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, ViewEncapsulation } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { FormBuilder, FormGroup, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -22,7 +22,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './doctor-registration.component.html',
-  styleUrls: ['./doctor-registration.component.css']
+  styleUrls: ['./doctor-registration.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class DoctorRegistrationComponent implements OnInit, OnDestroy, AfterViewInit {
   doctorForm!: FormGroup;
@@ -71,7 +72,7 @@ export class DoctorRegistrationComponent implements OnInit, OnDestroy, AfterView
     private route: ActivatedRoute,
     private authService: Auth,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.createDoctorForm();
@@ -227,7 +228,7 @@ export class DoctorRegistrationComponent implements OnInit, OnDestroy, AfterView
     // Get doctor name - prefer 'name' field, fallback to firstName + lastName
     const doctorName = doctor.name ||
       (doctor.firstName && doctor.lastName ? `${doctor.firstName} ${doctor.lastName}` :
-       doctor.firstName || doctor.lastName || '');
+        doctor.firstName || doctor.lastName || '');
 
     this.doctorForm.patchValue({
       name: doctorName,
@@ -288,7 +289,7 @@ export class DoctorRegistrationComponent implements OnInit, OnDestroy, AfterView
       email: [''],
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       dateOfBirth: [''],
-      age: [{value: '', disabled: true}],
+      age: [{ value: '', disabled: true }],
       specialization: [''],
       qualification: [''],
       experience: [''],
@@ -908,10 +909,10 @@ export class DoctorRegistrationComponent implements OnInit, OnDestroy, AfterView
   navigateToDocRegistration(): void {
     this.router.navigate(['/setup/doctors/doctor-registration']);
   }
- navigateToDepartmentList(): void {
+  navigateToDepartmentList(): void {
     this.router.navigate(['/setup/departments/list']);
   }
- navigateToDocSearch(): void {
+  navigateToDocSearch(): void {
     this.router.navigate(['/setup/doctors/doctor-list']);
   }
 

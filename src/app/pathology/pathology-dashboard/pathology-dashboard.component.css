@@ -16,9 +16,9 @@
   padding: 0;
 }
 
-/* Dashboard Header with Purple Gradient */
+/* Dashboard Header with Blue Gradient */
 .dashboard-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   padding: 15px;
   color: white;
   position: relative;
@@ -26,7 +26,7 @@
 }
 
 /* Floating profile icon positioned like Admin: bottom-right inside header */
-.profile-fab{
+.profile-fab {
   position: absolute;
   bottom: 6px;
   right: 10px;
@@ -35,15 +35,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255,255,255,0.96);
+  background: rgba(255, 255, 255, 0.96);
   color: #111827;
   border-radius: 9999px;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
   text-decoration: none;
   font-size: 18px;
   z-index: 2;
 }
-.profile-fab:hover{ filter: brightness(0.95); }
+
+.profile-fab:hover {
+  filter: brightness(0.95);
+}
 
 
 .header-content {
@@ -59,6 +62,7 @@
   font-size: 26px;
   margin: 0 0 10px;
   font-weight: 700;
+  color: #ffffff;
 }
 
 .dashboard-subtitle {
@@ -191,18 +195,23 @@
 
 /* Heart Beat Animation */
 @keyframes heartbeat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     filter: brightness(1);
   }
+
   25% {
     transform: scale(1.08);
     filter: brightness(1.1);
   }
+
   50% {
     transform: scale(1.12);
     filter: brightness(1.15);
   }
+
   75% {
     transform: scale(1.05);
     filter: brightness(1.05);
@@ -253,10 +262,12 @@
     stroke-dashoffset: 800;
     opacity: 0.7;
   }
+
   50% {
     stroke-dashoffset: 400;
     opacity: 1;
   }
+
   100% {
     stroke-dashoffset: 0;
     opacity: 0.7;
@@ -270,18 +281,21 @@
   text-align: center;
 }
 
-.heart-rate, .efficiency {
+.heart-rate,
+.efficiency {
   display: flex;
   flex-direction: column;
 }
 
-.rate-value, .efficiency-value {
+.rate-value,
+.efficiency-value {
   font-size: 28px;
   font-weight: bold;
   color: #ff6b9d;
 }
 
-.rate-label, .efficiency-label {
+.rate-label,
+.efficiency-label {
   font-size: 12px;
   opacity: 0.8;
   margin-top: 5px;
@@ -327,8 +341,15 @@
 
 /* Pulse Animation */
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Dashboard Content */
@@ -372,7 +393,7 @@
 
 .stat-icon-compact {
   font-size: 2.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   width: 60px;
   height: 60px;
@@ -477,8 +498,8 @@
 }
 
 .self-reg-card {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border: 2px solid #86efac;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 2px solid rgba(59, 130, 246, 0.3);
 }
 
 .self-reg-card .card-header h3 {
@@ -496,15 +517,15 @@
 }
 
 .activity-count.home-count {
-  background: rgba(34, 197, 94, 0.12);
-  color: #166534;
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(59, 130, 246, 0.15);
+  color: #1e40af;
+  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .live-indicator {
   font-size: 11px;
   margin-left: 4px;
-  color: #16a34a;
+  color: #3b82f6;
 }
 
 .live-indicator.pulse {
@@ -512,61 +533,90 @@
 }
 
 @keyframes livePulse {
-  0% { opacity: 0.3; transform: scale(0.9); }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0.3; transform: scale(0.9); }
+  0% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+
+  100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
 }
 
 .self-reg-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
 }
 
 .self-reg-item {
   display: flex;
-  align-items: flex-start;
-  padding: 14px 16px;
+  flex-direction: column;
+  padding: 1.25rem;
   background: #ffffff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.15s ease-out;
+  border-radius: 16px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.self-reg-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
 .self-reg-item:hover {
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.16);
-  transform: translateY(-1px);
-  border-color: #6ee7b7;
-}
-
-.self-reg-item.new-entry {
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
+  transform: translateY(-5px) scale(1.02);
   border-color: #22c55e;
 }
 
+.self-reg-item.new-entry {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.02);
+}
+
 .patient-avatar {
-  width: 36px;
-  height: 36px;
+  width: 50px;
+  height: 50px;
   border-radius: 999px;
   background: linear-gradient(135deg, #22c55e, #16a34a);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-weight: 600;
-  margin-right: 12px;
+  font-weight: 700;
+  margin-bottom: 1rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .patient-avatar span {
-  font-size: 16px;
+  font-size: 1.25rem;
+}
+
+.patient-info {
+  flex: 1;
 }
 
 .item-badges {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  margin-left: 12px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .collection-badge {
@@ -627,29 +677,39 @@
 /* Dashboard Cards */
 .dashboard-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.08);
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .dashboard-card:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+  transform: translateY(-3px);
 }
 
 .card-header {
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
 }
 
 .card-header h3 {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-header h3 i {
+  color: #3b82f6;
 }
 
 .card-content {
@@ -787,97 +847,138 @@
 .action-buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .action-btn {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 18px 16px;
-  min-height: 120px;
-  border: 1px solid rgba(255,255,255,0.35);
-  border-radius: 14px;
+  padding: 1.5rem;
+  min-height: 160px;
+  border: none;
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-decoration: none;
-  box-shadow: 0 6px 22px rgba(0,0,0,0.12);
-  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.action-btn.primary {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: white;
+.action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 0 20px 0 100%;
 }
 
-.action-btn.secondary {
-  background: linear-gradient(135deg, #6b7280, #4b5563);
-  color: white;
-}
-
-.action-btn.success {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-
-/* LIVE pill like admin */
-.live-pill{
-  position:absolute;
-  top:10px; right:10px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:#fff; font-size:10px; font-weight:700;
-  padding:2px 6px; border-radius:999px;
-  letter-spacing:.5px;
-}
-
-.action-btn.warning {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-}
-
-.action-btn.info {
-  background: linear-gradient(135deg, #06b6d4, #0891b2);
-  color: white;
-}
-
-.action-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.card-icon-wrapper {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: auto;
+  z-index: 1;
 }
 
 .action-icon {
-  position: absolute;
-  left: 16px;
-  top: 42px;
-  font-size: 22px;
-  opacity: 0.95;
+  font-size: 1.5rem;
+  color: white;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.action-btn:hover .action-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: auto;
+  z-index: 1;
 }
 
 .action-text {
   font-weight: 700;
-  font-size: 0.95rem;
-  margin-left: 44px;
-  margin-top: 6px;
-  color: #fff;
+  font-size: 1.1rem;
+  color: white;
+  line-height: 1.2;
 }
 
+.action-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+}
 
-/* Count badge bottom-right like Admin cards */
-.action-count{
-  position:absolute;
-  right:14px;
-  bottom:12px;
-  background: rgba(255,255,255,0.22);
-  border: 1px solid rgba(255,255,255,0.35);
-  color:#fff;
-  font-weight:800;
-  font-size:1rem;
-  padding:6px 10px;
-  border-radius:8px;
-  backdrop-filter: blur(2px);
+.card-count-wrapper {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 1.25rem;
+  right: 1.25rem;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-count-wrapper::before {
+  content: attr(data-label);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+}
+
+.action-count {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: white;
+  line-height: 1;
+}
+
+.action-btn.primary,
+.action-btn.secondary,
+.action-btn.success,
+.action-btn.warning,
+.action-btn.info {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.action-btn:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+}
+
+.live-pill {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  z-index: 2;
 }
 
 /* Pending Tests */
@@ -1069,6 +1170,7 @@
 }
 
 @media (max-width: 480px) {
+
   .stats-section,
   .chart-calendar-section,
   .quick-actions-section,

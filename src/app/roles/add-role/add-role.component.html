@@ -4,14 +4,11 @@
     <div class="header-content">
       <div class="doctor-avatar">
         <div class="avatar-placeholder">
-          <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+          <i class="fas fa-user-plus"></i>
         </div>
       </div>
       <div class="header-info">
-        <h1 class="page-title">✨Create New User</h1>
+        <h1 class="page-title"><i class="fas fa-sparkles"></i> Create New User</h1>
         <p class="page-subtitle">Add a new team member to your lab</p>
       </div>
     </div>
@@ -24,130 +21,111 @@
         <!-- Personal Information Section -->
         <div class="form-section">
           <div class="section-header">
-            <div class="section-icon">👤</div>
+            <div class="section-icon"><i class="fas fa-user"></i></div>
             <h3 class="section-title">Personal Information</h3>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">📧</span>
+                <span class="label-icon"><i class="fas fa-envelope"></i></span>
                 Email Address *
               </label>
-              <input
-                class="form-input"
-                type="email"
-                formControlName="email"
-                (input)="onEmailInput()"
-                placeholder="user@example.com"
-                autocomplete="off"
-              />
+              <input class="form-input" type="email" formControlName="email" (input)="onEmailInput()"
+                placeholder="user@example.com" autocomplete="off" />
               <span class="field-hint">This will be used for login</span>
             </div>
 
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">👨</span>
+                <span class="label-icon"><i class="fas fa-user"></i></span>
                 First Name
               </label>
-              <input
-                class="form-input"
-                formControlName="firstName"
-                (input)="onNameInput('firstName')"
-                placeholder="Enter first name"
-              />
+              <input class="form-input" formControlName="firstName" (input)="onNameInput('firstName')"
+                placeholder="Enter first name" />
             </div>
 
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">👤</span>
+                <span class="label-icon"><i class="fas fa-user"></i></span>
                 Last Name
               </label>
-              <input
-                class="form-input"
-                formControlName="lastName"
-                (input)="onNameInput('lastName')"
-                placeholder="Enter last name"
-              />
+              <input class="form-input" formControlName="lastName" (input)="onNameInput('lastName')"
+                placeholder="Enter last name" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">📱</span>
+                <span class="label-icon"><i class="fas fa-phone"></i></span>
                 Phone Number *
               </label>
-              <input
-                class="form-input"
-                formControlName="phone"
-                placeholder="10-digit mobile number"
-                maxlength="10"
-              />
+              <input class="form-input" formControlName="phone" placeholder="10-digit mobile number" maxlength="10" />
               <span class="field-hint">10-digit mobile number</span>
             </div>
 
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">🎭</span>
+                <span class="label-icon"><i class="fas fa-user-tag"></i></span>
                 Role *
               </label>
-	              <select class="form-input form-select" formControlName="role" (change)="onRoleChange($any($event.target).value)">
-	                <option value="" disabled>Select a role</option>
-	                <!-- SuperAdmin can create any role -->
-	                <ng-container *ngIf="currentUserRole === 'SuperAdmin'; else labOwnerRoleOptions">
-	                  <option value="Admin">👨‍💼 Admin</option>
-	                  <option value="LabAdmin">🧪 Lab Admin</option>
-	                  <option value="Pathology">🔬 Pathology</option>
-	                  <option value="Technician">🧪 Technician</option>
-	                  <option value="Receptionist">☎ Receptionist</option>
-	                  <option value="Doctor">👨‍⚕️ Doctor</option>
-	                  <option value="Pharmacy">💊 Pharmacy</option>
-	                  <option value="SuperAdmin">⚡ SuperAdmin</option>
-	                </ng-container>
-                  <!-- Lab Admin/Admin: Show ONLY dynamic custom roles from API -->
-                  <ng-template #labOwnerRoleOptions>
-                    <!-- Loading state -->
-                    <option *ngIf="rolesLoading" value="" disabled>Loading roles...</option>
-                    <!-- Dynamic custom roles from API -->
-                    <option *ngFor="let role of customRoles" [value]="role.name">
-                      🏷️ {{ role.label || role.name }}
-                    </option>
-                    <!-- Option to create new custom role inline -->
-                    <option value="__custom">➕ Create new role</option>
-                    <!-- Message if no roles exist -->
-                    <option *ngIf="!rolesLoading && customRoles.length === 0" value="" disabled>
-                      No roles found. Create roles in Lab Setup first.
-                    </option>
-                  </ng-template>
-	              </select>
-                      <!-- Custom role input for LabAdmin/Admin when they choose to create custom roles -->
-                      <div class="form-field" *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && form.get('role')?.value === '__custom'">
-                        <label class="field-label">
-                          <span class="label-icon">✍️</span>
-                          Custom Role Name *
-                        </label>
-                        <input class="form-input" type="text" formControlName="customRole" placeholder="e.g. Accountant, Sample Collector" />
-                        <span class="field-hint">This role will be created. Go to Lab Setup to manage roles.</span>
-                      </div>
-                      <!-- Hint to create roles in Lab Setup -->
-                      <span class="field-hint" *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && customRoles.length === 0 && !rolesLoading">
-                        💡 Tip: Create custom roles in <a routerLink="/setup/lab-setup" style="color:#2563eb;">Lab Setup</a> first
-                      </span>
+              <select class="form-input form-select" formControlName="role"
+                (change)="onRoleChange($any($event.target).value)">
+                <option value="" disabled>Select a role</option>
+                <!-- SuperAdmin can create any role -->
+                <ng-container *ngIf="currentUserRole === 'SuperAdmin'; else labOwnerRoleOptions">
+                  <option value="Admin"><i class="fas fa-user-tie"></i> Admin</option>
+                  <option value="LabAdmin"><i class="fas fa-flask"></i> Lab Admin</option>
+                  <option value="Pathology"><i class="fas fa-microscope"></i> Pathology</option>
+                  <option value="Technician"><i class="fas fa-user-cog"></i> Technician</option>
+                  <option value="Receptionist"><i class="fas fa-phone-volume"></i> Receptionist</option>
+                  <option value="Doctor"><i class="fas fa-user-md"></i> Doctor</option>
+                  <option value="Pharmacy"><i class="fas fa-pills"></i> Pharmacy</option>
+                  <option value="SuperAdmin"><i class="fas fa-crown"></i> SuperAdmin</option>
+                </ng-container>
+                <!-- Lab Admin/Admin: Show ONLY dynamic custom roles from API -->
+                <ng-template #labOwnerRoleOptions>
+                  <!-- Loading state -->
+                  <option *ngIf="rolesLoading" value="" disabled>Loading roles...</option>
+                  <!-- Dynamic custom roles from API -->
+                  <option *ngFor="let role of customRoles" [value]="role.name">
+                    <i class="fas fa-tag"></i> {{ role.label || role.name }}
+                  </option>
+                  <!-- Option to create new custom role inline -->
+                  <option value="__custom"><i class="fas fa-plus"></i> Create new role</option>
+                  <!-- Message if no roles exist -->
+                  <option *ngIf="!rolesLoading && customRoles.length === 0" value="" disabled>
+                    No roles found. Create roles in Lab Setup first.
+                  </option>
+                </ng-template>
+              </select>
+              <!-- Custom role input for LabAdmin/Admin when they choose to create custom roles -->
+              <div class="form-field"
+                *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && form.get('role')?.value === '__custom'">
+                <label class="field-label">
+                  <span class="label-icon"><i class="fas fa-edit"></i></span>
+                  Custom Role Name *
+                </label>
+                <input class="form-input" type="text" formControlName="customRole"
+                  placeholder="e.g. Accountant, Sample Collector" />
+                <span class="field-hint">This role will be created. Go to Lab Setup to manage roles.</span>
+              </div>
+              <!-- Hint to create roles in Lab Setup -->
+              <span class="field-hint"
+                *ngIf="(currentUserRole === 'Admin' || currentUserRole === 'LabAdmin') && customRoles.length === 0 && !rolesLoading">
+                <i class="fas fa-lightbulb"></i> Tip: Create custom roles in <a routerLink="/setup/lab-setup"
+                  style="color:#2563eb;">Lab Setup</a> first
+              </span>
             </div>
 
             <div class="form-field">
               <label class="field-label">
-                <span class="label-icon">🔒</span>
+                <span class="label-icon"><i class="fas fa-lock"></i></span>
                 Temporary Password *
               </label>
-              <input
-                class="form-input"
-                type="password"
-                formControlName="password"
-                placeholder="Min. 6 characters"
-                autocomplete="new-password"
-              />
+              <input class="form-input" type="password" formControlName="password" placeholder="Min. 6 characters"
+                autocomplete="new-password" />
               <span class="field-hint">User can change this after first login</span>
             </div>
           </div>
@@ -156,13 +134,14 @@
           <div class="form-row" *ngIf="availableComponents.length">
             <div class="form-field" style="grid-column: 1 / -1;">
               <label class="field-label">
-                <span class="label-icon">🎯</span>
+                <span class="label-icon"><i class="fas fa-shield-alt"></i></span>
                 Permissions & Access
               </label>
               <div class="comp-grid">
                 <div class="comp-item" *ngFor="let it of availableComponents; trackBy: trackComp">
                   <label class="checkbox-label">
-                    <input type="checkbox" [checked]="it.selected" (change)="it.selected = $any($event.target).checked" />
+                    <input type="checkbox" [checked]="it.selected"
+                      (change)="it.selected = $any($event.target).checked" />
                     <span class="checkbox-custom"></span>
                     <span class="comp-label">{{ it.label }}</span>
                     <span class="comp-sec">{{ it.section }}</span>
@@ -176,7 +155,7 @@
         <!-- Profile Photo Section -->
         <div class="form-section">
           <div class="section-header">
-            <div class="section-icon">📸</div>
+            <div class="section-icon"><i class="fas fa-camera"></i></div>
             <h3 class="section-title">Profile Photo (Optional)</h3>
           </div>
 
@@ -184,14 +163,15 @@
             <label class="upload-dropzone" [class.has-image]="imagePreview">
               <input #fileInput type="file" accept="image/*" (change)="handleFile($event)" />
               <div class="upload-content" *ngIf="!imagePreview">
-                <div class="upload-icon">📤</div>
+                <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
                 <span class="upload-text">Click to upload or drag and drop</span>
                 <span class="upload-sub">JPG, PNG or GIF (max. 5MB)</span>
               </div>
               <div class="inline-preview" *ngIf="imagePreview">
-                <img [src]="imagePreview" alt="Preview" class="doctor-preview-thumb" (click)="openPreview(); $event.preventDefault()" title="Click to preview" />
+                <img [src]="imagePreview" alt="Preview" class="doctor-preview-thumb"
+                  (click)="openPreview(); $event.preventDefault()" title="Click to preview" />
                 <div class="preview-overlay">
-                  <span>🔍 Click to preview</span>
+                  <span><i class="fas fa-search-plus"></i> Click to preview</span>
                 </div>
               </div>
             </label>
@@ -201,18 +181,18 @@
         <!-- Action Buttons -->
         <div class="form-actions">
           <button type="submit" class="btn-primary" [disabled]="form.invalid || saving">
-            <span class="btn-icon">{{ saving ? '⏳' : '💾' }}</span>
+            <span class="btn-icon"><i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i></span>
             {{ saving ? 'Creating User...' : 'Create User' }}
           </button>
           <button type="button" class="btn-secondary" (click)="form.reset()" [disabled]="saving">
-            <span class="btn-icon">🔄</span>
+            <span class="btn-icon"><i class="fas fa-redo"></i></span>
             Reset Form
           </button>
         </div>
 
         <!-- Success Message -->
         <div *ngIf="showSuccess && createdUser" class="success-banner">
-          <div class="success-icon">✅</div>
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
           <div class="success-content">
             <h4>User Created Successfully!</h4>
             <p>
@@ -221,10 +201,10 @@
             </p>
             <div class="success-actions">
               <button type="button" class="btn-success-action" (click)="goToList()">
-                📋 View All Users
+                <i class="fas fa-list"></i> View All Users
               </button>
               <button type="button" class="btn-success-action" (click)="goToPermissionsNow()">
-                🔐 Set Permissions
+                <i class="fas fa-lock"></i> Set Permissions
               </button>
             </div>
           </div>
@@ -234,29 +214,20 @@
   </div>
 
   <!-- Success Alert on Save -->
-  <app-success-alert
-    [show]="showSuccessAlert"
-    [title]="successTitle"
-    [message]="successMessage"
-    [badgeText]="'Operation Successful'"
-    [autoHideDelay]="1500"
-    (close)="showSuccessAlert = false">
+  <app-success-alert [show]="showSuccessAlert" [title]="successTitle" [message]="successMessage"
+    [badgeText]="'Operation Successful'" [autoHideDelay]="1500" (close)="showSuccessAlert = false">
   </app-success-alert>
 
   <!-- Record Exists Modal for duplicates -->
-  <app-record-exists-modal
-    [show]="showRecordExistsModal"
-    [title]="'Record Already Exists!'"
-    [message]="recordExistsMessage"
-    [subMessage]="'Please try with a different email/username.'"
-    [badgeText]="'Duplicate User Found'"
-    [autoHideDelay]="2000"
-    (closed)="onRecordExistsModalClosed()">
+  <app-record-exists-modal [show]="showRecordExistsModal" [title]="'Record Already Exists!'"
+    [message]="recordExistsMessage" [subMessage]="'Please try with a different email/username.'"
+    [badgeText]="'Duplicate User Found'" [autoHideDelay]="2000" (closed)="onRecordExistsModalClosed()">
   </app-record-exists-modal>
 </div>
 
 <!-- Full-screen image overlay preview -->
 <div class="image-overlay" *ngIf="showImageOverlay" (click)="closePreview()">
   <img [src]="imagePreview" alt="Preview" />
-  <button type="button" class="overlay-close" (click)="closePreview(); $event.stopPropagation()">✕</button>
+  <button type="button" class="overlay-close" (click)="closePreview(); $event.stopPropagation()"><i
+      class="fas fa-times"></i></button>
 </div>

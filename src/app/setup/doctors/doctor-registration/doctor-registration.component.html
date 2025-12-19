@@ -1,379 +1,276 @@
-<div class="registration-container">
-  
-    <!-- Header -->
-    <div class="card-header">
-      <div class="header-content">
-       
-        
-       <div class="doctor-avatar">          
-            <div class="avatar-placeholder">
-              👨‍⚕️
-            </div>                  
-        </div>
-        <div class="header-info">
-          <h1 class="page-title">{{ isEditMode ? 'Edit Doctor' : 'Doctor Registration' }}</h1>
-         
+<div class="lab-setup-container">
+  <!-- Fixed Header -->
+  <div class="lab-header">
+    <div class="header-content">
+      <h1>{{ isEditMode ? 'Edit Doctor' : 'Doctor Registration' }}</h1>
+      <p class="muted-white">Manage doctor details and registration.</p>
+    </div>
+    <!-- Tab Navigation -->
+    <div class="subnav">
+      <a (click)="navigateToDocRegistration()" class="active">Doctor Registration</a>
+      <a (click)="navigateToDocSearch()">Search Doctor</a>
+    </div>
+  </div>
+
+  <!-- Scrollable Content -->
+  <div class="grid" style="display: block;">
+    <div class="registration-container">
+      <div class="registration-card">
+        <!-- Form -->
+        <div class="card-body">
+          <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="registration-form">
+
+            <!-- Basic Doctor Form (Always Visible) -->
+            <div class="form-section">
+              <h3 class="section-title">Doctor Information</h3>
+              <!-- Row 1: Name and Department -->
+              <div class="form-row">
+                <!-- Name -->
+                <div class="form-field name-field">
+                  <label class="field-label">Doctor Name *</label>
+                  <input type="text" formControlName="name" class="form-input" [class.error]="isFieldInvalid('name')"
+                    placeholder="Enter doctor name" (input)="capitalizeFirstLetter($event)" #doctorNameInput>
+                  <div *ngIf="isFieldInvalid('name')" class="error-text">
+                    {{ getFieldError('name') }}
+                  </div>
+                </div>
+
+                <!-- Department -->
+                <div class="form-field dept-field">
+                  <label class="field-label">Department *</label>
+                  <select formControlName="department" class="form-input" [class.error]="isFieldInvalid('department')">
+                    <option value="">Select Department</option>
+                    <option *ngFor="let dept of departmentOptions" [value]="dept._id">
+                      {{ dept.name }}
+                    </option>
+                  </select>
+                  <div *ngIf="isFieldInvalid('department')" class="error-text">
+                    {{ getFieldError('department') }}
+                  </div>
+                </div>
+
+                <!-- Consultation Fee -->
+                <div class="form-field fee-field">
+                  <label class="field-label">Consultation Fee *</label>
+                  <input type="number" formControlName="fee" class="form-input" [class.error]="isFieldInvalid('fee')"
+                    placeholder="Enter consultation fee" min="0">
+                  <div *ngIf="isFieldInvalid('fee')" class="error-text">
+                    {{ getFieldError('fee') }}
+                  </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="form-field gender-field">
+                  <label class="field-label">Gender *</label>
+                  <select formControlName="gender" class="form-input" [class.error]="isFieldInvalid('gender')">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div *ngIf="isFieldInvalid('gender')" class="error-text">
+                    {{ getFieldError('gender') }}
+                  </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-field phone-field">
+                  <label class="field-label">Phone Number *</label>
+                  <input type="tel" formControlName="phone" class="form-input" [class.error]="isFieldInvalid('phone')"
+                    placeholder="Enter 10-digit phone number" maxlength="10" (input)="formatPhoneNumber($event)"
+                    (blur)="onPhoneBlur()">
+                  <div *ngIf="isFieldInvalid('phone')" class="error-text">
+                    {{ getFieldError('phone') || 'Phone number must be 10 digits' }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Additional Information Button -->
+            <div class="form-section" style="text-align: right;">
+              <button type="button" class="btn-additional-info" (click)="toggleAdditionalInfo()">
+                {{ showAdditionalInfo ? '➖ Hide Additional Information' : '➕ Additional Information' }}
+              </button>
+            </div>
+
+            <!-- Additional Information (Conditional) -->
+            <div *ngIf="showAdditionalInfo" class="additional-info-section">
+              <!-- Basic Information -->
+              <div class="form-section">
+                <h3 class="section-title">Basic Information</h3>
+
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label class="field-label">Email Address</label>
+                    <input type="email" formControlName="email" class="form-input"
+                      [class.error]="isFieldInvalid('email')" placeholder="Enter email address">
+                    <div *ngIf="isFieldInvalid('email')" class="error-text">
+                      {{ getFieldError('email') }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Date of Birth</label>
+                    <input type="date" formControlName="dateOfBirth" class="form-input"
+                      [class.error]="isFieldInvalid('dateOfBirth')">
+                    <div *ngIf="isFieldInvalid('dateOfBirth')" class="error-text">
+                      {{ getFieldError('dateOfBirth') }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Age</label>
+                    <input type="number" formControlName="age" class="form-input" placeholder="Auto-calculated"
+                      readonly>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Professional Information -->
+              <div class="form-section">
+                <h3 class="section-title">Professional Information</h3>
+
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label class="field-label">Specialization</label>
+                    <select formControlName="specialization" class="form-input"
+                      [class.error]="isFieldInvalid('specialization')">
+                      <option value="">Select Specialization</option>
+                      <option *ngFor="let spec of specializations" [value]="spec">
+                        {{ spec }}
+                      </option>
+                    </select>
+                    <div *ngIf="isFieldInvalid('specialization')" class="error-text">
+                      {{ getFieldError('specialization') }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Qualification</label>
+                    <input type="text" formControlName="qualification" class="form-input"
+                      [class.error]="isFieldInvalid('qualification')" placeholder="e.g., MBBS, MD"
+                      (input)="formatQualification($event)">
+                    <div *ngIf="isFieldInvalid('qualification')" class="error-text">
+                      {{ getFieldError('qualification') }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Experience (Years)</label>
+                    <input type="number" formControlName="experience" class="form-input"
+                      [class.error]="isFieldInvalid('experience')" placeholder="0">
+                    <div *ngIf="isFieldInvalid('experience')" class="error-text">
+                      {{ getFieldError('experience') }}
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">License Number</label>
+                    <input type="text" formControlName="licenseNumber" class="form-input"
+                      [class.error]="isFieldInvalid('licenseNumber')" placeholder="Medical license number">
+                    <div *ngIf="isFieldInvalid('licenseNumber')" class="error-text">
+                      {{ getFieldError('licenseNumber') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Address Information -->
+              <div class="form-section" formGroupName="address">
+                <h3 class="section-title">Address Information</h3>
+
+                <div class="form-grid">
+                  <div class="form-field full-width">
+                    <label class="field-label">Street Address</label>
+                    <input type="text" formControlName="street" class="form-input" placeholder="Enter street address"
+                      (input)="capitalizeAddress($event)">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">City</label>
+                    <input type="text" formControlName="city" class="form-input" placeholder="Enter city"
+                      (input)="capitalizeAddress($event)">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">State</label>
+                    <select formControlName="state" class="form-input">
+                      <option value="">Select State</option>
+                      <option *ngFor="let state of states" [value]="state">
+                        {{ state }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">ZIP Code</label>
+                    <input type="text" formControlName="zipCode" class="form-input"
+                      placeholder="Enter 6-digit ZIP code">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Country</label>
+                    <input type="text" formControlName="country" class="form-input"
+                      [class.error]="isAddressFieldInvalid('country')" readonly>
+                    <div *ngIf="isAddressFieldInvalid('country')" class="error-text">
+                      {{ getAddressFieldError('country') }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Doctor Photo Upload Section -->
+              <div class="form-section">
+                <h3 class="section-title">Doctor Photo</h3>
+                <div class="photo-upload-row">
+                  <!-- Left: File input -->
+                  <div class="upload-col">
+                    <label class="form-label">Upload Doctor Photo *</label>
+                    <input type="file" #fileInput (change)="onImageSelected($event)" accept="image/*"
+                      class="form-input file-input">
+                    <small class="form-hint">Upload a professional photo of the doctor (JPG, PNG, max 5MB)</small>
+                  </div>
+
+                  <!-- Right: Image Preview -->
+                  <div class="preview-col" *ngIf="imagePreview">
+                    <div class="image-preview-container inline">
+                      <div class="image-preview">
+                        <img [src]="imagePreview" alt="Doctor Preview" class="doctor-preview-thumb"
+                          (click)="openImagePreview(imagePreview)">
+                        <button type="button" class="remove-image-btn" (click)="removeImage()">×</button>
+                      </div>
+                      <p class="preview-text">Click image to view full size</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" (click)="resetForm()" [disabled]="isSubmitting">
+                <span class="btn-icon">🔄</span>
+                Reset Form
+              </button>
+
+              <button type="submit" class="btn-primary" [disabled]="!doctorForm.valid || isSubmitting">
+                <span class="btn-icon">💾</span>
+                <span *ngIf="!isSubmitting && !isEditMode">Register Doctor</span>
+                <span *ngIf="!isSubmitting && isEditMode">Update Doctor</span>
+                <span *ngIf="isSubmitting && !isEditMode">Registering...</span>
+                <span *ngIf="isSubmitting && isEditMode">Updating...</span>
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
-
-  <!-- Tab Navigation -->
-  <div class="tab-navigation" style="margin-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <nav style="display: flex; gap: 2rem; padding: 0 1.5rem;" aria-label="Tabs">
-
-      <button type="button" (click)="navigateToDocRegistration()"
-              style="border-bottom: 2px solid #011c47; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #3b82f6; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
-         Doctor Registration
-      </button>
-      <button type="button" (click)="navigateToDocSearch()"
-              style="border-bottom: 2px solid transparent; padding: 1rem 0.25rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; cursor: pointer;">
-       Search Doctor
-      </button>
-
-    </nav>
-  </div>
-  
-<div class="registration-card">
-    <!-- Form -->
-    <div class="card-body">
-      <form [formGroup]="doctorForm" (ngSubmit)="onSubmit()" class="registration-form">
-
-        <!-- Basic Doctor Form (Always Visible) -->
-        <div class="form-section">
-          <h3 class="section-title">Doctor Information</h3>
-          <div class="form-row">
-            <!-- Name -->
-            <div class="form-field">
-              <label class="field-label">Doctor Name *</label>
-              <input
-                type="text"
-                formControlName="name"
-                class="form-input"
-                [class.error]="isFieldInvalid('name')"
-                placeholder="Enter doctor name"
-                (input)="capitalizeFirstLetter($event)"
-                #doctorNameInput
-              >
-              <div *ngIf="isFieldInvalid('name')" class="error-text">
-                {{ getFieldError('name') }}
-              </div>
-            </div>
-
-            <!-- Department -->
-            <div class="form-field">
-              <label class="field-label">Department *</label>
-              <select
-                formControlName="department"
-                class="form-input"
-                [class.error]="isFieldInvalid('department')"
-              >
-                <option value="">Select Department</option>
-                <option *ngFor="let dept of departmentOptions" [value]="dept._id">
-                  {{ dept.name }}
-                </option>
-              </select>
-              <div *ngIf="isFieldInvalid('department')" class="error-text">
-                {{ getFieldError('department') }}
-              </div>
-            </div>
-
-            <!-- Consultation Fee -->
-            <div class="form-field">
-              <label class="field-label">Consultation Fee *</label>
-              <input
-                type="number"
-                formControlName="fee"
-                class="form-input"
-                [class.error]="isFieldInvalid('fee')"
-                placeholder="Enter consultation fee"
-                min="0"
-              >
-              <div *ngIf="isFieldInvalid('fee')" class="error-text">
-                {{ getFieldError('fee') }}
-              </div>
-            </div>
-
-            <!-- Gender -->
-            <div class="form-field">
-              <label class="field-label">Gender *</label>
-              <select
-                formControlName="gender"
-                class="form-input"
-                [class.error]="isFieldInvalid('gender')"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-              <div *ngIf="isFieldInvalid('gender')" class="error-text">
-                {{ getFieldError('gender') }}
-              </div>
-            </div>
-              <div class="form-field phone-field">
-                <label class="field-label">Phone Number *</label>
-                <input
-                  type="tel"
-                  formControlName="phone"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('phone')"
-                  placeholder="Enter 10-digit phone number"
-                  maxlength="10"
-                  (input)="formatPhoneNumber($event)"
-                  (blur)="onPhoneBlur()">
-                <div *ngIf="isFieldInvalid('phone')" class="error-text">
-                  {{ getFieldError('phone') || 'Phone number must be 10 digits' }}
-                </div>
-              </div>
-          </div>
-        </div>
-
-        <!-- Add Additional Information Button -->
-        <div class="form-section" style="text-align: right;">
-          <button
-            type="button"
-            class="btn-additional-info"
-            (click)="toggleAdditionalInfo()"
-          >
-            {{ showAdditionalInfo ? '➖ Hide Additional Information' : '➕ Additional Information' }}
-          </button>
-        </div>
-
-        <!-- Additional Information (Conditional) -->
-        <div *ngIf="showAdditionalInfo" class="additional-info-section">
-          <!-- Basic Information -->
-          <div class="form-section">
-            <h3 class="section-title">Basic Information</h3>
-
-            <div class="form-grid">
-              <div class="form-field">
-                <label class="field-label">Email Address</label>
-                <input
-                  type="email"
-                  formControlName="email"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('email')"
-                  placeholder="Enter email address">
-                <div *ngIf="isFieldInvalid('email')" class="error-text">
-                  {{ getFieldError('email') }}
-                </div>
-              </div>
-
-            
-
-              <div class="form-field">
-                <label class="field-label">Date of Birth</label>
-                <input
-                  type="date"
-                  formControlName="dateOfBirth"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('dateOfBirth')">
-                <div *ngIf="isFieldInvalid('dateOfBirth')" class="error-text">
-                  {{ getFieldError('dateOfBirth') }}
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">Age</label>
-                <input
-                  type="number"
-                  formControlName="age"
-                  class="form-input"
-                  placeholder="Auto-calculated"
-                  readonly>
-              </div>
-            </div>
-          </div>
-
-          <!-- Professional Information -->
-          <div class="form-section">
-            <h3 class="section-title">Professional Information</h3>
-
-            <div class="form-grid">
-              <div class="form-field">
-                <label class="field-label">Specialization</label>
-                <select
-                  formControlName="specialization"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('specialization')">
-                  <option value="">Select Specialization</option>
-                  <option *ngFor="let spec of specializations" [value]="spec">
-                    {{ spec }}
-                  </option>
-                </select>
-                <div *ngIf="isFieldInvalid('specialization')" class="error-text">
-                  {{ getFieldError('specialization') }}
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">Qualification</label>
-                <input
-                  type="text"
-                  formControlName="qualification"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('qualification')"
-                  placeholder="e.g., MBBS, MD"
-                  (input)="formatQualification($event)">
-                <div *ngIf="isFieldInvalid('qualification')" class="error-text">
-                  {{ getFieldError('qualification') }}
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">Experience (Years)</label>
-                <input
-                  type="number"
-                  formControlName="experience"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('experience')"
-                  placeholder="0"
-                  >
-                <div *ngIf="isFieldInvalid('experience')" class="error-text">
-                  {{ getFieldError('experience') }}
-                </div>
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">License Number</label>
-                <input
-                  type="text"
-                  formControlName="licenseNumber"
-                  class="form-input"
-                  [class.error]="isFieldInvalid('licenseNumber')"
-                  placeholder="Medical license number">
-                <div *ngIf="isFieldInvalid('licenseNumber')" class="error-text">
-                  {{ getFieldError('licenseNumber') }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Address Information -->
-          <div class="form-section" formGroupName="address">
-            <h3 class="section-title">Address Information</h3>
-
-            <div class="form-grid">
-              <div class="form-field full-width">
-                <label class="field-label">Street Address</label>
-                <input
-                  type="text"
-                  formControlName="street"
-                  class="form-input"
-                  placeholder="Enter street address"
-                  (input)="capitalizeAddress($event)">
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">City</label>
-                <input
-                  type="text"
-                  formControlName="city"
-                  class="form-input"
-                  placeholder="Enter city"
-                  (input)="capitalizeAddress($event)">
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">State</label>
-                <select
-                  formControlName="state"
-                  class="form-input">
-                  <option value="">Select State</option>
-                  <option *ngFor="let state of states" [value]="state">
-                    {{ state }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">ZIP Code</label>
-                <input
-                  type="text"
-                  formControlName="zipCode"
-                  class="form-input"
-                  placeholder="Enter 6-digit ZIP code">
-              </div>
-
-              <div class="form-field">
-                <label class="field-label">Country</label>
-                <input
-                  type="text"
-                  formControlName="country"
-                  class="form-input"
-                  [class.error]="isAddressFieldInvalid('country')"
-                  readonly>
-                <div *ngIf="isAddressFieldInvalid('country')" class="error-text">
-                  {{ getAddressFieldError('country') }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Doctor Photo Upload Section -->
-          <div class="form-section">
-            <h3 class="section-title">Doctor Photo</h3>
-            <div class="photo-upload-row">
-              <!-- Left: File input -->
-              <div class="upload-col">
-                <label class="form-label">Upload Doctor Photo *</label>
-                <input
-                  type="file"
-                  #fileInput
-                  (change)="onImageSelected($event)"
-                  accept="image/*"
-                  class="form-input file-input">
-                <small class="form-hint">Upload a professional photo of the doctor (JPG, PNG, max 5MB)</small>
-              </div>
-
-              <!-- Right: Image Preview -->
-              <div class="preview-col" *ngIf="imagePreview">
-                <div class="image-preview-container inline">
-                  <div class="image-preview">
-                    <img [src]="imagePreview" alt="Doctor Preview" class="doctor-preview-thumb" (click)="openImagePreview(imagePreview)">
-                    <button type="button" class="remove-image-btn" (click)="removeImage()">×</button>
-                  </div>
-                  <p class="preview-text">Click image to view full size</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="form-actions">
-          <button
-            type="button"
-            class="btn-secondary"
-            (click)="resetForm()"
-            [disabled]="isSubmitting">
-            <span class="btn-icon">🔄</span>
-            Reset Form
-          </button>
-
-          <button
-            type="submit"
-            class="btn-primary"
-            [disabled]="!doctorForm.valid || isSubmitting">
-            <span class="btn-icon">💾</span>
-            <span *ngIf="!isSubmitting && !isEditMode">Register Doctor</span>
-            <span *ngIf="!isSubmitting && isEditMode">Update Doctor</span>
-            <span *ngIf="isSubmitting && !isEditMode">Registering...</span>
-            <span *ngIf="isSubmitting && isEditMode">Updating...</span>
-          </button>
-
-        
-        </div>
-      </form>
     </div>
   </div>
 </div>
 
 <!-- Success Alert Modal -->
-<app-success-alert
-  [show]="showSuccessAlert"
+<app-success-alert [show]="showSuccessAlert"
   [title]="isEditMode ? '🎉 Doctor Updated Successfully!' : '🎉 Doctor Registration Successful!'"
-  [message]="successMessage"
-  [badgeText]="isEditMode ? 'Doctor Updated Successfully' : 'Doctor Added Successfully'"
+  [message]="successMessage" [badgeText]="isEditMode ? 'Doctor Updated Successfully' : 'Doctor Added Successfully'"
   (close)="closeSuccessAlert()">
 </app-success-alert>
