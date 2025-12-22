@@ -7,8 +7,8 @@
   max-width: 100%;
   overflow: hidden;
   /* Dark Gradient Background for entire page */
-  background: #0f172a;
-  /* Deep Navy Base */
+  background: #f1f5f9;
+  /* Light gray background matching dashboard main area */
   align-items: center;
   justify-content: center;
   padding: 0;
@@ -23,12 +23,12 @@
   max-width: 1000px;
   height: 85vh;
   max-height: 650px;
-  background: #1e293b;
-  /* Slightly lighter navy card bg */
+  background: white;
+  /* White card background */
   border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   margin: 0 auto;
 }
 
@@ -105,13 +105,7 @@
   font-weight: 300;
 }
 
-.hero-footer {
-  position: absolute;
-  bottom: 2rem;
-  left: 4rem;
-  color: #64748b;
-  font-size: 0.8rem;
-}
+
 
 /* RIGHT SIDE: Form Area */
 .login-right {
@@ -119,8 +113,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1e293b;
-  /* Dark Navy to match 'black theme' request */
+  background: white;
+  /* White background for form */
   padding: 3rem;
   position: relative;
 }
@@ -141,14 +135,14 @@
 
 .login-header h2 {
   font-size: 1.8rem;
-  color: white;
-  /* White text for dark mode */
+  color: #0f172a;
+  /* Dark text */
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .login-header p {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
@@ -161,8 +155,8 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #cbd5e1;
-  /* Light gray label */
+  color: #334155;
+  /* Dark gray label */
   margin-bottom: 0.5rem;
 }
 
@@ -185,23 +179,23 @@
 .form-input {
   width: 100%;
   padding: 0.85rem 1rem 0.85rem 2.8rem !important;
-  border: 1px solid #334155;
-  /* Dark border */
+  border: 1px solid #e2e8f0;
+  /* Light border */
   border-radius: 12px;
-  background: #0f172a;
-  /* Deep dark input background */
-  color: white;
+  background: #f8fafc;
+  /* Very light gray input background */
+  color: #0f172a;
   transition: all 0.2s;
   font-size: 0.95rem;
   box-sizing: border-box !important;
 }
 
 .form-input::placeholder {
-  color: #475569;
+  color: #94a3b8;
 }
 
 .form-input:focus {
-  background: #0f172a;
+  background: white;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   outline: none;
@@ -242,7 +236,7 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  color: #cbd5e1;
+  color: #475569;
 }
 
 .link {

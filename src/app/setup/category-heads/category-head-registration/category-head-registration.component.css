@@ -6,8 +6,7 @@
 
 /* Header Styles */
 .header {
-background: #2d143d;
-background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1) 55%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -73,7 +72,7 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
 }
 
 .nav-tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   color: white;
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
@@ -231,7 +230,7 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
   white-space: nowrap;
   font-size: 12px;
   padding: 8px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
@@ -369,6 +368,7 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -386,9 +386,11 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
   font-size: 14px;
   color: #9ca3af;
 }
+
 .icon-search::placeholder {
   color: #9ca3af;
 }
+
 .icon-search:focus {
   outline: none;
   border-color: #6366f1;
@@ -412,14 +414,17 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
 .icon-grid::-webkit-scrollbar {
   width: 8px;
 }
+
 .icon-grid::-webkit-scrollbar-track {
   background: #f3f4f6;
   border-radius: 4px;
 }
+
 .icon-grid::-webkit-scrollbar-thumb {
   background: #d1d5db;
   border-radius: 4px;
 }
+
 .icon-grid::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
@@ -515,8 +520,7 @@ background: linear-gradient(90deg, rgba(45, 20, 61, 1) 0%, rgba(153, 50, 115, 1)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 18px;
-background: #e3a3c7;
-background: linear-gradient(90deg, rgba(227, 163, 199, 1) 0%, rgba(255, 199, 243, 1) 55%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   padding: 20px 30px;
   border-radius: 16px;
   border-bottom: 1px solid #e5e7eb;
@@ -609,7 +613,8 @@ background: linear-gradient(90deg, rgba(227, 163, 199, 1) 0%, rgba(255, 199, 243
 /* Clear button styles in Search Section */
 .clear-btn {
   padding: 10px 16px;
-  background: #f97316; /* orange to match View button theme */
+  background: #f97316;
+  /* orange to match View button theme */
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -649,7 +654,7 @@ background: linear-gradient(90deg, rgba(227, 163, 199, 1) 0%, rgba(255, 199, 243
 }
 
 .category-heads-table th {
-padding: 1rem;
+  padding: 1rem;
   text-align: left;
   font-weight: 600;
   color: #374151;
@@ -658,7 +663,7 @@ padding: 1rem;
 }
 
 .category-heads-table td {
-    padding: 12px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid #f3f4f6;
   font-size: 13px;
   color: #374151;
@@ -924,8 +929,13 @@ padding: 1rem;
 }
 
 @keyframes fadeInOverlay {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .success-alert-modal {
@@ -969,6 +979,7 @@ padding: 1rem;
     opacity: 0;
     transform: translateY(30px) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -995,10 +1006,12 @@ padding: 1rem;
     transform: scale(0);
     opacity: 0;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.8;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;
@@ -1049,8 +1062,15 @@ padding: 1rem;
 }
 
 @keyframes sparkle {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(180deg); }
+
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  50% {
+    transform: scale(1.2) rotate(180deg);
+  }
 }
 
 .success-ok-btn {
@@ -1153,9 +1173,19 @@ padding: 1rem;
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-2px); }
-  75% { transform: translateX(2px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-2px);
+  }
+
+  75% {
+    transform: translateX(2px);
+  }
 }
 
 .delete-actions {
@@ -1165,7 +1195,8 @@ padding: 1rem;
   flex-wrap: wrap;
 }
 
-.delete-btn-confirm, .delete-btn-cancel {
+.delete-btn-confirm,
+.delete-btn-cancel {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -1180,7 +1211,7 @@ padding: 1rem;
 
 .delete-btn-confirm {
   font-size: 0.875rem;
-border-radius: 25px;
+  border-radius: 25px;
   background: #ffc7c7;
   color: rgb(176, 0, 0);
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
@@ -1194,7 +1225,7 @@ border-radius: 25px;
 
 .delete-btn-cancel {
   font-size: 0.875rem;
-border-radius: 25px;
+  border-radius: 25px;
   background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
   color: #374151;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -1313,6 +1344,13 @@ border-radius: 25px;
 }
 
 @keyframes bounceIcon {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
 }

@@ -163,7 +163,7 @@
   background-repeat: no-repeat;
   background-position: center;
   animation: heartbeat 1.5s infinite;
-  filter: drop-shadow(0 4px 12px rgba(255, 107, 157, 0.4));
+  filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.4));
   flex-shrink: 0;
 
 }
@@ -253,8 +253,8 @@
 }
 
 .pink-line {
-  stroke: #ff6b9d;
-  filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.5));
+  stroke: #60a5fa;
+  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.5));
 }
 
 @keyframes heartbeat-draw {
@@ -291,7 +291,7 @@
 .efficiency-value {
   font-size: 28px;
   font-weight: bold;
-  color: #ff6b9d;
+  color: #3b82f6;
 }
 
 .rate-label,
@@ -335,8 +335,8 @@
 }
 
 .indicator.active {
-  background: #ff6b9d;
-  border-color: #ff6b9d;
+  background: #3b82f6;
+  border-color: #3b82f6;
 }
 
 /* Pulse Animation */
